@@ -271,7 +271,8 @@ interface ReactiveSystem {
 Built-in minimal reactive system for testing and prototyping:
 
 ```ts
-import { SimpleReactiveSystem, Blaze } from '@blaze-ng/core';
+import { Blaze } from '@blaze-ng/core';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 
 Blaze.setReactiveSystem(new SimpleReactiveSystem());
 ```

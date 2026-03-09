@@ -126,7 +126,8 @@ A real-time chat application with rooms, message history, typing indicators, and
 
 ```ts
 import { Template } from '@blaze-ng/templating-runtime';
-import { Blaze, SimpleReactiveSystem } from '@blaze-ng/core';
+import { Blaze } from '@blaze-ng/core';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 
 Blaze.setReactiveSystem(new SimpleReactiveSystem());
 

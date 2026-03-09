@@ -158,7 +158,8 @@ Blaze-NG is **framework-agnostic**. You can use any reactive system:
 For non-Meteor apps or testing:
 
 ```ts
-import { Blaze, SimpleReactiveSystem } from '@blaze-ng/core';
+import { Blaze } from '@blaze-ng/core';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 
 const reactive = new SimpleReactiveSystem();
 Blaze.setReactiveSystem(reactive);

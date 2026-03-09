@@ -12,9 +12,6 @@
 // Types
 export type { Computation, ReactiveVar, Binding, Dependency, ReactiveSystem } from './types';
 
-// Reactivity (testing)
-export { SimpleReactiveSystem } from './reactivity';
-
 // Preamble utilities
 export { _escape, _warn, _bind } from './preamble';
 

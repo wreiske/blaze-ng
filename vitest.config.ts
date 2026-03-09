@@ -16,6 +16,7 @@ export default defineConfig({
 
       '@blaze-ng/blaze-tools': resolve(__dirname, 'packages/blaze-tools/src/index.ts'),
       '@blaze-ng/compat': resolve(__dirname, 'packages/compat/src/index.ts'),
+      '@blaze-ng/core/testing': resolve(__dirname, 'packages/core/src/testing.ts'),
       '@blaze-ng/core': resolve(__dirname, 'packages/core/src/index.ts'),
       '@blaze-ng/hot': resolve(__dirname, 'packages/hot/src/index.ts'),
       '@blaze-ng/html-templates': resolve(__dirname, 'packages/html-templates/src/index.ts'),

@@ -74,7 +74,8 @@ A comprehensive form system with real-time validation, dynamic fields, and multi
 
 ```ts
 import { Template } from '@blaze-ng/templating-runtime';
-import { Blaze, SimpleReactiveSystem } from '@blaze-ng/core';
+import { Blaze } from '@blaze-ng/core';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 
 Blaze.setReactiveSystem(new SimpleReactiveSystem());
 

@@ -11,9 +11,9 @@ import { Spacebars } from '@blaze-ng/spacebars';
 import { ObserveSequence } from '@blaze-ng/observe-sequence';
 import { compile } from '../src/compiler';
 import type { TemplateInstance } from '@blaze-ng/core';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 import {
   View,
-  SimpleReactiveSystem,
   setReactiveSystem,
   render,
   remove,

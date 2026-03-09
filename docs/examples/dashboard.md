@@ -159,7 +159,8 @@ A data dashboard with filterable charts, real-time updates, and responsive card 
 
 ```ts
 import { Template } from '@blaze-ng/templating-runtime';
-import { Blaze, SimpleReactiveSystem } from '@blaze-ng/core';
+import { Blaze } from '@blaze-ng/core';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 
 Blaze.setReactiveSystem(new SimpleReactiveSystem());
 

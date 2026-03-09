@@ -118,7 +118,8 @@ Blaze.setReactiveSystem(createTrackerAdapter(Tracker));
 ### Without Meteor
 
 ```ts
-import { Blaze, SimpleReactiveSystem } from '@blaze-ng/core';
+import { Blaze } from '@blaze-ng/core';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 
 // Use the built-in simple reactive system
 Blaze.setReactiveSystem(new SimpleReactiveSystem());

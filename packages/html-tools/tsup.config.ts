@@ -9,6 +9,7 @@ export default defineConfig({
   esbuildOptions(options) {
     options.minifySyntax = true;
     options.minifyWhitespace = true;
+    options.minifyIdentifiers = true;
   },
   clean: true,
 });

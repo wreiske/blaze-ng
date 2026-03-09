@@ -160,17 +160,17 @@ For full page renders, all frameworks perform similarly. **Blaze-NG excels at pa
 
 Actual measured sizes (ESM, gzip level 9):
 
-| Package                       |          Raw |        Gzip |
-| ----------------------------- | -----------: | ----------: |
-| @blaze-ng/core                |      86.5 KB |     19.6 KB |
-| @blaze-ng/htmljs              |      15.6 KB |      4.3 KB |
-| @blaze-ng/spacebars           |       5.2 KB |      1.7 KB |
-| @blaze-ng/observe-sequence    |      12.3 KB |      3.4 KB |
-| @blaze-ng/spacebars-compiler  |      36.7 KB |      8.8 KB |
-| @blaze-ng/templating-runtime  |       6.2 KB |      1.8 KB |
-| @blaze-ng/templating-compiler |       0.4 KB |      0.2 KB |
-| **Core runtime total**        | **119.5 KB** | **29.0 KB** |
-| All packages total            |     361.3 KB |     81.6 KB |
+| Package                       |         Raw |        Gzip |
+| ----------------------------- | ----------: | ----------: |
+| @blaze-ng/core                |     34.7 KB |     11.6 KB |
+| @blaze-ng/htmljs              |      9.2 KB |      3.6 KB |
+| @blaze-ng/spacebars           |      2.6 KB |      1.2 KB |
+| @blaze-ng/observe-sequence    |      4.7 KB |      2.1 KB |
+| @blaze-ng/spacebars-compiler  |     17.6 KB |      6.4 KB |
+| @blaze-ng/templating-runtime  |      2.9 KB |      1.4 KB |
+| @blaze-ng/templating-compiler |      0.2 KB |      0.2 KB |
+| **Core runtime total**        | **51.3 KB** | **18.5 KB** |
+| All packages total            |    223.1 KB |     63.6 KB |
 
 Run `pnpm bundle-size` to measure yourself.
 

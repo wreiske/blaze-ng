@@ -46,7 +46,8 @@ Blaze.setReactiveSystem(myReactiveSystem);
 Blaze-ng ships with a minimal reactive system for quick prototyping:
 
 ```ts
-import { Blaze, SimpleReactiveSystem } from '@blaze-ng/core';
+import { Blaze } from '@blaze-ng/core';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 
 Blaze.setReactiveSystem(new SimpleReactiveSystem());
 ```

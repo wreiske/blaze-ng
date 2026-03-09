@@ -338,7 +338,7 @@ import { createTrackerAdapter } from '@blaze-ng/meteor';
 Blaze.setReactiveSystem(createTrackerAdapter(Tracker));
 
 // Or use the built-in simple reactive system (for testing/non-Meteor apps)
-import { SimpleReactiveSystem } from '@blaze-ng/core';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 Blaze.setReactiveSystem(new SimpleReactiveSystem());
 
 // Or implement your own:

@@ -11,7 +11,8 @@ npm install @blaze-ng/core
 ## Usage
 
 ```ts
-import { Blaze, Template, View, SimpleReactiveSystem } from '@blaze-ng/core';
+import { Blaze, Template, View } from '@blaze-ng/core';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 
 // Set up reactivity
 Blaze.setReactiveSystem(new SimpleReactiveSystem());

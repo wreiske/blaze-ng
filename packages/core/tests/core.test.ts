@@ -6,10 +6,10 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { HTML } from '@blaze-ng/htmljs';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 import {
   View,
   DOMRange,
-  SimpleReactiveSystem,
   setReactiveSystem,
   _getReactiveSystem,
   render,

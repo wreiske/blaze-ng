@@ -9,9 +9,9 @@ import { HTML, Raw, CharRef, Comment as HtmlComment } from '@blaze-ng/htmljs';
 import { Spacebars } from '@blaze-ng/spacebars';
 import { ObserveSequence } from '@blaze-ng/observe-sequence';
 import { compile } from '@blaze-ng/spacebars-compiler';
+import { SimpleReactiveSystem } from '@blaze-ng/core/testing';
 import {
   View,
-  SimpleReactiveSystem,
   setReactiveSystem,
   render,
   remove,
