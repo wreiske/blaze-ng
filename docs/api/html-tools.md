@@ -21,10 +21,7 @@ import { HTMLTools } from '@blaze-ng/html-tools';
 Parse an HTML fragment into an HTMLJS tree.
 
 ```ts
-function parseFragment(
-  input: string,
-  options?: ParseOptions
-): HTMLNode[];
+function parseFragment(input: string, options?: ParseOptions): HTMLNode[];
 ```
 
 ```ts
@@ -41,7 +38,7 @@ interface ParseOptions {
 }
 ```
 
-The `getTemplateTag` function is used by Spacebars to handle `{{...}}` expressions during parsing.
+The `getTemplateTag` function is used by Spacebars to handle mustache expressions during parsing.
 
 ## Scanner
 
@@ -52,10 +49,10 @@ Low-level string scanner for tokenization.
 ```ts
 class Scanner {
   constructor(input: string);
-  
+
   pos: number;
   input: string;
-  
+
   peek(): string;
   rest(): string;
   isEOF(): boolean;
@@ -65,8 +62,8 @@ class Scanner {
 
 ```ts
 const scanner = new HTMLTools.Scanner('<div>hello</div>');
-console.log(scanner.peek());  // '<'
-console.log(scanner.rest());  // '<div>hello</div>'
+console.log(scanner.peek()); // '<'
+console.log(scanner.rest()); // '<div>hello</div>'
 ```
 
 ## Tokenization
@@ -82,34 +79,34 @@ function getHTMLToken(scanner: Scanner, dataMode?: string): HTMLToken | null;
 ### Token Types
 
 ```ts
-type HTMLToken = 
-  | TagToken        // <div>, </div>, <br/>
-  | CharsToken      // text content
-  | CommentToken    // <!-- comment -->
-  | DoctypeToken    // <!DOCTYPE html>
-  | CharRefToken;   // &amp;, &#123;
+type HTMLToken =
+  | TagToken // <div>, </div>, <br/>
+  | CharsToken // text content
+  | CommentToken // <!-- comment -->
+  | DoctypeToken // <!DOCTYPE html>
+  | CharRefToken; // &amp;, &#123;
 
 interface TagToken {
   t: 'Tag';
-  n: string;           // tag name
-  isEnd?: boolean;     // closing tag
+  n: string; // tag name
+  isEnd?: boolean; // closing tag
   isSelfClose?: boolean;
   attrs?: AttrsDict;
 }
 
 interface CharsToken {
   t: 'Chars';
-  v: string;           // text value
+  v: string; // text value
 }
 
 interface CommentToken {
   t: 'Comment';
-  v: string;           // comment value
+  v: string; // comment value
 }
 
 interface DoctypeToken {
   t: 'Doctype';
-  v: string;           // doctype value
+  v: string; // doctype value
 }
 ```
 
@@ -132,8 +129,8 @@ function properCaseTagName(name: string): string;
 ```
 
 ```ts
-properCaseTagName('div')      // => 'DIV'
-properCaseTagName('textArea') // => 'TEXTAREA'
+properCaseTagName('div'); // => 'DIV'
+properCaseTagName('textArea'); // => 'TEXTAREA'
 ```
 
 ### `properCaseAttributeName()`
@@ -153,10 +150,10 @@ function getCharacterReference(name: string): string | null;
 ```
 
 ```ts
-getCharacterReference('amp')    // => '&'
-getCharacterReference('lt')     // => '<'
-getCharacterReference('#123')   // => '{'
-getCharacterReference('#x1F600') // => '😀'
+getCharacterReference('amp'); // => '&'
+getCharacterReference('lt'); // => '<'
+getCharacterReference('#123'); // => '{'
+getCharacterReference('#x1F600'); // => '😀'
 ```
 
 ### `makeRegexMatcher()`
@@ -175,9 +172,9 @@ Positions where template tags can appear:
 
 ```ts
 const TEMPLATE_TAG_POSITION = {
-  ELEMENT: 1,      // Between tags
+  ELEMENT: 1, // Between tags
   IN_START_TAG: 2, // Inside an opening tag
   IN_ATTRIBUTE: 3, // Inside an attribute value
-  IN_RCDATA: 4,    // Inside <textarea> or <title>
+  IN_RCDATA: 4, // Inside <textarea> or <title>
 };
 ```

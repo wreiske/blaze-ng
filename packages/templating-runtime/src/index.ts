@@ -9,10 +9,11 @@
  * - Dynamic template inclusion (`__dynamic`, `__dynamicWithDataContext`)
  */
 
+import type {
+  View} from '@blaze-ng/core';
 import {
   Template,
   isTemplate,
-  View,
   render,
   renderWithData,
   remove,
@@ -64,9 +65,7 @@ export function __checkName(name: string): void {
   if (existing) {
     if (isTemplate(existing) && name !== 'body') {
       throw new Error(
-        "There are multiple templates named '" +
-          name +
-          "'. Each template needs a unique name.",
+        "There are multiple templates named '" + name + "'. Each template needs a unique name.",
       );
     }
     throw new Error('This template name is reserved: ' + name);
@@ -194,7 +193,10 @@ export function _applyHmrChanges(_templateName?: string): void {
         if (view === _bodyView) {
           const newView = render(body, document.body, comment);
           _bodyView = newView;
-        } else if ((view as View & { dataVar?: { curValue?: { value?: unknown } } }).dataVar && renderFunc) {
+        } else if (
+          (view as View & { dataVar?: { curValue?: { value?: unknown } } }).dataVar &&
+          renderFunc
+        ) {
           renderWithData(
             renderFunc,
             (view as View & { dataVar: { curValue: { value: unknown } } }).dataVar.curValue?.value,
@@ -209,7 +211,7 @@ export function _applyHmrChanges(_templateName?: string): void {
           parentEl.removeChild(comment);
         }
       } catch (e) {
-        // eslint-disable-next-line no-console
+         
         console.error('[Blaze HMR] Error re-rendering template:', e);
 
         const newestRoot = __rootViews[__rootViews.length - 1];
@@ -234,10 +236,12 @@ export function _migrateTemplate(templateName: string, newTemplate: Template): v
   const shouldMigrate = _pendingReplacement.indexOf(templateName) > -1;
 
   if (oldTemplate && shouldMigrate) {
-    (newTemplate as Template & { __helpers?: unknown }).__helpers =
-      (oldTemplate as Template & { __helpers?: unknown }).__helpers;
-    (newTemplate as Template & { __eventMaps?: unknown[] }).__eventMaps =
-      (oldTemplate as Template & { __eventMaps?: unknown[] }).__eventMaps;
+    (newTemplate as Template & { __helpers?: unknown }).__helpers = (
+      oldTemplate as Template & { __helpers?: unknown }
+    ).__helpers;
+    (newTemplate as Template & { __eventMaps?: unknown[] }).__eventMaps = (
+      oldTemplate as Template & { __eventMaps?: unknown[] }
+    ).__eventMaps;
     newTemplate._callbacks.created = oldTemplate._callbacks.created;
     newTemplate._callbacks.rendered = oldTemplate._callbacks.rendered;
     newTemplate._callbacks.destroyed = oldTemplate._callbacks.destroyed;
@@ -272,16 +276,15 @@ export function _markPendingReplacement(name: string): void {
  * Used internally by the `__dynamic` template to resolve template names
  * to Template instances.
  */
-export const __dynamicWithDataContext = new Template(
-  '__dynamicWithDataContext',
-  function (this: View) {
-    const view = this;
-    const templateName = view.lookup?.('template') as string;
-    const tmpl = _getTemplate(templateName, () => view);
-    if (!tmpl) return null;
-    return include(tmpl as Template);
-  },
-);
+export const __dynamicWithDataContext = new Template('__dynamicWithDataContext', function (
+  this: View,
+) {
+  const view = this;
+  const templateName = view.lookup?.('template') as string;
+  const tmpl = _getTemplate(templateName, () => view);
+  if (!tmpl) return null;
+  return include(tmpl as Template);
+});
 
 __dynamicWithDataContext.helpers({
   chooseTemplate: function (this: { template?: string }, name: string) {
@@ -299,9 +302,7 @@ export const __dynamic = new Template('__dynamic', function (this: View) {
   const data = view.lookup?.('.') as Record<string, unknown> | undefined;
 
   if (!data || !('template' in data)) {
-    throw new Error(
-      "Must specify name in the 'template' argument to {{> Template.dynamic}}.",
-    );
+    throw new Error("Must specify name in the 'template' argument to {{> Template.dynamic}}.");
   }
 
   for (const k of Object.keys(data)) {

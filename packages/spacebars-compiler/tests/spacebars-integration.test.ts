@@ -10,6 +10,8 @@ import { HTML, Raw, CharRef, Comment as HtmlComment } from '@blaze-ng/htmljs';
 import { Spacebars } from '@blaze-ng/spacebars';
 import { ObserveSequence } from '@blaze-ng/observe-sequence';
 import { compile } from '../src/compiler';
+import type {
+  TemplateInstance} from '@blaze-ng/core';
 import {
   View,
   SimpleReactiveSystem,
@@ -18,7 +20,6 @@ import {
   remove,
   toHTML,
   Template,
-  TemplateInstance,
   registerHelper,
   deregisterHelper,
   getData,
@@ -62,9 +63,11 @@ function makeTemplate(name: string, source: string): Template {
  */
 function createSpacebarsProxy() {
   const proxy = { ...Spacebars };
-  const OrigKw = (Spacebars as Record<string, unknown>).kw as new (hash?: Record<string, unknown>) => unknown;
+  const OrigKw = (Spacebars as Record<string, unknown>).kw as new (
+    hash?: Record<string, unknown>,
+  ) => unknown;
   (proxy as Record<string, unknown>).kw = function (...args: unknown[]) {
-    return new OrigKw(...args as [Record<string, unknown>?]);
+    return new OrigKw(...(args as [Record<string, unknown>?]));
   };
   return proxy;
 }
@@ -124,7 +127,7 @@ function compileToRenderFunc(source: string): (this: View) => unknown {
   const htmlProxy = createHtmlProxy();
   const spacebarsProxy = createSpacebarsProxy();
 
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval
+   
   const fn = new Function('HTML', 'Spacebars', 'Blaze', 'Template', `return ${code}`)(
     htmlProxy,
     spacebarsProxy,
@@ -135,22 +138,42 @@ function compileToRenderFunc(source: string): (this: View) => unknown {
 }
 
 // Import the actual builtins
-import { If, Unless, Each, Let, _parentData, _withCurrentView, _InOuterTemplateScope } from '@blaze-ng/core';
+import {
+  If,
+  Unless,
+  Each,
+  Let,
+  _parentData,
+  _withCurrentView,
+  _InOuterTemplateScope,
+} from '@blaze-ng/core';
 
 function createBuiltinIf() {
-  return function BlazeIf(conditionFunc: () => unknown, contentFunc: () => unknown, elseFunc?: () => unknown) {
+  return function BlazeIf(
+    conditionFunc: () => unknown,
+    contentFunc: () => unknown,
+    elseFunc?: () => unknown,
+  ) {
     return If(conditionFunc, contentFunc, elseFunc);
   };
 }
 
 function createBuiltinUnless() {
-  return function BlazeUnless(conditionFunc: () => unknown, contentFunc: () => unknown, elseFunc?: () => unknown) {
+  return function BlazeUnless(
+    conditionFunc: () => unknown,
+    contentFunc: () => unknown,
+    elseFunc?: () => unknown,
+  ) {
     return Unless(conditionFunc, contentFunc, elseFunc);
   };
 }
 
 function createBuiltinEach() {
-  return function BlazeEach(argFunc: () => unknown, contentFunc: () => unknown, elseFunc?: () => unknown) {
+  return function BlazeEach(
+    argFunc: () => unknown,
+    contentFunc: () => unknown,
+    elseFunc?: () => unknown,
+  ) {
     return Each(argFunc, contentFunc, elseFunc);
   };
 }
@@ -238,10 +261,14 @@ describe('spacebars integration - simple helpers', () => {
     const tmpl = makeTemplate('test_data_helper', '{{foo bar}}');
     const R = reactive.ReactiveVar(1);
     tmpl.helpers({
-      bar: function () { return 123; },
+      bar: function () {
+        return 123;
+      },
     });
     const div = renderToDiv(tmpl, {
-      foo: function (x: number) { return x + R.get(); },
+      foo: function (x: number) {
+        return x + R.get();
+      },
     });
     expect(canonicalizeHtml(div.innerHTML)).toBe('124');
 
@@ -292,7 +319,9 @@ describe('spacebars integration - triple stache (raw HTML)', () => {
     const tmpl = makeTemplate('test_triple', '{{{html}}}');
     const R = reactive.ReactiveVar('<span class="hi">blah</span>');
     tmpl.helpers({
-      html: function () { return R.get(); },
+      html: function () {
+        return R.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -311,7 +340,9 @@ describe('spacebars integration - triple stache (raw HTML)', () => {
     const tmpl = makeTemplate('test_triple2', 'x{{{html}}}{{{html2}}}{{{html3}}}y');
     tmpl.helpers({
       html: function () {},
-      html2: function () { return null; },
+      html2: function () {
+        return null;
+      },
     });
     const div = renderToDiv(tmpl);
     expect(canonicalizeHtml(div.innerHTML)).toBe('xy');
@@ -322,8 +353,12 @@ describe('spacebars integration - interpolate attribute', () => {
   test('attribute interpolation', () => {
     const tmpl = makeTemplate('test_interp', '<div class="aaa{{foo bar}}zzz"></div>');
     tmpl.helpers({
-      foo: function (x: number) { return x + 1; },
-      bar: function () { return 123; },
+      foo: function (x: number) {
+        return x + 1;
+      },
+      bar: function () {
+        return 123;
+      },
     });
     const div = renderToDiv(tmpl);
     const inner = div.querySelector('div');
@@ -333,13 +368,20 @@ describe('spacebars integration - interpolate attribute', () => {
 
 describe('spacebars integration - dynamic attrs', () => {
   test('object attributes with reactive updates', () => {
-    const tmpl = makeTemplate('test_dynattrs', '<span {{attrsObj}} {{singleAttr}} {{nonexistent}}>hi</span>');
+    const tmpl = makeTemplate(
+      'test_dynattrs',
+      '<span {{attrsObj}} {{singleAttr}} {{nonexistent}}>hi</span>',
+    );
     const R2 = reactive.ReactiveVar({ x: 'X' } as Record<string, string>);
     const R3 = reactive.ReactiveVar('selected');
 
     tmpl.helpers({
-      attrsObj: function () { return R2.get(); },
-      singleAttr: function () { return R3.get(); },
+      attrsObj: function () {
+        return R2.get();
+      },
+      singleAttr: function () {
+        return R3.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -363,7 +405,9 @@ describe('spacebars integration - if/unless', () => {
     const tmpl = makeTemplate('test_if', '{{#if foo}}{{bar}}{{else}}{{baz}}{{/if}}');
     const R = reactive.ReactiveVar(true);
     tmpl.helpers({
-      foo: function () { return R.get(); },
+      foo: function () {
+        return R.get();
+      },
       bar: 1,
       baz: 2,
     });
@@ -377,7 +421,10 @@ describe('spacebars integration - if/unless', () => {
   });
 
   test('if in with block', () => {
-    const tmpl = makeTemplate('test_if_with', '{{#with foo}}{{bar}}{{#if true}}{{bar}}{{/if}}{{/with}}');
+    const tmpl = makeTemplate(
+      'test_if_with',
+      '{{#with foo}}{{bar}}{{#if true}}{{bar}}{{/if}}{{/with}}',
+    );
     tmpl.helpers({ foo: { bar: 'bar' } });
     const div = renderToDiv(tmpl);
     // Both output 'bar' adjacently
@@ -390,7 +437,9 @@ describe('spacebars integration - each on array', () => {
     const tmpl = makeTemplate('test_each', '{{#each items}}{{this}}{{else}}else-clause{{/each}}');
     const R = reactive.ReactiveVar<unknown[]>([]);
     tmpl.helpers({
-      items: function () { return R.get(); },
+      items: function () {
+        return R.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -418,8 +467,10 @@ describe('spacebars integration - each on array', () => {
 
 describe('spacebars integration - with', () => {
   test('#with falsy value (issue #770)', () => {
-    const tmpl = makeTemplate('test_with_falsy',
-      '{{#with value1}}{{this}}{{else}}xxx{{/with}} {{#with value2}}{{this}}{{else}}xxx{{/with}} {{#with value1}}{{this}}{{/with}} {{#with value2}}{{this}}{{/with}}');
+    const tmpl = makeTemplate(
+      'test_with_falsy',
+      '{{#with value1}}{{this}}{{else}}xxx{{/with}} {{#with value2}}{{this}}{{else}}xxx{{/with}} {{#with value1}}{{this}}{{/with}} {{#with value2}}{{this}}{{/with}}',
+    );
 
     tmpl.helpers({
       value1: 0,
@@ -435,7 +486,9 @@ describe('spacebars integration - with', () => {
     const tmpl = makeTemplate('test_with_data', '{{#with someData}}{{foo}} {{bar}}{{/with}}');
     const R = reactive.ReactiveVar({ foo: 'A', bar: 'B' } as Record<string, string> | null);
     tmpl.helpers({
-      someData: function () { return R.get(); },
+      someData: function () {
+        return R.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -456,7 +509,9 @@ describe('spacebars integration - textarea', () => {
     const tmpl = makeTemplate('test_textarea', '<textarea>{{foo}}</textarea>');
     const R = reactive.ReactiveVar('hello');
     tmpl.helpers({
-      foo: function () { return R.get(); },
+      foo: function () {
+        return R.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -466,10 +521,15 @@ describe('spacebars integration - textarea', () => {
   });
 
   test('textarea with if', () => {
-    const tmpl = makeTemplate('test_textarea_if', '<textarea>{{#if foo}}</not a tag>{{else}}<also not a tag>{{/if}}</textarea>');
+    const tmpl = makeTemplate(
+      'test_textarea_if',
+      '<textarea>{{#if foo}}</not a tag>{{else}}<also not a tag>{{/if}}</textarea>',
+    );
     const R = reactive.ReactiveVar(true);
     tmpl.helpers({
-      foo: function () { return R.get(); },
+      foo: function () {
+        return R.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -487,10 +547,15 @@ describe('spacebars integration - nully attributes', () => {
   });
 
   test('nully attribute removal', () => {
-    const tmpl = makeTemplate('test_nully1', '<input type="checkbox" checked={{foo}} stuff={{foo}}>');
+    const tmpl = makeTemplate(
+      'test_nully1',
+      '<input type="checkbox" checked={{foo}} stuff={{foo}}>',
+    );
     const R = reactive.ReactiveVar<string | null>('checked');
     tmpl.helpers({
-      foo: function () { return R.get(); },
+      foo: function () {
+        return R.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -509,7 +574,9 @@ describe('spacebars integration - double (escaping)', () => {
   test('double stache escapes HTML', () => {
     const tmpl = makeTemplate('test_double', '{{foo}}');
     tmpl.helpers({
-      foo: function () { return '<b>hi</b>'; },
+      foo: function () {
+        return '<b>hi</b>';
+      },
     });
     const div = renderToDiv(tmpl);
     // Double stache should escape HTML entities
@@ -578,9 +645,15 @@ describe('spacebars integration - template lifecycle', () => {
   test('created/rendered/destroyed fire in order', () => {
     const buf: string[] = [];
     const tmpl = makeTemplate('test_lifecycle', '<div>hello</div>');
-    tmpl.onCreated(function () { buf.push('created'); });
-    tmpl.onRendered(function () { buf.push('rendered'); });
-    tmpl.onDestroyed(function () { buf.push('destroyed'); });
+    tmpl.onCreated(function () {
+      buf.push('created');
+    });
+    tmpl.onRendered(function () {
+      buf.push('rendered');
+    });
+    tmpl.onDestroyed(function () {
+      buf.push('destroyed');
+    });
 
     const div = renderToDiv(tmpl);
     expect(buf).toContain('created');
@@ -596,7 +669,9 @@ describe('spacebars integration - nested expressions', () => {
   test('nested sub-expression', () => {
     const tmpl = makeTemplate('test_nested', '{{add (add 1 2) 3}}');
     tmpl.helpers({
-      add: function (a: number, b: number) { return a + b; },
+      add: function (a: number, b: number) {
+        return a + b;
+      },
     });
     const div = renderToDiv(tmpl);
     expect(canonicalizeHtml(div.innerHTML)).toBe('6');
@@ -606,8 +681,12 @@ describe('spacebars integration - nested expressions', () => {
     const tmpl = makeTemplate('test_nested2', '{{capitalize (firstWord generateSentence)}}');
     tmpl.helpers({
       generateSentence: 'hello world',
-      firstWord: function (str: string) { return str.split(' ')[0]; },
-      capitalize: function (str: string) { return str.toUpperCase(); },
+      firstWord: function (str: string) {
+        return str.split(' ')[0];
+      },
+      capitalize: function (str: string) {
+        return str.toUpperCase();
+      },
     });
     const div = renderToDiv(tmpl);
     expect(canonicalizeHtml(div.innerHTML)).toBe('HELLO');
@@ -616,12 +695,19 @@ describe('spacebars integration - nested expressions', () => {
 
 describe('spacebars integration - tricky attrs', () => {
   test('type and class attributes', () => {
-    const tmpl = makeTemplate('test_tricky', '<input type={{theType}}><input type=checkbox class={{theClass}}>');
+    const tmpl = makeTemplate(
+      'test_tricky',
+      '<input type={{theType}}><input type=checkbox class={{theClass}}>',
+    );
     const R1 = reactive.ReactiveVar('text');
     const R2 = reactive.ReactiveVar('foo');
     tmpl.helpers({
-      theType: function () { return R1.get(); },
-      theClass: function () { return R2.get(); },
+      theType: function () {
+        return R1.get();
+      },
+      theClass: function () {
+        return R2.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -654,10 +740,12 @@ describe('spacebars integration - falsy helper', () => {
 
 describe('spacebars integration - let bindings', () => {
   test('let with alias and override', () => {
-    const tmpl = makeTemplate('test_let',
+    const tmpl = makeTemplate(
+      'test_let',
       '{{#with dataContext}}{{#let alias=helper anotherVarFromContext="override"}}' +
-      '<div>{{alias}} -- {{helper}} -- {{varFromContext}} -- {{anotherVarFromContext}}</div>' +
-      '{{/let}}{{/with}}');
+        '<div>{{alias}} -- {{helper}} -- {{varFromContext}} -- {{anotherVarFromContext}}</div>' +
+        '{{/let}}{{/with}}',
+    );
     tmpl.helpers({
       dataContext: {
         helper: 'H',
@@ -672,10 +760,15 @@ describe('spacebars integration - let bindings', () => {
 
 describe('spacebars integration - each @index', () => {
   test('@index is available', () => {
-    const tmpl = makeTemplate('test_index', '{{#each things}}<span>{{@index}} - {{num}}</span>{{/each}}');
+    const tmpl = makeTemplate(
+      'test_index',
+      '{{#each things}}<span>{{@index}} - {{num}}</span>{{/each}}',
+    );
     const R = reactive.ReactiveVar([{ num: 'a' }, { num: 'b' }, { num: 'c' }]);
     tmpl.helpers({
-      things: function () { return R.get(); },
+      things: function () {
+        return R.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -689,15 +782,19 @@ describe('spacebars integration - each @index', () => {
 
 describe('spacebars integration - expressions as keyword args', () => {
   test('sub-expression as keyword arg', () => {
-    const tmpl = makeTemplate('test_kwarg',
-      '{{> callable stuff=(capitalize name) another=(capitalize "mello")}}');
+    const tmpl = makeTemplate(
+      'test_kwarg',
+      '{{> callable stuff=(capitalize name) another=(capitalize "mello")}}',
+    );
 
     const callable = makeTemplate('callable', '{{stuff}} {{another}}');
     // Register as a global template
     (Template as Record<string, unknown>)['callable'] = callable;
 
     tmpl.helpers({
-      capitalize: function (str: string) { return str.toUpperCase(); },
+      capitalize: function (str: string) {
+        return str.toUpperCase();
+      },
       name: 'hello',
     });
 
@@ -715,7 +812,9 @@ describe('spacebars integration - Blaze.render / Blaze.remove', () => {
     const R = reactive.ReactiveVar('world');
     tmpl.helpers({
       greeting: 'hello',
-      r: function () { return R.get(); },
+      r: function () {
+        return R.get();
+      },
     });
 
     const div = document.createElement('div');
@@ -738,7 +837,9 @@ describe('spacebars integration - #with mutated data context', () => {
     const tmpl = makeTemplate('test_with_mutate', '{{#with foo}}{{value}}{{/with}}');
     const R = reactive.ReactiveVar({ value: 'A' } as Record<string, string>);
     tmpl.helpers({
-      foo: function () { return R.get(); },
+      foo: function () {
+        return R.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -818,14 +919,18 @@ describe('spacebars integration - global helpers', () => {
 
 describe('spacebars integration - constant each argument', () => {
   test('each with constant array', () => {
-    const tmpl = makeTemplate('test_const_each',
-      '{{#with someData}}{{#each anArray}}{{justReturn this}}{{/each}}{{this}}{{/with}}');
+    const tmpl = makeTemplate(
+      'test_const_each',
+      '{{#with someData}}{{#each anArray}}{{justReturn this}}{{/each}}{{this}}{{/with}}',
+    );
     tmpl.helpers({
       someData: function () {
         return 'parentData';
       },
       anArray: ['item1', 'item2'],
-      justReturn: function (x: unknown) { return x; },
+      justReturn: function (x: unknown) {
+        return x;
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -890,8 +995,10 @@ describe('spacebars integration - helper invalidates self', () => {
 
 describe('spacebars integration - new #each with each-in', () => {
   test('each-in with variable binding', () => {
-    const tmpl = makeTemplate('test_each_in',
-      '{{#with dataContext}}{{#each item in items}}<div>{{item.text}} -- {{toplevel}}</div>{{/each}}{{/with}}');
+    const tmpl = makeTemplate(
+      'test_each_in',
+      '{{#with dataContext}}{{#each item in items}}<div>{{item.text}} -- {{toplevel}}</div>{{/each}}{{/with}}',
+    );
     tmpl.helpers({
       dataContext: {
         items: [{ text: 'A' }, { text: 'B' }],
@@ -926,8 +1033,10 @@ describe('spacebars integration - old #each data context', () => {
 
 describe('spacebars integration - textarea variations', () => {
   test('textarea with reactive conditional content', () => {
-    const tmpl = makeTemplate('test_textarea2',
-      '<textarea>{{#if foo}}</not a tag>{{else}}<also not a tag>{{/if}}</textarea>');
+    const tmpl = makeTemplate(
+      'test_textarea2',
+      '<textarea>{{#if foo}}</not a tag>{{else}}<also not a tag>{{/if}}</textarea>',
+    );
     const R = reactive.ReactiveVar(true);
     tmpl.helpers({ foo: () => R.get() });
 
@@ -945,8 +1054,7 @@ describe('spacebars integration - textarea variations', () => {
   });
 
   test('textarea with id and reactive value', () => {
-    const tmpl = makeTemplate('test_textarea3',
-      '<textarea id="myTextarea">{{foo}}</textarea>');
+    const tmpl = makeTemplate('test_textarea3', '<textarea id="myTextarea">{{foo}}</textarea>');
     const R = reactive.ReactiveVar('hello');
     tmpl.helpers({ foo: () => R.get() });
 
@@ -961,8 +1069,10 @@ describe('spacebars integration - textarea variations', () => {
   });
 
   test('textarea with each loop content', () => {
-    const tmpl = makeTemplate('test_textarea_each',
-      '<textarea>{{#each foo}}<not a tag {{this}} {{/each}}</textarea>');
+    const tmpl = makeTemplate(
+      'test_textarea_each',
+      '<textarea>{{#each foo}}<not a tag {{this}} {{/each}}</textarea>',
+    );
     const R = reactive.ReactiveVar(['APPLE', 'BANANA']);
     tmpl.helpers({ foo: () => R.get() });
 
@@ -1044,8 +1154,10 @@ describe('spacebars integration - view isolation', () => {
 
 describe('spacebars integration - SVG rendering', () => {
   test('SVG elements render in correct namespace', () => {
-    const tmpl = makeTemplate('test_svg',
-      '<div class="container"><svg width="100" height="100"><circle cx="50" cy="50" r="40" fill="{{fillColor}}"></circle></svg></div>');
+    const tmpl = makeTemplate(
+      'test_svg',
+      '<div class="container"><svg width="100" height="100"><circle cx="50" cy="50" r="40" fill="{{fillColor}}"></circle></svg></div>',
+    );
     const fillColor = reactive.ReactiveVar('red');
     tmpl.helpers({ fillColor: () => fillColor.get() });
 
@@ -1062,8 +1174,10 @@ describe('spacebars integration - SVG rendering', () => {
   });
 
   test('SVG with reactive class', () => {
-    const tmpl = makeTemplate('test_svg_class',
-      '<svg><rect class="{{cls}}" width="10" height="10"></rect></svg>');
+    const tmpl = makeTemplate(
+      'test_svg_class',
+      '<svg><rect class="{{cls}}" width="10" height="10"></rect></svg>',
+    );
     const cls = reactive.ReactiveVar('one two');
     tmpl.helpers({ cls: () => cls.get() });
 
@@ -1130,8 +1244,7 @@ describe('spacebars integration - inclusion with arguments', () => {
 
 describe('spacebars integration - block helpers', () => {
   test('block helper with content and else', () => {
-    const tmpl = makeTemplate('test_block',
-      '{{#if flag}}bar{{else}}baz{{/if}}');
+    const tmpl = makeTemplate('test_block', '{{#if flag}}bar{{else}}baz{{/if}}');
     const R = reactive.ReactiveVar(true);
     tmpl.helpers({ flag: () => R.get() });
 
@@ -1144,8 +1257,10 @@ describe('spacebars integration - block helpers', () => {
   });
 
   test('nested conditionals', () => {
-    const tmpl = makeTemplate('test_nested_if',
-      '{{#if outer}}{{#if inner}}both{{else}}outer-only{{/if}}{{else}}none{{/if}}');
+    const tmpl = makeTemplate(
+      'test_nested_if',
+      '{{#if outer}}{{#if inner}}both{{else}}outer-only{{/if}}{{else}}none{{/if}}',
+    );
     const outer = reactive.ReactiveVar(true);
     const inner = reactive.ReactiveVar(true);
     tmpl.helpers({ outer: () => outer.get(), inner: () => inner.get() });
@@ -1168,7 +1283,10 @@ describe('spacebars integration - block helpers', () => {
     (Template as Record<string, unknown>)['content_tmpl'] = content;
     (Template as Record<string, unknown>)['else_tmpl'] = elsecontent;
 
-    const tmpl = makeTemplate('test_block_switch', '{{#if show}}<b>content</b>{{else}}<i>else</i>{{/if}}');
+    const tmpl = makeTemplate(
+      'test_block_switch',
+      '{{#if show}}<b>content</b>{{else}}<i>else</i>{{/if}}',
+    );
     const R = reactive.ReactiveVar(true);
     tmpl.helpers({ show: () => R.get() });
 
@@ -1192,8 +1310,10 @@ describe('spacebars integration - block helpers', () => {
 
 describe('spacebars integration - parent data context', () => {
   test('access parent context with ../', () => {
-    const tmpl = makeTemplate('test_parent_ctx',
-      '{{#with child}}{{name}} of {{../parentName}}{{/with}}');
+    const tmpl = makeTemplate(
+      'test_parent_ctx',
+      '{{#with child}}{{name}} of {{../parentName}}{{/with}}',
+    );
 
     const div = renderToDiv(tmpl, { child: { name: 'kid' }, parentName: 'parent' });
     expect(div.textContent).toContain('kid');
@@ -1274,9 +1394,15 @@ describe('spacebars integration - rendered callbacks', () => {
   test('lifecycle order: created → rendered → destroyed', () => {
     const order: string[] = [];
     const tmpl = makeTemplate('test_lifecycle_order', '<span>test</span>');
-    tmpl.onCreated(function () { order.push('created'); });
-    tmpl.onRendered(function () { order.push('rendered'); });
-    tmpl.onDestroyed(function () { order.push('destroyed'); });
+    tmpl.onCreated(function () {
+      order.push('created');
+    });
+    tmpl.onRendered(function () {
+      order.push('rendered');
+    });
+    tmpl.onDestroyed(function () {
+      order.push('destroyed');
+    });
 
     const div = renderToDiv(tmpl);
     reactive.flush();
@@ -1294,8 +1420,10 @@ describe('spacebars integration - rendered callbacks', () => {
 
 describe('spacebars integration - complex expressions', () => {
   test('nested with and each', () => {
-    const tmpl = makeTemplate('test_nested_with_each',
-      '{{#with data}}{{#each items}}<span>{{name}} ({{../category}})</span>{{/each}}{{/with}}');
+    const tmpl = makeTemplate(
+      'test_nested_with_each',
+      '{{#with data}}{{#each items}}<span>{{name}} ({{../category}})</span>{{/each}}{{/with}}',
+    );
     tmpl.helpers({
       data: {
         category: 'fruit',
@@ -1311,8 +1439,10 @@ describe('spacebars integration - complex expressions', () => {
   });
 
   test('multiple helpers in same element', () => {
-    const tmpl = makeTemplate('test_multi_helpers',
-      '<div class="{{cls}}" data-id="{{id}}">{{text}}</div>');
+    const tmpl = makeTemplate(
+      'test_multi_helpers',
+      '<div class="{{cls}}" data-id="{{id}}">{{text}}</div>',
+    );
     tmpl.helpers({
       cls: 'my-class',
       id: '42',
@@ -1327,8 +1457,10 @@ describe('spacebars integration - complex expressions', () => {
   });
 
   test('each with index and nested helpers', () => {
-    const tmpl = makeTemplate('test_each_complex',
-      '{{#each item in items}}<li>{{@index}}: {{item.name}}</li>{{/each}}');
+    const tmpl = makeTemplate(
+      'test_each_complex',
+      '{{#each item in items}}<li>{{@index}}: {{item.name}}</li>{{/each}}',
+    );
     tmpl.helpers({
       items: [{ name: 'a' }, { name: 'b' }, { name: 'c' }],
     });
@@ -1342,8 +1474,7 @@ describe('spacebars integration - complex expressions', () => {
   });
 
   test('let with multiple bindings', () => {
-    const tmpl = makeTemplate('test_let_multi',
-      '{{#let x="hello" y="world"}}{{x}} {{y}}{{/let}}');
+    const tmpl = makeTemplate('test_let_multi', '{{#let x="hello" y="world"}}{{x}} {{y}}{{/let}}');
 
     const div = renderToDiv(tmpl);
     expect(div.textContent).toContain('hello');
@@ -1351,8 +1482,10 @@ describe('spacebars integration - complex expressions', () => {
   });
 
   test('deeply nested data contexts', () => {
-    const tmpl = makeTemplate('test_deep_ctx',
-      '{{#with a}}{{#with b}}{{#with c}}{{value}}{{/with}}{{/with}}{{/with}}');
+    const tmpl = makeTemplate(
+      'test_deep_ctx',
+      '{{#with a}}{{#with b}}{{#with c}}{{value}}{{/with}}{{/with}}{{/with}}',
+    );
     tmpl.helpers({
       a: { b: { c: { value: 'deep' } } },
     });
@@ -1441,8 +1574,7 @@ describe('spacebars integration - edge cases', () => {
   });
 
   test('conditional with reactive data context', () => {
-    const tmpl = makeTemplate('test_cond_data',
-      '{{#if show}}<p>{{message}}</p>{{/if}}');
+    const tmpl = makeTemplate('test_cond_data', '{{#if show}}<p>{{message}}</p>{{/if}}');
     const show = reactive.ReactiveVar(false);
     const message = reactive.ReactiveVar('hello');
     tmpl.helpers({
@@ -1472,15 +1604,21 @@ describe('spacebars integration - edge cases', () => {
 describe('spacebars integration - with someData efficiency', () => {
   test('#with runs helper only once even when nested helpers re-run', () => {
     // In {{#with someData}}{{foo}} {{bar}}{{/with}}, someData runs once
-    const tmpl = makeTemplate('test_with_someData',
-      '{{#with someData}}{{foo}} {{bar}}{{/with}}');
+    const tmpl = makeTemplate('test_with_someData', '{{#with someData}}{{foo}} {{bar}}{{/with}}');
     const foo = reactive.ReactiveVar('AAA');
     let someDataRuns = 0;
 
     tmpl.helpers({
-      someData: function () { someDataRuns++; return {}; },
-      foo: function () { return foo.get(); },
-      bar: function () { return 'YO'; },
+      someData: function () {
+        someDataRuns++;
+        return {};
+      },
+      foo: function () {
+        return foo.get();
+      },
+      bar: function () {
+        return 'YO';
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -1502,10 +1640,16 @@ describe('spacebars integration - with someData efficiency', () => {
 describe('spacebars integration - block helpers in attribute', () => {
   test('block helper in attribute with reactive switching', () => {
     // {{#if foo}}checked{{/if}} in an attribute
-    const tmpl = makeTemplate('test_block_attr2',
-      '<input value="{{#if foo}}&quot;{{else}}&amp;<>&lt;/x&gt;{{/if}}">');
+    const tmpl = makeTemplate(
+      'test_block_attr2',
+      '<input value="{{#if foo}}&quot;{{else}}&amp;<>&lt;/x&gt;{{/if}}">',
+    );
     const R = reactive.ReactiveVar(true);
-    tmpl.helpers({ foo: function () { return R.get(); } });
+    tmpl.helpers({
+      foo: function () {
+        return R.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     const input = div.querySelector('input')!;
@@ -1519,15 +1663,22 @@ describe('spacebars integration - block helpers in attribute', () => {
 
 describe('spacebars integration - constant #each argument', () => {
   test('#each with constant array does not depend on data context', () => {
-    const tmpl = makeTemplate('test_const_each',
-      '{{#with someData}}{{#each anArray}}{{justReturn this}}{{/each}} {{this}}{{/with}}');
+    const tmpl = makeTemplate(
+      'test_const_each',
+      '{{#with someData}}{{#each anArray}}{{justReturn this}}{{/each}} {{this}}{{/with}}',
+    );
     let justReturnRuns = 0;
     const R = reactive.ReactiveVar(1);
 
     tmpl.helpers({
-      someData: function () { return R.get(); },
+      someData: function () {
+        return R.get();
+      },
       anArray: ['foo', 'bar'],
-      justReturn: function (x: unknown) { justReturnRuns++; return String(x); },
+      justReturn: function (x: unknown) {
+        justReturnRuns++;
+        return String(x);
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -1548,11 +1699,12 @@ describe('spacebars integration - constant #each argument', () => {
 
 describe('spacebars integration - content context', () => {
   test('data context switches between inner and outer', () => {
-    const inner = makeTemplate('test_content_ctx_inner',
-      '{{#if bar.cond}}{{bar.firstLetter}}{{bar.secondLetter}}{{else}}{{firstLetter}}{{secondLetter}}{{/if}}');
+    const inner = makeTemplate(
+      'test_content_ctx_inner',
+      '{{#if bar.cond}}{{bar.firstLetter}}{{bar.secondLetter}}{{else}}{{firstLetter}}{{secondLetter}}{{/if}}',
+    );
 
-    const tmpl = makeTemplate('test_content_ctx_outer',
-      '{{#with foo}}{{> inner}}{{/with}}');
+    const tmpl = makeTemplate('test_content_ctx_outer', '{{#with foo}}{{> inner}}{{/with}}');
     tmpl.helpers({ inner });
 
     const R = reactive.ReactiveVar(true);
@@ -1561,7 +1713,9 @@ describe('spacebars integration - content context', () => {
         firstLetter: 'F',
         secondLetter: 'O',
         bar: {
-          cond: function () { return R.get(); },
+          cond: function () {
+            return R.get();
+          },
           firstLetter: 'B',
           secondLetter: 'A',
         },
@@ -1579,14 +1733,17 @@ describe('spacebars integration - content context', () => {
 
 describe('spacebars integration - helper called exactly once on invalidation', () => {
   test('helper passed to #if runs exactly once per invalidation', () => {
-    const tmpl = makeTemplate('test_if_exact',
-      '{{#if foo}}true{{else}}false{{/if}}');
+    const tmpl = makeTemplate('test_if_exact', '{{#if foo}}true{{else}}false{{/if}}');
     let count = 0;
     const dep = reactive.Dependency();
     let foo = false;
 
     tmpl.helpers({
-      foo: function () { dep.depend(); count++; return foo; },
+      foo: function () {
+        dep.depend();
+        count++;
+        return foo;
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -1602,13 +1759,16 @@ describe('spacebars integration - helper called exactly once on invalidation', (
 
   test('custom block helper function called exactly once per invalidation', () => {
     const subTmpl = makeTemplate('test_block_fn_sub', 'aaa');
-    const tmpl = makeTemplate('test_block_fn',
-      '{{#if true}}{{> dynamicTemplate}}{{/if}}');
+    const tmpl = makeTemplate('test_block_fn', '{{#if true}}{{> dynamicTemplate}}{{/if}}');
     let count = 0;
     const dep = reactive.Dependency();
 
     tmpl.helpers({
-      dynamicTemplate: function () { dep.depend(); count++; return subTmpl; },
+      dynamicTemplate: function () {
+        dep.depend();
+        count++;
+        return subTmpl;
+      },
     });
 
     renderToDiv(tmpl);
@@ -1622,10 +1782,13 @@ describe('spacebars integration - helper called exactly once on invalidation', (
 
 describe('spacebars integration - falsy with', () => {
   test('#with falsy value shows nothing, truthy shows content', () => {
-    const tmpl = makeTemplate('test_falsy_with',
-      '{{#with obj}}{{greekLetter}}{{/with}}');
+    const tmpl = makeTemplate('test_falsy_with', '{{#with obj}}{{greekLetter}}{{/with}}');
     const R = reactive.ReactiveVar<Record<string, string> | null>(null);
-    tmpl.helpers({ obj: function () { return R.get(); } });
+    tmpl.helpers({
+      obj: function () {
+        return R.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     expect(canonicalizeHtml(div.innerHTML)).toBe('');
@@ -1647,10 +1810,13 @@ describe('spacebars integration - falsy with', () => {
 describe('spacebars integration - helpers do not leak', () => {
   test('template helpers do not leak to sub-templates', () => {
     const sub = makeTemplate('test_no_leak_sub', '{{bonus}}');
-    sub.helpers({ bonus: function () { return 'BONUS'; } });
+    sub.helpers({
+      bonus: function () {
+        return 'BONUS';
+      },
+    });
 
-    const tmpl = makeTemplate('test_no_leak',
-      'correct {{> sub}}');
+    const tmpl = makeTemplate('test_no_leak', 'correct {{> sub}}');
     tmpl.helpers({ sub });
 
     const div = renderToDiv(tmpl);
@@ -1662,12 +1828,20 @@ describe('spacebars integration - event cleanup', () => {
   test('event handlers removed when view is destroyed', () => {
     const inner = makeTemplate('test_evt_cleanup_inner', '<span>click me</span>');
     let clickCount = 0;
-    inner.events({ 'click span': function () { clickCount++; } });
+    inner.events({
+      'click span': function () {
+        clickCount++;
+      },
+    });
 
-    const tmpl = makeTemplate('test_evt_cleanup_outer',
-      '{{#if show}}{{> inner}}{{/if}}');
+    const tmpl = makeTemplate('test_evt_cleanup_outer', '{{#if show}}{{> inner}}{{/if}}');
     const show = reactive.ReactiveVar(true);
-    tmpl.helpers({ show: function () { return show.get(); }, inner });
+    tmpl.helpers({
+      show: function () {
+        return show.get();
+      },
+      inner,
+    });
 
     const div = renderToDiv(tmpl);
     const span = div.querySelector('span')!;
@@ -1686,8 +1860,7 @@ describe('spacebars integration - event cleanup', () => {
 
 describe('spacebars integration - data context in event handlers', () => {
   test('data context available in event handler inside #if', () => {
-    const tmpl = makeTemplate('test_data_ctx_evt',
-      '{{#with foo}}<button>click</button>{{/with}}');
+    const tmpl = makeTemplate('test_data_ctx_evt', '{{#with foo}}<button>click</button>{{/with}}');
     let dataInEvent: unknown = null;
 
     tmpl.helpers({ foo: { bar: 'baz' } });
@@ -1707,8 +1880,7 @@ describe('spacebars integration - data context in event handlers', () => {
 
 describe('spacebars integration - Blaze.renderWithData', () => {
   test('renderWithData and remove', () => {
-    const tmpl = makeTemplate('test_render_data',
-      '<b>some data - {{foo}}</b>');
+    const tmpl = makeTemplate('test_render_data', '<b>some data - {{foo}}</b>');
 
     const div = document.createElement('div');
     const view = renderWithData(tmpl, { foo: 3130 }, div);
@@ -1724,8 +1896,7 @@ describe('spacebars integration - Blaze.renderWithData', () => {
 
 describe('spacebars integration - old #each data context', () => {
   test('old each with array of objects sets data context', () => {
-    const tmpl = makeTemplate('test_old_each_ctx',
-      '{{#each items}}<div>{{text}}</div>{{/each}}');
+    const tmpl = makeTemplate('test_old_each_ctx', '{{#each items}}<div>{{text}}</div>{{/each}}');
     tmpl.helpers({ items: [{ text: 'a' }, { text: 'b' }] });
 
     const div = renderToDiv(tmpl);
@@ -1735,8 +1906,10 @@ describe('spacebars integration - old #each data context', () => {
 
 describe('spacebars integration - new each-in extends context', () => {
   test('each-in preserves parent context', () => {
-    const tmpl = makeTemplate('test_each_in_ctx',
-      '{{#with dataContext}}{{#each item in items}}<div>{{item.text}} -- {{toplevel}}</div>{{/each}}{{/with}}');
+    const tmpl = makeTemplate(
+      'test_each_in_ctx',
+      '{{#with dataContext}}{{#each item in items}}<div>{{item.text}} -- {{toplevel}}</div>{{/each}}{{/with}}',
+    );
     tmpl.helpers({
       dataContext: function () {
         return { items: [{ text: 'a' }, { text: 'b' }], toplevel: 'XYZ' };
@@ -1750,15 +1923,21 @@ describe('spacebars integration - new each-in extends context', () => {
 
 describe('spacebars integration - nested sub-expressions', () => {
   test('capitalize(firstWord(sentence))', () => {
-    const tmpl = makeTemplate('test_nested_subexpr',
-      '{{capitalize (firstWord (generateSentence))}}');
+    const tmpl = makeTemplate(
+      'test_nested_subexpr',
+      '{{capitalize (firstWord (generateSentence))}}',
+    );
     const sentence = reactive.ReactiveVar("can't even imagine");
     tmpl.helpers({
       capitalize: function (str: string) {
         return str.charAt(0).toUpperCase() + str.substring(1);
       },
-      firstWord: function (s: string) { return s.split(' ')[0]; },
-      generateSentence: function () { return sentence.get(); },
+      firstWord: function (s: string) {
+        return s.split(' ')[0];
+      },
+      generateSentence: function () {
+        return sentence.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -1772,14 +1951,15 @@ describe('spacebars integration - nested sub-expressions', () => {
 
 describe('spacebars integration - expressions as keyword args', () => {
   test('sub-expressions as keyword arguments', () => {
-    const tmpl = makeTemplate('test_expr_kw',
-      '{{capitalize (name)}} {{capitalize "mello"}}');
+    const tmpl = makeTemplate('test_expr_kw', '{{capitalize (name)}} {{capitalize "mello"}}');
     const name = reactive.ReactiveVar('light');
     tmpl.helpers({
       capitalize: function (str: string) {
         return str.charAt(0).toUpperCase() + str.substring(1);
       },
-      name: function () { return name.get(); },
+      name: function () {
+        return name.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -1793,10 +1973,16 @@ describe('spacebars integration - expressions as keyword args', () => {
 
 describe('spacebars integration - #with does not re-render template', () => {
   test('with reactive value preserves DOM nodes', () => {
-    const tmpl = makeTemplate('test_with_rerender',
-      '{{#with x}}<input class="foo"><span class="bar">{{this}}</span>{{/with}}');
+    const tmpl = makeTemplate(
+      'test_with_rerender',
+      '{{#with x}}<input class="foo"><span class="bar">{{this}}</span>{{/with}}',
+    );
     const x = reactive.ReactiveVar('aaa');
-    tmpl.helpers({ x: function () { return x.get(); } });
+    tmpl.helpers({
+      x: function () {
+        return x.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     const input = div.querySelector('input.foo');
@@ -1816,10 +2002,16 @@ describe('spacebars integration - #with does not re-render template', () => {
 
 describe('spacebars integration - #let does not re-render template', () => {
   test('let reactive value preserves DOM nodes', () => {
-    const tmpl = makeTemplate('test_let_rerender',
-      '{{#let y=x}}<input class="foo"><span class="bar">{{y}}</span>{{/let}}');
+    const tmpl = makeTemplate(
+      'test_let_rerender',
+      '{{#let y=x}}<input class="foo"><span class="bar">{{y}}</span>{{/let}}',
+    );
     const x = reactive.ReactiveVar('aaa');
-    tmpl.helpers({ x: function () { return x.get(); } });
+    tmpl.helpers({
+      x: function () {
+        return x.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     const input = div.querySelector('input.foo');
@@ -1838,11 +2030,15 @@ describe('spacebars integration - #let does not re-render template', () => {
 
 describe('spacebars integration - #each takes multiple arguments', () => {
   test('each with helper wrapping array', () => {
-    const tmpl = makeTemplate('test_each_multiarg',
-      '{{#each helper arg}}<div>{{this}}</div>{{/each}}');
+    const tmpl = makeTemplate(
+      'test_each_multiarg',
+      '{{#each helper arg}}<div>{{this}}</div>{{/each}}',
+    );
     tmpl.helpers({
       arg: ['a', 'b', 'c'],
-      helper: function (x: string[]) { return x; },
+      helper: function (x: string[]) {
+        return x;
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -1852,11 +2048,15 @@ describe('spacebars integration - #each takes multiple arguments', () => {
 
 describe('spacebars integration - multiple arguments in each-in', () => {
   test('each-in with helper call on list', () => {
-    const tmpl = makeTemplate('test_each_in_multi',
-      '{{#each item in (helper list)}}<div>{{item}}</div>{{/each}}');
+    const tmpl = makeTemplate(
+      'test_each_in_multi',
+      '{{#each item in (helper list)}}<div>{{item}}</div>{{/each}}',
+    );
     tmpl.helpers({
       list: ['a', 'b', 'c'],
-      helper: function (list: string[]) { return [...list].reverse(); },
+      helper: function (list: string[]) {
+        return [...list].reverse();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -1873,8 +2073,7 @@ describe('spacebars integration - inclusion lookup order', () => {
     // Register sub1 as a global template
     (Template as Record<string, unknown>)['test_incl_lookup_sub1'] = sub1;
 
-    const tmpl = makeTemplate('test_incl_lookup',
-      '{{> test_incl_lookup_sub1}} {{> dataSubTmpl}}');
+    const tmpl = makeTemplate('test_incl_lookup', '{{> test_incl_lookup_sub1}} {{> dataSubTmpl}}');
     // Helper overrides the template registered by name
     tmpl.helpers({
       test_incl_lookup_sub1: sub2,
@@ -1890,9 +2089,12 @@ describe('spacebars integration - inclusion lookup order', () => {
 
 describe('spacebars integration - attribute object helpers', () => {
   test('disabled/undefined attribute object does not affect element', () => {
-    const tmpl = makeTemplate('test_attr_disabled',
-      '<button {{disabled}}>test</button>');
-    tmpl.helpers({ disabled: function () { return undefined; } });
+    const tmpl = makeTemplate('test_attr_disabled', '<button {{disabled}}>test</button>');
+    tmpl.helpers({
+      disabled: function () {
+        return undefined;
+      },
+    });
 
     const div = renderToDiv(tmpl);
     const button = div.querySelector('button')!;
@@ -1901,10 +2103,13 @@ describe('spacebars integration - attribute object helpers', () => {
   });
 
   test('attribute object with reactive updates', () => {
-    const tmpl = makeTemplate('test_attr_obj_reactive',
-      '<p {{attrs}}>text</p>');
+    const tmpl = makeTemplate('test_attr_obj_reactive', '<p {{attrs}}>text</p>');
     const attrs = reactive.ReactiveVar({ class: 'foo', id: 'bar' });
-    tmpl.helpers({ attrs: function () { return attrs.get(); } });
+    tmpl.helpers({
+      attrs: function () {
+        return attrs.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     const p = div.querySelector('p')!;
@@ -1921,13 +2126,19 @@ describe('spacebars integration - attribute object helpers', () => {
 
 describe('spacebars integration - nully attributes detailed', () => {
   test('null/undefined/false attributes are removed', () => {
-    const tmpl = makeTemplate('test_nully_attrs',
-      '<input checked="{{checked}}" stuff="{{stuff}}">');
+    const tmpl = makeTemplate(
+      'test_nully_attrs',
+      '<input checked="{{checked}}" stuff="{{stuff}}">',
+    );
     const checked = reactive.ReactiveVar<unknown>(true);
     const stuff = reactive.ReactiveVar<unknown>('yes');
     tmpl.helpers({
-      checked: function () { return checked.get(); },
-      stuff: function () { return stuff.get(); },
+      checked: function () {
+        return checked.get();
+      },
+      stuff: function () {
+        return stuff.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -1949,8 +2160,7 @@ describe('spacebars integration - nully attributes detailed', () => {
   });
 
   test('empty string is truthy for attributes', () => {
-    const tmpl = makeTemplate('test_empty_str_attr',
-      '<input checked="{{val}}">');
+    const tmpl = makeTemplate('test_empty_str_attr', '<input checked="{{val}}">');
     tmpl.helpers({ val: '' });
     const div = renderToDiv(tmpl);
     const input = div.querySelector('input')!;
@@ -2013,11 +2223,12 @@ describe('spacebars integration - autorun on template instance', () => {
       });
     });
 
-    const tmpl = makeTemplate('test_autorun_outer',
-      '{{#if show}}{{> inner}}{{/if}}');
+    const tmpl = makeTemplate('test_autorun_outer', '{{#if show}}{{> inner}}{{/if}}');
     const show = reactive.ReactiveVar(true);
     tmpl.helpers({
-      show: function () { return show.get(); },
+      show: function () {
+        return show.get();
+      },
       inner,
     });
 
@@ -2054,24 +2265,25 @@ describe('spacebars integration - created/rendered/destroyed by each', () => {
       buf.push('D' + String(getData(this.view)).toLowerCase());
     });
 
-    const tmpl = makeTemplate('test_lifecycle_each_outer',
-      '{{#each items}}{{> inner}}{{/each}}');
+    const tmpl = makeTemplate('test_lifecycle_each_outer', '{{#each items}}{{> inner}}{{/each}}');
     const R = reactive.ReactiveVar([{ _id: 'A' }]);
     tmpl.helpers({
-      items: function () { return R.get(); },
+      items: function () {
+        return R.get();
+      },
       inner,
     });
 
     const div = renderToDiv(tmpl);
     expect(canonicalizeHtml(div.innerHTML)).toBe('<div>[object Object]</div>');
     // Created + Rendered for first item
-    expect(buf.filter(s => s.startsWith('C')).length).toBe(1);
-    expect(buf.filter(s => s.startsWith('R')).length).toBe(1);
+    expect(buf.filter((s) => s.startsWith('C')).length).toBe(1);
+    expect(buf.filter((s) => s.startsWith('R')).length).toBe(1);
 
     R.set([{ _id: 'B' }]);
     reactive.flush();
     // First item destroyed, second created + rendered
-    expect(buf.filter(s => s.startsWith('D')).length).toBe(1);
+    expect(buf.filter((s) => s.startsWith('D')).length).toBe(1);
   });
 });
 
@@ -2080,7 +2292,12 @@ describe('spacebars integration - view removal stops reactivity', () => {
     const tmpl = makeTemplate('test_view_removal', '<span>{{foo}}</span>');
     const rv = reactive.ReactiveVar('one');
     let runCount = 0;
-    tmpl.helpers({ foo: function () { runCount++; return rv.get(); } });
+    tmpl.helpers({
+      foo: function () {
+        runCount++;
+        return rv.get();
+      },
+    });
 
     const div = document.createElement('div');
     const view = render(tmpl, div);
@@ -2109,7 +2326,10 @@ describe('spacebars integration - toHTML variations', () => {
     let count = 0;
     const R = reactive.ReactiveVar<unknown>(null);
     tmpl.helpers({
-      foo: function () { count++; return R.get(); },
+      foo: function () {
+        count++;
+        return R.get();
+      },
     });
 
     R.set('bar');
@@ -2127,7 +2347,10 @@ describe('spacebars integration - toHTML variations', () => {
     let count = 0;
     const R = reactive.ReactiveVar<unknown>(null);
     tmpl.helpers({
-      foos: function () { count++; return R.get(); },
+      foos: function () {
+        count++;
+        return R.get();
+      },
     });
 
     R.set(['bar']);
@@ -2150,8 +2373,10 @@ describe('spacebars integration - javascript scheme URLs', () => {
 
 describe('spacebars integration - SVG elements', () => {
   test('SVG circle renders with correct namespace', () => {
-    const tmpl = makeTemplate('test_svg_circle',
-      '<svg><circle cx="10" cy="10" r="5"></circle></svg>');
+    const tmpl = makeTemplate(
+      'test_svg_circle',
+      '<svg><circle cx="10" cy="10" r="5"></circle></svg>',
+    );
 
     const div = renderToDiv(tmpl);
     const svg = div.querySelector('svg')!;
@@ -2161,10 +2386,13 @@ describe('spacebars integration - SVG elements', () => {
   });
 
   test('SVG path with reactive d attribute', () => {
-    const tmpl = makeTemplate('test_svg_path',
-      '<svg><path d="{{pathData}}"></path></svg>');
+    const tmpl = makeTemplate('test_svg_path', '<svg><path d="{{pathData}}"></path></svg>');
     const pathData = reactive.ReactiveVar('M0 0 L10 10');
-    tmpl.helpers({ pathData: function () { return pathData.get(); } });
+    tmpl.helpers({
+      pathData: function () {
+        return pathData.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     const path = div.querySelector('path')!;
@@ -2178,10 +2406,16 @@ describe('spacebars integration - SVG elements', () => {
 
 describe('spacebars integration - textarea advanced', () => {
   test('textarea each with reactive array', () => {
-    const tmpl = makeTemplate('test_textarea_each',
-      '<textarea>{{#each foo}}<not a tag {{this}} {{/each}}</textarea>');
+    const tmpl = makeTemplate(
+      'test_textarea_each',
+      '<textarea>{{#each foo}}<not a tag {{this}} {{/each}}</textarea>',
+    );
     const R = reactive.ReactiveVar(['APPLE', 'BANANA']);
-    tmpl.helpers({ foo: function () { return R.get(); } });
+    tmpl.helpers({
+      foo: function () {
+        return R.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     const textarea = div.querySelector('textarea')!;
@@ -2201,11 +2435,12 @@ describe('spacebars integration - textarea advanced', () => {
 
 describe('spacebars integration - parentData', () => {
   test('Template.parentData accesses ancestor data contexts', () => {
-    const child = makeTemplate('test_parent_data_child',
-      '{{foo}}');
+    const child = makeTemplate('test_parent_data_child', '{{foo}}');
 
-    const tmpl = makeTemplate('test_parent_data_outer',
-      '{{#with outer}}{{#with inner}}{{> child}}{{/with}}{{/with}}');
+    const tmpl = makeTemplate(
+      'test_parent_data_outer',
+      '{{#with outer}}{{#with inner}}{{> child}}{{/with}}{{/with}}',
+    );
     tmpl.helpers({
       child,
       outer: { inner: { val: 'deepest' }, outerVal: 'mid' },
@@ -2239,10 +2474,11 @@ describe('spacebars integration - Blaze.getView and getData', () => {
 
 describe('spacebars integration - contentBlock argument', () => {
   test('arguments passed to contentBlock are evaluated', () => {
-    const wrapper = makeTemplate('test_cb_wrapper',
-      '{{#if true}}<div>{{> Template.contentBlock}}</div>{{/if}}');
-    const tmpl = makeTemplate('test_cb_outer',
-      '{{#wrapper}}AAA{{/wrapper}} BBB');
+    const wrapper = makeTemplate(
+      'test_cb_wrapper',
+      '{{#if true}}<div>{{> Template.contentBlock}}</div>{{/if}}',
+    );
+    const tmpl = makeTemplate('test_cb_outer', '{{#wrapper}}AAA{{/wrapper}} BBB');
     tmpl.helpers({ wrapper });
 
     const div = renderToDiv(tmpl);
@@ -2253,10 +2489,11 @@ describe('spacebars integration - contentBlock argument', () => {
 
 describe('spacebars integration - contentBlock via inclusion', () => {
   test('block content passed via inclusion', () => {
-    const wrapper = makeTemplate('test_content_pass_wrapper',
-      '<div>{{> Template.contentBlock}}</div>');
-    const tmpl = makeTemplate('test_content_pass_outer',
-      '{{#wrapper}}hello world{{/wrapper}}');
+    const wrapper = makeTemplate(
+      'test_content_pass_wrapper',
+      '<div>{{> Template.contentBlock}}</div>',
+    );
+    const tmpl = makeTemplate('test_content_pass_outer', '{{#wrapper}}hello world{{/wrapper}}');
     tmpl.helpers({ wrapper });
 
     const div = renderToDiv(tmpl);
@@ -2266,10 +2503,13 @@ describe('spacebars integration - contentBlock via inclusion', () => {
 
 describe('spacebars integration - #unless', () => {
   test('unless with reactive condition', () => {
-    const tmpl = makeTemplate('test_unless',
-      '{{#unless hidden}}visible{{else}}hidden{{/unless}}');
+    const tmpl = makeTemplate('test_unless', '{{#unless hidden}}visible{{else}}hidden{{/unless}}');
     const R = reactive.ReactiveVar(false);
-    tmpl.helpers({ hidden: function () { return R.get(); } });
+    tmpl.helpers({
+      hidden: function () {
+        return R.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     expect(canonicalizeHtml(div.innerHTML)).toBe('visible');
@@ -2286,10 +2526,16 @@ describe('spacebars integration - #unless', () => {
 
 describe('spacebars integration - #each with else', () => {
   test('each shows else block when empty', () => {
-    const tmpl = makeTemplate('test_each_else',
-      '{{#each items}}<li>{{this}}</li>{{else}}<li>none</li>{{/each}}');
+    const tmpl = makeTemplate(
+      'test_each_else',
+      '{{#each items}}<li>{{this}}</li>{{else}}<li>none</li>{{/each}}',
+    );
     const R = reactive.ReactiveVar<string[]>([]);
-    tmpl.helpers({ items: function () { return R.get(); } });
+    tmpl.helpers({
+      items: function () {
+        return R.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     expect(canonicalizeHtml(div.innerHTML)).toBe('<li>none</li>');
@@ -2308,7 +2554,9 @@ describe('spacebars integration - SafeString in helper', () => {
   test('SafeString is not escaped', () => {
     const tmpl = makeTemplate('test_safestring', '{{foo}}');
     tmpl.helpers({
-      foo: function () { return new Spacebars.SafeString('<b>bold</b>'); },
+      foo: function () {
+        return new Spacebars.SafeString('<b>bold</b>');
+      },
     });
     const div = renderToDiv(tmpl);
     expect(div.querySelector('b')).toBeTruthy();
@@ -2317,7 +2565,11 @@ describe('spacebars integration - SafeString in helper', () => {
 
   test('regular string is escaped', () => {
     const tmpl = makeTemplate('test_escaped_str', '{{foo}}');
-    tmpl.helpers({ foo: function () { return '<b>not bold</b>'; } });
+    tmpl.helpers({
+      foo: function () {
+        return '<b>not bold</b>';
+      },
+    });
     const div = renderToDiv(tmpl);
     expect(div.querySelector('b')).toBeNull();
     expect(div.textContent).toBe('<b>not bold</b>');
@@ -2326,8 +2578,10 @@ describe('spacebars integration - SafeString in helper', () => {
 
 describe('spacebars integration - deeply nested #with and #each', () => {
   test('deeply nested template structures', () => {
-    const tmpl = makeTemplate('test_deep_nesting',
-      '{{#with a}}{{#with b}}{{#each items}}<span>{{name}}-{{../../title}}</span>{{/each}}{{/with}}{{/with}}');
+    const tmpl = makeTemplate(
+      'test_deep_nesting',
+      '{{#with a}}{{#with b}}{{#each items}}<span>{{name}}-{{../../title}}</span>{{/each}}{{/with}}{{/with}}',
+    );
     tmpl.helpers({
       a: {
         title: 'TOP',
@@ -2352,7 +2606,11 @@ describe('spacebars integration - reactive template switching via helper', () =>
     const tmpl = makeTemplate('test_switch', '{{> whichOne}}');
 
     const R = reactive.ReactiveVar<Template>(tmplA);
-    tmpl.helpers({ whichOne: function () { return R.get(); } });
+    tmpl.helpers({
+      whichOne: function () {
+        return R.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     expect(div.querySelector('span')!.textContent).toBe('A');
@@ -2369,13 +2627,19 @@ describe('spacebars integration - reactive template switching via helper', () =>
 
 describe('spacebars integration - reactive #if with nested each', () => {
   test('if toggling with nested each', () => {
-    const tmpl = makeTemplate('test_if_each',
-      '{{#if show}}{{#each items}}<span>{{this}}</span>{{/each}}{{/if}}');
+    const tmpl = makeTemplate(
+      'test_if_each',
+      '{{#if show}}{{#each items}}<span>{{this}}</span>{{/each}}{{/if}}',
+    );
     const show = reactive.ReactiveVar(true);
     const items = reactive.ReactiveVar(['a', 'b']);
     tmpl.helpers({
-      show: function () { return show.get(); },
-      items: function () { return items.get(); },
+      show: function () {
+        return show.get();
+      },
+      items: function () {
+        return items.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -2398,10 +2662,13 @@ describe('spacebars integration - reactive #if with nested each', () => {
 
 describe('spacebars integration - #with else block', () => {
   test('with else shows fallback when null', () => {
-    const tmpl = makeTemplate('test_with_else',
-      '{{#with obj}}has: {{val}}{{else}}empty{{/with}}');
+    const tmpl = makeTemplate('test_with_else', '{{#with obj}}has: {{val}}{{else}}empty{{/with}}');
     const R = reactive.ReactiveVar<Record<string, string> | null>(null);
-    tmpl.helpers({ obj: function () { return R.get(); } });
+    tmpl.helpers({
+      obj: function () {
+        return R.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     expect(canonicalizeHtml(div.innerHTML)).toBe('empty');
@@ -2418,7 +2685,9 @@ describe('spacebars integration - #with else block', () => {
 
 describe('spacebars integration - global helper from registerHelper', () => {
   test('global helper accessible from all templates', () => {
-    registerHelper('GLOBAL_TEST_HELPER', function () { return 'GLOBAL'; });
+    registerHelper('GLOBAL_TEST_HELPER', function () {
+      return 'GLOBAL';
+    });
 
     const tmpl = makeTemplate('test_global', '{{GLOBAL_TEST_HELPER}}');
     const div = renderToDiv(tmpl);
@@ -2438,18 +2707,28 @@ describe('spacebars integration - global helper from registerHelper', () => {
 
 describe('spacebars integration - multiple helpers on same element', () => {
   test('multiple reactive attributes update independently', () => {
-    const tmpl = makeTemplate('test_multi_attrs',
-      '<div class="{{cls}}" id="{{ident}}" title="{{ttl}}">{{text}}</div>');
+    const tmpl = makeTemplate(
+      'test_multi_attrs',
+      '<div class="{{cls}}" id="{{ident}}" title="{{ttl}}">{{text}}</div>',
+    );
     const cls = reactive.ReactiveVar('a');
     const ident = reactive.ReactiveVar('id1');
     const ttl = reactive.ReactiveVar('tip');
     const text = reactive.ReactiveVar('hello');
 
     tmpl.helpers({
-      cls: function () { return cls.get(); },
-      ident: function () { return ident.get(); },
-      ttl: function () { return ttl.get(); },
-      text: function () { return text.get(); },
+      cls: function () {
+        return cls.get();
+      },
+      ident: function () {
+        return ident.get();
+      },
+      ttl: function () {
+        return ttl.get();
+      },
+      text: function () {
+        return text.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -2473,13 +2752,19 @@ describe('spacebars integration - multiple helpers on same element', () => {
 
 describe('spacebars integration - nested #if chains', () => {
   test('nested if/else if/else', () => {
-    const tmpl = makeTemplate('test_nested_if',
-      '{{#if a}}A{{else}}{{#if b}}B{{else}}C{{/if}}{{/if}}');
+    const tmpl = makeTemplate(
+      'test_nested_if',
+      '{{#if a}}A{{else}}{{#if b}}B{{else}}C{{/if}}{{/if}}',
+    );
     const a = reactive.ReactiveVar(true);
     const b = reactive.ReactiveVar(false);
     tmpl.helpers({
-      a: function () { return a.get(); },
-      b: function () { return b.get(); },
+      a: function () {
+        return a.get();
+      },
+      b: function () {
+        return b.get();
+      },
     });
 
     const div = renderToDiv(tmpl);
@@ -2501,8 +2786,7 @@ describe('spacebars integration - nested #if chains', () => {
 
 describe('spacebars integration - helper with keyword hash', () => {
   test('helper receives keyword arguments', () => {
-    const tmpl = makeTemplate('test_kw_hash',
-      '{{greet name="World" greeting="Hello"}}');
+    const tmpl = makeTemplate('test_kw_hash', '{{greet name="World" greeting="Hello"}}');
     tmpl.helpers({
       greet: function (opts: { hash: { name: string; greeting: string } }) {
         return opts.hash.greeting + ' ' + opts.hash.name;
@@ -2529,10 +2813,13 @@ describe('spacebars integration - data context propagation', () => {
 
 describe('spacebars integration - reactive each reordering', () => {
   test('each re-renders correctly when items change', () => {
-    const tmpl = makeTemplate('test_each_reorder',
-      '{{#each items}}<span>{{this}}</span>{{/each}}');
+    const tmpl = makeTemplate('test_each_reorder', '{{#each items}}<span>{{this}}</span>{{/each}}');
     const R = reactive.ReactiveVar(['a', 'b', 'c']);
-    tmpl.helpers({ items: function () { return R.get(); } });
+    tmpl.helpers({
+      items: function () {
+        return R.get();
+      },
+    });
 
     const div = renderToDiv(tmpl);
     expect(div.querySelectorAll('span').length).toBe(3);

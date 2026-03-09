@@ -176,11 +176,7 @@ describe('render', () => {
   const INPUT = HTML.INPUT;
 
   test('basic', () => {
-    const run = (
-      input: unknown,
-      expectedInnerHTML: string,
-      expectedHTML: string,
-    ) => {
+    const run = (input: unknown, expectedInnerHTML: string, expectedHTML: string) => {
       const div = document.createElement('DIV');
       materialize(input, div);
       expect(canonicalizeHtml(div.innerHTML)).toBe(expectedInnerHTML);
@@ -206,31 +202,17 @@ describe('render', () => {
     );
 
     // Arrays
-    run(
-      [P('Hello'), P('World')],
-      '<p>Hello</p><p>World</p>',
-      '<p>Hello</p><p>World</p>',
-    );
+    run([P('Hello'), P('World')], '<p>Hello</p><p>World</p>', '<p>Hello</p><p>World</p>');
 
     // Nested structure
     run(
-      DIV(
-        { class: 'foo' },
-        UL(
-          LI(P(A({ href: '#one' }, 'One'))),
-          LI(P('Two', BR(), 'Three')),
-        ),
-      ),
+      DIV({ class: 'foo' }, UL(LI(P(A({ href: '#one' }, 'One'))), LI(P('Two', BR(), 'Three')))),
       '<div class="foo"><ul><li><p><a href="#one">One</a></p></li><li><p>Two<br>Three</p></li></ul></div>',
       '<div class="foo"><ul><li><p><a href="#one">One</a></p></li><li><p>Two<br>Three</p></li></ul></div>',
     );
 
     // Nully attributes
-    run(
-      BR({ x: null, y: [[], []], a: [['']] }),
-      '<br a="">',
-      '<br a="">',
-    );
+    run(BR({ x: null, y: [[], []], a: [['']] }), '<br a="">', '<br a="">');
   });
 
   test('input - value', () => {
@@ -248,10 +230,7 @@ describe('render', () => {
   test('input - checked', () => {
     const R = reactive.ReactiveVar<string | null>(null);
     const div = document.createElement('DIV');
-    materialize(
-      INPUT({ type: 'checkbox', checked: () => R.get() }),
-      div,
-    );
+    materialize(INPUT({ type: 'checkbox', checked: () => R.get() }), div);
     const inputEl = div.querySelector('input') as HTMLInputElement;
     expect(inputEl.checked).toBe(false);
     inputEl.checked = true;
@@ -352,9 +331,9 @@ describe('render', () => {
 
   test('ui - attributes', () => {
     const amp = new HTML.CharRef({ html: '&amp;', str: '&' });
-    expect(
-      HTML.toHTML(SPAN({ title: ['M', amp, 'Ms'] }, 'M', amp, 'M candies')),
-    ).toBe('<span title="M&amp;Ms">M&amp;M candies</span>');
+    expect(HTML.toHTML(SPAN({ title: ['M', amp, 'Ms'] }, 'M', amp, 'M candies'))).toBe(
+      '<span title="M&amp;Ms">M&amp;M candies</span>',
+    );
   });
 });
 
@@ -422,15 +401,12 @@ describe('builtins', () => {
   });
 
   test('Let - lexical bindings', () => {
-    const view = Let(
-      { greeting: 'Hello', target: 'World' },
-      () => {
-        const v = currentView!;
-        const g = (v._scopeBindings['greeting']?.get() as { value?: unknown } | undefined)?.value;
-        const t = (v._scopeBindings['target']?.get() as { value?: unknown } | undefined)?.value;
-        return `${g} ${t}`;
-      },
-    );
+    const view = Let({ greeting: 'Hello', target: 'World' }, () => {
+      const v = currentView!;
+      const g = (v._scopeBindings['greeting']?.get() as { value?: unknown } | undefined)?.value;
+      const t = (v._scopeBindings['target']?.get() as { value?: unknown } | undefined)?.value;
+      return `${g} ${t}`;
+    });
 
     const div = document.createElement('DIV');
     render(view, div);
@@ -682,10 +658,12 @@ describe('view garbage collection', () => {
     let innerRuns = 0;
 
     const outerView = new View('outer', () => {
-      return HTML.DIV(new View('inner', () => {
-        innerRuns++;
-        return R.get();
-      }));
+      return HTML.DIV(
+        new View('inner', () => {
+          innerRuns++;
+          return R.get();
+        }),
+      );
     });
 
     const div = document.createElement('div');
@@ -711,11 +689,7 @@ describe('reactive attributes', () => {
   test('dynamic class attribute updates', () => {
     const R = reactive.ReactiveVar('foo');
 
-    const spanFunc = () =>
-      HTML.SPAN(
-        { class: () => new View('attr', () => R.get()) },
-        'text',
-      );
+    const spanFunc = () => HTML.SPAN({ class: () => new View('attr', () => R.get()) }, 'text');
 
     const div = document.createElement('div');
     render(spanFunc, div);
@@ -731,11 +705,7 @@ describe('reactive attributes', () => {
   test('nully attributes are removed', () => {
     const R = reactive.ReactiveVar<string | null>('value');
 
-    const spanFunc = () =>
-      HTML.SPAN(
-        { id: () => new View('attr', () => R.get()) },
-        'text',
-      );
+    const spanFunc = () => HTML.SPAN({ id: () => new View('attr', () => R.get()) }, 'text');
 
     const div = document.createElement('div');
     render(spanFunc, div);
@@ -752,10 +722,7 @@ describe('reactive attributes', () => {
     const R = reactive.ReactiveVar('initial');
 
     const spanFunc = () =>
-      HTML.SPAN(
-        { 'data-info': () => new View('attr', () => R.get()) },
-        'text',
-      );
+      HTML.SPAN({ 'data-info': () => new View('attr', () => R.get()) }, 'text');
 
     const div = document.createElement('div');
     render(spanFunc, div);
@@ -834,9 +801,7 @@ describe('template lifecycle', () => {
   test('template events fire', () => {
     let clicked = false;
 
-    const tmpl = new Template('event-test', () =>
-      HTML.BUTTON({ class: 'btn' }, 'Click me'),
-    );
+    const tmpl = new Template('event-test', () => HTML.BUTTON({ class: 'btn' }, 'Click me'));
 
     tmpl.events({
       'click .btn': () => {

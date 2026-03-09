@@ -6,11 +6,12 @@ Control what's rendered based on reactive data using `{{#if}}` and `{{#unless}}`
 
 ```handlebars
 {{#if isVisible}}
-  <div class="content">This is visible!</div>
+  <div class='content'>This is visible!</div>
 {{/if}}
 ```
 
 The block renders when the value is **truthy**. Blaze considers these falsy:
+
 - `false`
 - `null`
 - `undefined`
@@ -22,14 +23,14 @@ The block renders when the value is **truthy**. Blaze considers these falsy:
 
 ```handlebars
 {{#if hasMessages}}
-  <div class="inbox">
+  <div class='inbox'>
     {{#each messages}}
-      <div class="message">{{text}}</div>
+      <div class='message'>{{text}}</div>
     {{/each}}
   </div>
 {{else}}
-  <div class="empty-state">
-    <img src="/no-messages.svg" alt="">
+  <div class='empty-state'>
+    <img src='/no-messages.svg' alt='' />
     <p>No messages yet</p>
   </div>
 {{/if}}
@@ -41,7 +42,7 @@ The inverse of `{{#if}}` — renders when the value is **falsy**:
 
 ```handlebars
 {{#unless isLoading}}
-  <div class="results">
+  <div class='results'>
     {{#each results}}
       <div>{{title}}</div>
     {{/each}}
@@ -53,9 +54,9 @@ The inverse of `{{#if}}` — renders when the value is **falsy**:
 
 ```handlebars
 {{#unless error}}
-  <p class="success">Everything looks good!</p>
+  <p class='success'>Everything looks good!</p>
 {{else}}
-  <p class="error">{{error}}</p>
+  <p class='error'>{{error}}</p>
 {{/unless}}
 ```
 
@@ -98,20 +99,20 @@ Template.taskList.helpers({
 ```handlebars
 {{#if currentUser}}
   {{#if isAdmin}}
-    <nav class="admin-nav">
-      <a href="/admin/users">Users</a>
-      <a href="/admin/settings">Settings</a>
+    <nav class='admin-nav'>
+      <a href='/admin/users'>Users</a>
+      <a href='/admin/settings'>Settings</a>
     </nav>
   {{else}}
-    <nav class="user-nav">
-      <a href="/dashboard">Dashboard</a>
-      <a href="/profile">Profile</a>
+    <nav class='user-nav'>
+      <a href='/dashboard'>Dashboard</a>
+      <a href='/profile'>Profile</a>
     </nav>
   {{/if}}
 {{else}}
-  <nav class="public-nav">
-    <a href="/login">Log In</a>
-    <a href="/register">Sign Up</a>
+  <nav class='public-nav'>
+    <a href='/login'>Log In</a>
+    <a href='/register'>Sign Up</a>
   </nav>
 {{/if}}
 ```
@@ -133,15 +134,15 @@ Template.taskList.helpers({
 ### Conditional Attributes
 
 ```handlebars
-<input 
-  type="text" 
+<input
+  type="text"
   value="{{value}}"
   {{#if isRequired}}required{{/if}}
   {{#if isDisabled}}disabled{{/if}}
   {{#if maxLength}}maxlength="{{maxLength}}"{{/if}}
 >
 
-<button 
+<button
   class="btn"
   {{#if isLoading}}disabled{{/if}}
 >
@@ -158,7 +159,7 @@ Template.taskList.helpers({
 Use parentheses for complex conditions:
 
 ```handlebars
-{{!-- Helper-based logic --}}
+{{! Helper-based logic }}
 {{#if (and isLoggedIn hasPermission)}}
   <button>Delete</button>
 {{/if}}
@@ -168,15 +169,15 @@ Use parentheses for complex conditions:
 {{/if}}
 
 {{#if (not isArchived)}}
-  <div class="actions">...</div>
+  <div class='actions'>...</div>
 {{/if}}
 
 {{#if (gt itemCount 0)}}
-  <span class="badge">{{itemCount}}</span>
+  <span class='badge'>{{itemCount}}</span>
 {{/if}}
 
-{{#if (eq status "active")}}
-  <span class="status active">Active</span>
+{{#if (eq status 'active')}}
+  <span class='status active'>Active</span>
 {{/if}}
 ```
 
@@ -232,7 +233,7 @@ Template.registerHelper('lte', (a, b) => a <= b);
                 {{#if (eq notification.type "comment")}}
                   <span class="icon">💬</span>
                 {{/if}}
-                
+
                 <div class="body">
                   <p>{{notification.message}}</p>
                   <time>{{formatDate notification.createdAt}}</time>
@@ -263,11 +264,21 @@ Template.notificationCenter.onCreated(function () {
 });
 
 Template.notificationCenter.helpers({
-  isOpen() { return Template.instance().isOpen.get(); },
-  isLoading() { return !Template.instance().subscriptionsReady(); },
-  unreadCount() { return Notifications.find({ read: false }).count(); },
-  hasNotifications() { return Notifications.find().count() > 0; },
-  notifications() { return Notifications.find({}, { sort: { createdAt: -1 } }); },
+  isOpen() {
+    return Template.instance().isOpen.get();
+  },
+  isLoading() {
+    return !Template.instance().subscriptionsReady();
+  },
+  unreadCount() {
+    return Notifications.find({ read: false }).count();
+  },
+  hasNotifications() {
+    return Notifications.find().count() > 0;
+  },
+  notifications() {
+    return Notifications.find({}, { sort: { createdAt: -1 } });
+  },
 });
 
 Template.notificationCenter.events({

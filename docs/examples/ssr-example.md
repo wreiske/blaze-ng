@@ -16,7 +16,7 @@ Template.__define__('userCard', function () {
       { class: 'user-card' },
       HTML.IMG({ src: this.data.avatar, alt: this.data.name, class: 'avatar' }),
       HTML.H3(this.data.name),
-      HTML.P({ class: 'bio' }, this.data.bio)
+      HTML.P({ class: 'bio' }, this.data.bio),
     );
   });
 });
@@ -80,13 +80,17 @@ Template.__define__('homePage', function () {
       <p>Built with Blaze-ng SSR</p>
     </div>
     <div class="features">
-      ${this.data.features.map(f => `
+      ${this.data.features
+        .map(
+          (f) => `
         <div class="feature-card">
           <span class="icon">${f.icon}</span>
           <h3>${Blaze._escape(f.title)}</h3>
           <p>${Blaze._escape(f.description)}</p>
         </div>
-      `).join('')}
+      `,
+        )
+        .join('')}
     </div>
   `);
 });
@@ -117,25 +121,25 @@ app.get('/', (req, res) => {
       { icon: '🔍', title: 'SEO Ready', description: 'Full HTML sent to crawlers' },
     ],
   });
-  
+
   const html = Blaze.toHTMLWithData(Template.layout, {
     title: 'Home',
     content,
   });
-  
+
   res.send(html);
 });
 
 app.get('/blog/:slug', async (req, res) => {
   const post = await fetchPost(req.params.slug); // Your data fetching
   if (!post) return res.status(404).send('Not found');
-  
+
   const content = Blaze.toHTMLWithData(Template.blogPost, { post });
   const html = Blaze.toHTMLWithData(Template.layout, {
     title: post.title,
     content,
   });
-  
+
   res.send(html);
 });
 
@@ -169,7 +173,7 @@ Template.__define__('welcomeEmail', function () {
         Here&rsquo;s what you can do next:
       </p>
       <ul style="color:#475569;line-height:2;">
-        ${d.steps.map(step => `<li>${Blaze._escape(step)}</li>`).join('')}
+        ${d.steps.map((step) => `<li>${Blaze._escape(step)}</li>`).join('')}
       </ul>
       <div style="text-align:center;margin:32px 0;">
         <a href="${Blaze._escape(d.actionUrl)}"
@@ -193,15 +197,11 @@ Template.__define__('welcomeEmail', function () {
 function sendWelcomeEmail(user) {
   const html = Blaze.toHTMLWithData(Template.welcomeEmail, {
     name: user.name,
-    steps: [
-      'Complete your profile',
-      'Connect your first integration',
-      'Invite your team members',
-    ],
+    steps: ['Complete your profile', 'Connect your first integration', 'Invite your team members'],
     actionUrl: `https://app.example.com/onboarding?token=${user.token}`,
     unsubscribeUrl: `https://app.example.com/unsubscribe?email=${encodeURIComponent(user.email)}`,
   });
-  
+
   // Send with your email provider
   return sendEmail({
     to: user.email,
@@ -225,16 +225,16 @@ import { WebApp } from 'meteor/webapp';
 WebApp.connectHandlers.use('/preview/:templateName', (req, res, next) => {
   const { templateName } = req.params;
   const template = Template[templateName];
-  
+
   if (!template) {
     res.writeHead(404);
     res.end('Template not found');
     return;
   }
-  
+
   const data = getPreviewData(templateName);
   const content = Blaze.toHTMLWithData(template, data);
-  
+
   res.writeHead(200, { 'Content-Type': 'text/html' });
   res.end(`
     <!DOCTYPE html>
@@ -274,13 +274,13 @@ function generateStaticSite(pages: Page[], outDir: string) {
       console.warn(`Template "${page.template}" not found, skipping`);
       continue;
     }
-    
+
     const content = Blaze.toHTMLWithData(template, page.data);
     const html = Blaze.toHTMLWithData(Template.layout, {
       title: page.data.title,
       content,
     });
-    
+
     const filePath = join(outDir, page.path, 'index.html');
     mkdirSync(join(outDir, page.path), { recursive: true });
     writeFileSync(filePath, html);
@@ -312,26 +312,26 @@ describe('Component Snapshots', () => {
       avatar: '/test.jpg',
       bio: 'Test bio',
     });
-    
+
     expect(html).toMatchSnapshot();
   });
-  
+
   it('renders empty state when no data', () => {
     const html = Blaze.toHTMLWithData(Template.userList, {
       users: [],
     });
-    
+
     expect(html).toContain('No users found');
     expect(html).not.toContain('user-card');
   });
-  
+
   it('escapes user-provided content', () => {
     const html = Blaze.toHTMLWithData(Template.userCard, {
       name: '<script>alert("xss")</script>',
       avatar: '/test.jpg',
       bio: 'Normal bio',
     });
-    
+
     expect(html).not.toContain('<script>');
     expect(html).toContain('&lt;script&gt;');
   });

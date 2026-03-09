@@ -167,10 +167,31 @@ Blaze.setReactiveSystem(new SimpleReactiveSystem());
 
 function generateStats() {
   return [
-    { label: 'Revenue', value: '$48,295', change: 12.5, isPositive: true, icon: '💰', color: '#22c55e' },
+    {
+      label: 'Revenue',
+      value: '$48,295',
+      change: 12.5,
+      isPositive: true,
+      icon: '💰',
+      color: '#22c55e',
+    },
     { label: 'Users', value: '2,847', change: 8.3, isPositive: true, icon: '👥', color: '#3b82f6' },
-    { label: 'Orders', value: '1,205', change: 3.1, isPositive: true, icon: '📦', color: '#8b5cf6' },
-    { label: 'Bounce Rate', value: '24.8%', change: 2.4, isPositive: false, icon: '📉', color: '#ef4444' },
+    {
+      label: 'Orders',
+      value: '1,205',
+      change: 3.1,
+      isPositive: true,
+      icon: '📦',
+      color: '#8b5cf6',
+    },
+    {
+      label: 'Bounce Rate',
+      value: '24.8%',
+      change: 2.4,
+      isPositive: false,
+      icon: '📉',
+      color: '#ef4444',
+    },
   ];
 }
 
@@ -197,11 +218,11 @@ function generateUsersChart() {
     { label: 'Referral', value: 18, color: '#f59e0b' },
     { label: 'Direct', value: 12, color: '#ef4444' },
   ];
-  
+
   let offset = 0;
   return {
     type: 'donut',
-    data: segments.map(s => {
+    data: segments.map((s) => {
       const circumference = 2 * Math.PI * 40;
       const length = (s.value / 100) * circumference;
       const dashArray = `${length} ${circumference - length}`;
@@ -214,12 +235,60 @@ function generateUsersChart() {
 
 function generateActivities() {
   return [
-    { user: 'Alice Chen', initials: 'AC', avatarColor: '#4f46e5', action: 'Deployed', target: 'v2.4.1', time: Date.now() - 120000, status: 'success' },
-    { user: 'Bob Smith', initials: 'BS', avatarColor: '#22c55e', action: 'Merged PR', target: '#847', time: Date.now() - 300000, status: 'success' },
-    { user: 'Carol Wu', initials: 'CW', avatarColor: '#f59e0b', action: 'Opened Issue', target: '#848', time: Date.now() - 600000, status: 'pending' },
-    { user: 'David Kim', initials: 'DK', avatarColor: '#ef4444', action: 'Failed Build', target: 'main', time: Date.now() - 900000, status: 'error' },
-    { user: 'Eve Jones', initials: 'EJ', avatarColor: '#8b5cf6', action: 'Reviewed PR', target: '#845', time: Date.now() - 1200000, status: 'success' },
-    { user: 'Frank Lee', initials: 'FL', avatarColor: '#06b6d4', action: 'Created Branch', target: 'feat/auth', time: Date.now() - 1800000, status: 'success' },
+    {
+      user: 'Alice Chen',
+      initials: 'AC',
+      avatarColor: '#4f46e5',
+      action: 'Deployed',
+      target: 'v2.4.1',
+      time: Date.now() - 120000,
+      status: 'success',
+    },
+    {
+      user: 'Bob Smith',
+      initials: 'BS',
+      avatarColor: '#22c55e',
+      action: 'Merged PR',
+      target: '#847',
+      time: Date.now() - 300000,
+      status: 'success',
+    },
+    {
+      user: 'Carol Wu',
+      initials: 'CW',
+      avatarColor: '#f59e0b',
+      action: 'Opened Issue',
+      target: '#848',
+      time: Date.now() - 600000,
+      status: 'pending',
+    },
+    {
+      user: 'David Kim',
+      initials: 'DK',
+      avatarColor: '#ef4444',
+      action: 'Failed Build',
+      target: 'main',
+      time: Date.now() - 900000,
+      status: 'error',
+    },
+    {
+      user: 'Eve Jones',
+      initials: 'EJ',
+      avatarColor: '#8b5cf6',
+      action: 'Reviewed PR',
+      target: '#845',
+      time: Date.now() - 1200000,
+      status: 'success',
+    },
+    {
+      user: 'Frank Lee',
+      initials: 'FL',
+      avatarColor: '#06b6d4',
+      action: 'Created Branch',
+      target: 'feat/auth',
+      time: Date.now() - 1800000,
+      status: 'success',
+    },
   ];
 }
 
@@ -235,7 +304,7 @@ Template.dashboard.onCreated(function () {
   this.sortField = new ReactiveVar('time');
   this.sortDirection = new ReactiveVar(-1);
   this.isRefreshing = new ReactiveVar(false);
-  
+
   // Auto-refresh every 30 seconds
   this.refreshInterval = setInterval(() => {
     this.stats.set(generateStats());
@@ -255,28 +324,41 @@ Template.dashboard.helpers({
       { value: '90d', label: 'Last 90 Days' },
     ];
   },
-  selectedPeriod() { return Template.instance().selectedPeriod.get(); },
-  stats() { return Template.instance().stats.get(); },
-  revenueChart() { return Template.instance().revenueChart.get(); },
-  usersChart() { return Template.instance().usersChart.get(); },
-  isRefreshing() { return Template.instance().isRefreshing.get(); },
-  searchQuery() { return Template.instance().searchQuery.get(); },
+  selectedPeriod() {
+    return Template.instance().selectedPeriod.get();
+  },
+  stats() {
+    return Template.instance().stats.get();
+  },
+  revenueChart() {
+    return Template.instance().revenueChart.get();
+  },
+  usersChart() {
+    return Template.instance().usersChart.get();
+  },
+  isRefreshing() {
+    return Template.instance().isRefreshing.get();
+  },
+  searchQuery() {
+    return Template.instance().searchQuery.get();
+  },
   filteredActivities() {
     const instance = Template.instance();
     const query = instance.searchQuery.get().toLowerCase();
     const field = instance.sortField.get();
     const dir = instance.sortDirection.get();
-    
+
     let activities = instance.activities.get();
-    
+
     if (query) {
-      activities = activities.filter(a =>
-        a.user.toLowerCase().includes(query) ||
-        a.action.toLowerCase().includes(query) ||
-        a.target.toLowerCase().includes(query)
+      activities = activities.filter(
+        (a) =>
+          a.user.toLowerCase().includes(query) ||
+          a.action.toLowerCase().includes(query) ||
+          a.target.toLowerCase().includes(query),
       );
     }
-    
+
     return activities.sort((a, b) => {
       if (a[field] < b[field]) return -dir;
       if (a[field] > b[field]) return dir;
@@ -307,7 +389,7 @@ Template.activityTable.events({
   'click .sortable'(event, instance) {
     const field = event.currentTarget.dataset.field;
     const dashboard = instance.view.parentView.templateInstance();
-    
+
     if (dashboard.sortField.get() === field) {
       dashboard.sortDirection.set(dashboard.sortDirection.get() * -1);
     } else {
@@ -347,9 +429,13 @@ Template.registerHelper('timeAgo', (timestamp) => {
   margin-bottom: 2rem;
 }
 
-.controls { display: flex; gap: 0.75rem; }
+.controls {
+  display: flex;
+  gap: 0.75rem;
+}
 
-.period-select, .btn-refresh {
+.period-select,
+.btn-refresh {
   padding: 0.5rem 1rem;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
@@ -385,15 +471,27 @@ Template.registerHelper('timeAgo', (timestamp) => {
   font-size: 1.5rem;
 }
 
-.stat-label { display: block; font-size: 0.875rem; color: #64748b; }
-.stat-value { display: block; font-size: 1.5rem; font-weight: 700; }
+.stat-label {
+  display: block;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
 
 .stat-change {
   font-size: 0.8125rem;
   font-weight: 500;
 }
-.stat-change.positive { color: #22c55e; }
-.stat-change.negative { color: #ef4444; }
+.stat-change.positive {
+  color: #22c55e;
+}
+.stat-change.negative {
+  color: #ef4444;
+}
 
 /* Charts */
 .charts-grid {
@@ -449,11 +547,24 @@ Template.registerHelper('timeAgo', (timestamp) => {
   transition: opacity 0.15s;
 }
 
-.bar:hover .bar-tooltip { opacity: 1; }
-.bar-label { font-size: 0.75rem; color: #64748b; margin-top: 0.5rem; }
+.bar:hover .bar-tooltip {
+  opacity: 1;
+}
+.bar-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+}
 
-.donut-chart { display: flex; align-items: center; gap: 1.5rem; }
-.donut-chart svg { width: 140px; height: 140px; }
+.donut-chart {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.donut-chart svg {
+  width: 140px;
+  height: 140px;
+}
 
 .legend-item {
   display: flex;
@@ -510,10 +621,18 @@ Template.registerHelper('timeAgo', (timestamp) => {
   border-bottom: 1px solid #f1f5f9;
 }
 
-.sortable { cursor: pointer; }
-.sortable:hover { color: #4f46e5; }
+.sortable {
+  cursor: pointer;
+}
+.sortable:hover {
+  color: #4f46e5;
+}
 
-.user-cell { display: flex; align-items: center; gap: 0.75rem; }
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 
 .user-avatar {
   width: 32px;
@@ -527,7 +646,10 @@ Template.registerHelper('timeAgo', (timestamp) => {
   font-weight: 600;
 }
 
-.mono { font-family: 'SF Mono', monospace; font-size: 0.875rem; }
+.mono {
+  font-family: 'SF Mono', monospace;
+  font-size: 0.875rem;
+}
 
 .status-badge {
   padding: 0.25rem 0.5rem;
@@ -535,9 +657,18 @@ Template.registerHelper('timeAgo', (timestamp) => {
   font-size: 0.75rem;
   font-weight: 500;
 }
-.status-badge.success { background: #dcfce7; color: #16a34a; }
-.status-badge.pending { background: #fef3c7; color: #d97706; }
-.status-badge.error { background: #fef2f2; color: #dc2626; }
+.status-badge.success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.status-badge.pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+.status-badge.error {
+  background: #fef2f2;
+  color: #dc2626;
+}
 
 .empty-state {
   text-align: center;
@@ -546,8 +677,12 @@ Template.registerHelper('timeAgo', (timestamp) => {
 }
 
 @media (max-width: 768px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .charts-grid { grid-template-columns: 1fr; }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
 }
 ```
 

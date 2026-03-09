@@ -31,8 +31,8 @@ npm install @blaze-ng/html-templates
 ### 1. Define the Template
 
 ```handlebars
-<template name="greeting">
-  <div class="greeting">
+<template name='greeting'>
+  <div class='greeting'>
     <h1>Hello, {{name}}!</h1>
     <p>Welcome to Blaze-NG.</p>
   </div>
@@ -62,11 +62,7 @@ import { Blaze } from '@blaze-ng/core';
 Blaze.render(Template.greeting, document.getElementById('app'));
 
 // Or render with data
-Blaze.renderWithData(
-  Template.greeting,
-  { name: 'Developer' },
-  document.getElementById('app')
-);
+Blaze.renderWithData(Template.greeting, { name: 'Developer' }, document.getElementById('app'));
 ```
 
 ## Adding Reactivity
@@ -74,7 +70,7 @@ Blaze.renderWithData(
 The magic of Blaze is that templates **automatically re-render** when data changes:
 
 ```handlebars
-<template name="counter">
+<template name='counter'>
   <div>
     <p>Count: {{count}}</p>
     <button>Click me!</button>

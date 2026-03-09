@@ -56,17 +56,17 @@ A real-time chat application with rooms, message history, typing indicators, and
       {{#if isLoading}}
         <div class="loading">Loading messages...</div>
       {{/if}}
-      
+
       {{#if hasOlderMessages}}
         <button class="load-more">Load older messages</button>
       {{/if}}
 
       {{#each message in messages}}
-        {{> chatMessage message=message 
+        {{> chatMessage message=message
                         isOwn=(eq message.userId currentUserId)
                         showAvatar=(shouldShowAvatar message @index)}}
       {{/each}}
-      
+
       {{#if typingUsers.length}}
         <div class="typing-indicator">
           {{typingText}} {{typingDots}}
@@ -75,7 +75,7 @@ A real-time chat application with rooms, message history, typing indicators, and
     </div>
 
     <form class="message-form">
-      <input type="text" class="message-input" 
+      <input type="text" class="message-input"
              placeholder="Type a message..."
              value="{{draft}}"
              autocomplete="off">
@@ -142,10 +142,14 @@ Template.chatApp.onCreated(function () {
 });
 
 Template.chatApp.helpers({
-  rooms() { return Template.instance().rooms.get(); },
+  rooms() {
+    return Template.instance().rooms.get();
+  },
   currentRoom() {
     const id = Template.instance().currentRoomId.get();
-    return Template.instance().rooms.get().find(r => r._id === id);
+    return Template.instance()
+      .rooms.get()
+      .find((r) => r._id === id);
   },
 });
 
@@ -173,7 +177,7 @@ Template.chatRoom.onCreated(function () {
   this.isLoading = new ReactiveVar(false);
   this.typingUsers = new ReactiveVar([]);
   this.limit = new ReactiveVar(50);
-  
+
   // Simulate loading messages
   this.autorun(() => {
     const room = this.data.room;
@@ -200,19 +204,33 @@ Template.chatRoom.onRendered(function () {
 });
 
 Template.chatRoom.helpers({
-  messages() { return Template.instance().messages.get(); },
-  draft() { return Template.instance().draft.get(); },
-  isLoading() { return Template.instance().isLoading.get(); },
-  currentUserId() { return 'current-user'; },
-  typingUsers() { return Template.instance().typingUsers.get(); },
+  messages() {
+    return Template.instance().messages.get();
+  },
+  draft() {
+    return Template.instance().draft.get();
+  },
+  isLoading() {
+    return Template.instance().isLoading.get();
+  },
+  currentUserId() {
+    return 'current-user';
+  },
+  typingUsers() {
+    return Template.instance().typingUsers.get();
+  },
   typingText() {
     const users = Template.instance().typingUsers.get();
     if (users.length === 1) return `${users[0].name} is typing`;
     if (users.length === 2) return `${users[0].name} and ${users[1].name} are typing`;
     return 'Several people are typing';
   },
-  typingDots() { return '...'; },
-  hasOlderMessages() { return false; },
+  typingDots() {
+    return '...';
+  },
+  hasOlderMessages() {
+    return false;
+  },
   shouldShowAvatar(message, index) {
     const messages = Template.instance().messages.get();
     if (index === 0) return true;
@@ -226,7 +244,7 @@ Template.chatRoom.events({
     event.preventDefault();
     const text = instance.draft.get().trim();
     if (!text) return;
-    
+
     const messages = instance.messages.get();
     messages.push({
       _id: String(Date.now()),
@@ -283,7 +301,7 @@ function getSampleMessages(roomId) {
     },
     {
       _id: '2',
-      text: 'Hey everyone! How\'s the new Blaze-ng library looking?',
+      text: "Hey everyone! How's the new Blaze-ng library looking?",
       userId: 'alice',
       user: { name: 'Alice', avatar: '/avatars/alice.jpg' },
       createdAt: new Date(Date.now() - 1800000),
@@ -299,7 +317,7 @@ function getSampleMessages(roomId) {
     },
     {
       _id: '4',
-      text: 'The BYORS concept is genius. I\'m using it with Preact signals and it\'s blazing fast.',
+      text: "The BYORS concept is genius. I'm using it with Preact signals and it's blazing fast.",
       userId: 'alice',
       user: { name: 'Alice', avatar: '/avatars/alice.jpg' },
       createdAt: new Date(Date.now() - 600000),
@@ -356,8 +374,12 @@ Blaze.render(Template.chatApp, document.getElementById('app'));
   align-items: center;
 }
 
-.room-item:hover { background: #313244; }
-.room-item.active { background: #4f46e5; }
+.room-item:hover {
+  background: #313244;
+}
+.room-item.active {
+  background: #4f46e5;
+}
 
 .unread-badge {
   background: #ef4444;
@@ -379,7 +401,9 @@ Blaze.render(Template.chatApp, document.getElementById('app'));
   border-radius: 50%;
   margin-right: 0.5rem;
 }
-.status-dot.online { background: #22c55e; }
+.status-dot.online {
+  background: #22c55e;
+}
 
 /* Chat Room */
 .chat-room {
@@ -396,7 +420,10 @@ Blaze.render(Template.chatApp, document.getElementById('app'));
   gap: 1rem;
 }
 
-.member-count { color: #64748b; font-size: 0.875rem; }
+.member-count {
+  color: #64748b;
+  font-size: 0.875rem;
+}
 
 .messages-container {
   flex: 1;
@@ -419,7 +446,9 @@ Blaze.render(Template.chatApp, document.getElementById('app'));
   object-fit: cover;
 }
 
-.avatar-spacer { width: 36px; }
+.avatar-spacer {
+  width: 36px;
+}
 
 .message-header {
   display: flex;
@@ -454,7 +483,10 @@ Blaze.render(Template.chatApp, document.getElementById('app'));
   cursor: pointer;
 }
 
-.reaction.mine { border-color: #4f46e5; background: #eef2ff; }
+.reaction.mine {
+  border-color: #4f46e5;
+  background: #eef2ff;
+}
 
 .typing-indicator {
   color: #64748b;

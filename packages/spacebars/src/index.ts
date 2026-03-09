@@ -334,8 +334,7 @@ export function dot(...args: unknown[]): unknown {
   if (typeof result !== 'function') return result;
 
   // Bind the function to its parent object.
-  return (...fnArgs: unknown[]) =>
-    (result as (...a: unknown[]) => unknown).apply(value, fnArgs);
+  return (...fnArgs: unknown[]) => (result as (...a: unknown[]) => unknown).apply(value, fnArgs);
 }
 
 // ─── With ───────────────────────────────────────────────────────────────────

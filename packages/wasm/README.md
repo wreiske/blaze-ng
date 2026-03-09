@@ -28,12 +28,12 @@ const tokens = tokenize(htmlString);
 
 ## Exports
 
-| Export | Description |
-|--------|-------------|
-| `loadWasm` | Load the WASM module (async) |
-| `isWasmAvailable` | Check whether WASM is loaded |
-| `diff` | Compute minimal diff operations between two arrays |
-| `tokenize` | Tokenize an HTML string |
+| Export            | Description                                        |
+| ----------------- | -------------------------------------------------- |
+| `loadWasm`        | Load the WASM module (async)                       |
+| `isWasmAvailable` | Check whether WASM is loaded                       |
+| `diff`            | Compute minimal diff operations between two arrays |
+| `tokenize`        | Tokenize an HTML string                            |
 
 ### Automatic Thresholds
 

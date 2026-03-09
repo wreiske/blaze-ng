@@ -7,6 +7,7 @@ This guide helps you migrate from the original Meteor Blaze to Blaze-ng.
 Blaze-ng is a **TypeScript rewrite** of the original Blaze. The template syntax and API are the same — the main changes are in how you install and configure it.
 
 ### Same
+
 - Spacebars template syntax (`{{#if}}`, `{{#each}}`, `{{> inclusion}}`, etc.)
 - Template helpers, events, and lifecycle callbacks
 - `Blaze.render`, `Blaze.toHTML`, `Blaze.renderWithData`
@@ -15,6 +16,7 @@ Blaze-ng is a **TypeScript rewrite** of the original Blaze. The template syntax 
 - DOM reactivity model
 
 ### Different
+
 - **TypeScript** — full type safety
 - **No Meteor dependency** — works outside Meteor
 - **BYORS** — bring your own reactive system (no Tracker dependency)
@@ -170,52 +172,52 @@ Template.taskList.helpers({
 
 ### Fully Compatible
 
-| API | Status |
-|-----|--------|
-| `Template.myTemplate.helpers()` | ✅ Identical |
-| `Template.myTemplate.events()` | ✅ Identical |
-| `Template.myTemplate.onCreated()` | ✅ Identical |
-| `Template.myTemplate.onRendered()` | ✅ Identical |
+| API                                 | Status       |
+| ----------------------------------- | ------------ |
+| `Template.myTemplate.helpers()`     | ✅ Identical |
+| `Template.myTemplate.events()`      | ✅ Identical |
+| `Template.myTemplate.onCreated()`   | ✅ Identical |
+| `Template.myTemplate.onRendered()`  | ✅ Identical |
 | `Template.myTemplate.onDestroyed()` | ✅ Identical |
-| `Template.instance()` | ✅ Identical |
-| `Template.currentData()` | ✅ Identical |
-| `Template.registerHelper()` | ✅ Identical |
-| `Blaze.render()` | ✅ Identical |
-| `Blaze.renderWithData()` | ✅ Identical |
-| `Blaze.remove()` | ✅ Identical |
-| `Blaze.toHTML()` | ✅ Identical |
-| `Blaze.toHTMLWithData()` | ✅ Identical |
-| `Blaze.View` | ✅ Identical |
-| `Blaze.currentView` | ✅ Identical |
-| `Blaze.With()` | ✅ Identical |
-| `Blaze.If()` / `Blaze.Unless()` | ✅ Identical |
-| `Blaze.Each()` | ✅ Identical |
-| `Blaze.Let()` | ✅ Identical |
-| `HTML.*` (all tag functions) | ✅ Identical |
-| `{{#if}}` / `{{#unless}}` | ✅ Identical |
-| `{{#each}}` / `{{#each in}}` | ✅ Identical |
-| `{{#with}}` | ✅ Identical |
-| `{{#let}}` | ✅ Identical |
-| `{{> inclusion}}` | ✅ Identical |
-| `{{{raw}}}` | ✅ Identical |
-| `{{! comments}}` | ✅ Identical |
+| `Template.instance()`               | ✅ Identical |
+| `Template.currentData()`            | ✅ Identical |
+| `Template.registerHelper()`         | ✅ Identical |
+| `Blaze.render()`                    | ✅ Identical |
+| `Blaze.renderWithData()`            | ✅ Identical |
+| `Blaze.remove()`                    | ✅ Identical |
+| `Blaze.toHTML()`                    | ✅ Identical |
+| `Blaze.toHTMLWithData()`            | ✅ Identical |
+| `Blaze.View`                        | ✅ Identical |
+| `Blaze.currentView`                 | ✅ Identical |
+| `Blaze.With()`                      | ✅ Identical |
+| `Blaze.If()` / `Blaze.Unless()`     | ✅ Identical |
+| `Blaze.Each()`                      | ✅ Identical |
+| `Blaze.Let()`                       | ✅ Identical |
+| `HTML.*` (all tag functions)        | ✅ Identical |
+| `{{#if}}` / `{{#unless}}`           | ✅ Identical |
+| `{{#each}}` / `{{#each in}}`        | ✅ Identical |
+| `{{#with}}`                         | ✅ Identical |
+| `{{#let}}`                          | ✅ Identical |
+| `{{> inclusion}}`                   | ✅ Identical |
+| `{{{raw}}}`                         | ✅ Identical |
+| `{{! comments}}`                    | ✅ Identical |
 
 ### Requires Adapter
 
-| API | Migration |
-|-----|-----------|
-| `Tracker.autorun()` | Use `@blaze-ng/meteor` adapter |
-| `ReactiveVar` | Use `@blaze-ng/meteor` adapter or `createVar()` |
-| `ReactiveDict` | Use `@blaze-ng/meteor` adapter |
-| `Mongo.Cursor` observe | Use `@blaze-ng/meteor` adapter |
+| API                    | Migration                                       |
+| ---------------------- | ----------------------------------------------- |
+| `Tracker.autorun()`    | Use `@blaze-ng/meteor` adapter                  |
+| `ReactiveVar`          | Use `@blaze-ng/meteor` adapter or `createVar()` |
+| `ReactiveDict`         | Use `@blaze-ng/meteor` adapter                  |
+| `Mongo.Cursor` observe | Use `@blaze-ng/meteor` adapter                  |
 
 ### Deprecated / Removed
 
-| API | Replacement |
-|-----|-------------|
-| `Blaze._globalHelpers` | `Template.registerHelper()` |
-| `UI` namespace (legacy) | `Blaze` namespace |
-| `Blaze.isTemplate()` | `instanceof Template` |
+| API                     | Replacement                 |
+| ----------------------- | --------------------------- |
+| `Blaze._globalHelpers`  | `Template.registerHelper()` |
+| `UI` namespace (legacy) | `Blaze` namespace           |
+| `Blaze.isTemplate()`    | `instanceof Template`       |
 
 ## Common Migration Issues
 

@@ -5,9 +5,9 @@ Control HTML attributes dynamically using Spacebars expressions.
 ## Basic Dynamic Attributes
 
 ```handlebars
-<a href="{{url}}" title="{{tooltip}}">{{label}}</a>
-<img src="{{imageUrl}}" alt="{{altText}}" width="{{width}}">
-<input type="text" value="{{currentValue}}" placeholder="{{placeholder}}">
+<a href='{{url}}' title='{{tooltip}}'>{{label}}</a>
+<img src='{{imageUrl}}' alt='{{altText}}' width='{{width}}' />
+<input type='text' value='{{currentValue}}' placeholder='{{placeholder}}' />
 ```
 
 ## Dynamic Classes
@@ -34,18 +34,18 @@ Control HTML attributes dynamically using Spacebars expressions.
 Template.registerHelper('classNames', function (...args) {
   const options = args.pop();
   const classes = [...args];
-  
+
   // Add conditional classes from hash
   Object.entries(options.hash).forEach(([className, condition]) => {
     if (condition) classes.push(className);
   });
-  
+
   return classes.filter(Boolean).join(' ');
 });
 ```
 
 ```handlebars
-<div class="{{classNames 'card' active=isActive highlighted=isHighlighted large=isLarge}}">
+<div class='{{classNames "card" active=isActive highlighted=isHighlighted large=isLarge}}'>
   {{content}}
 </div>
 ```
@@ -55,15 +55,15 @@ Template.registerHelper('classNames', function (...args) {
 ### Inline Styles
 
 ```handlebars
-<div style="color: {{textColor}}; background: {{bgColor}}; font-size: {{fontSize}}px">
+<div style='color: {{textColor}}; background: {{bgColor}}; font-size: {{fontSize}}px'>
   {{content}}
 </div>
 
-<div class="progress-bar" style="width: {{percentage}}%">
+<div class='progress-bar' style='width: {{percentage}}%'>
   {{percentage}}%
 </div>
 
-<div class="avatar" style="background-image: url('{{avatarUrl}}')">
+<div class='avatar' style="background-image: url('{{avatarUrl}}')">
   {{initials}}
 </div>
 ```
@@ -84,7 +84,7 @@ Template.registerHelper('style', function (options) {
 ```
 
 ```handlebars
-<div style="{{style color=textColor backgroundColor=bgColor fontSize=fontSizePx}}">
+<div style='{{style color=textColor backgroundColor=bgColor fontSize=fontSizePx}}'>
   {{content}}
 </div>
 ```
@@ -135,7 +135,7 @@ Template.myInput.helpers({
 ```
 
 ```handlebars
-<input {{attrs}}>
+<input {{attrs}} />
 ```
 
 This renders all the key-value pairs as HTML attributes.
@@ -143,16 +143,11 @@ This renders all the key-value pairs as HTML attributes.
 ## Data Attributes
 
 ```handlebars
-<div class="item" 
-     data-id="{{_id}}" 
-     data-type="{{type}}" 
-     data-index="{{@index}}">
+<div class='item' data-id='{{_id}}' data-type='{{type}}' data-index='{{@index}}'>
   {{name}}
 </div>
 
-<button class="action" 
-        data-action="{{action}}" 
-        data-target="{{targetId}}">
+<button class='action' data-action='{{action}}' data-target='{{targetId}}'>
   {{label}}
 </button>
 ```
@@ -178,21 +173,25 @@ Template.itemList.events({
 Build accessible components:
 
 ```handlebars
-<template name="accordion">
+<template name='accordion'>
   {{#each section in sections}}
-    <div class="accordion-section">
-      <button class="accordion-trigger"
-              id="trigger-{{section._id}}"
-              aria-expanded="{{section.isOpen}}"
-              aria-controls="panel-{{section._id}}">
+    <div class='accordion-section'>
+      <button
+        class='accordion-trigger'
+        id='trigger-{{section._id}}'
+        aria-expanded='{{section.isOpen}}'
+        aria-controls='panel-{{section._id}}'
+      >
         {{section.title}}
-        <span class="chevron">{{#if section.isOpen}}▲{{else}}▼{{/if}}</span>
+        <span class='chevron'>{{#if section.isOpen}}▲{{else}}▼{{/if}}</span>
       </button>
       {{#if section.isOpen}}
-        <div class="accordion-panel"
-             id="panel-{{section._id}}"
-             role="region"
-             aria-labelledby="trigger-{{section._id}}">
+        <div
+          class='accordion-panel'
+          id='panel-{{section._id}}'
+          role='region'
+          aria-labelledby='trigger-{{section._id}}'
+        >
           {{section.content}}
         </div>
       {{/if}}
@@ -214,7 +213,7 @@ Build accessible components:
       </button>
     {{/each}}
   </div>
-  
+
   {{#each tab in tabs}}
     {{#if (eq activeTab tab.id)}}
       <div role="tabpanel"
@@ -232,21 +231,39 @@ Build accessible components:
 Blaze handles SVG namespacing automatically:
 
 ```handlebars
-<template name="progressRing">
-  <svg width="{{size}}" height="{{size}}" viewBox="0 0 {{size}} {{size}}">
-    {{!-- Background circle --}}
-    <circle cx="{{half}}" cy="{{half}}" r="{{radius}}"
-            fill="none" stroke="#e5e7eb" stroke-width="{{strokeWidth}}"/>
-    {{!-- Progress arc --}}
-    <circle cx="{{half}}" cy="{{half}}" r="{{radius}}"
-            fill="none" stroke="{{color}}" stroke-width="{{strokeWidth}}"
-            stroke-dasharray="{{circumference}}"
-            stroke-dashoffset="{{offset}}"
-            stroke-linecap="round"
-            transform="rotate(-90 {{half}} {{half}})"/>
-    {{!-- Center text --}}
-    <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central"
-          font-size="{{fontSize}}" fill="{{textColor}}">
+<template name='progressRing'>
+  <svg width='{{size}}' height='{{size}}' viewBox='0 0 {{size}} {{size}}'>
+    {{! Background circle }}
+    <circle
+      cx='{{half}}'
+      cy='{{half}}'
+      r='{{radius}}'
+      fill='none'
+      stroke='#e5e7eb'
+      stroke-width='{{strokeWidth}}'
+    />
+    {{! Progress arc }}
+    <circle
+      cx='{{half}}'
+      cy='{{half}}'
+      r='{{radius}}'
+      fill='none'
+      stroke='{{color}}'
+      stroke-width='{{strokeWidth}}'
+      stroke-dasharray='{{circumference}}'
+      stroke-dashoffset='{{offset}}'
+      stroke-linecap='round'
+      transform='rotate(-90 {{half}} {{half}})'
+    />
+    {{! Center text }}
+    <text
+      x='50%'
+      y='50%'
+      text-anchor='middle'
+      dominant-baseline='central'
+      font-size='{{fontSize}}'
+      fill='{{textColor}}'
+    >
       {{percentage}}%
     </text>
   </svg>
@@ -255,8 +272,12 @@ Blaze handles SVG namespacing automatically:
 
 ```ts
 Template.progressRing.helpers({
-  half() { return this.size / 2; },
-  radius() { return (this.size - this.strokeWidth) / 2; },
+  half() {
+    return this.size / 2;
+  },
+  radius() {
+    return (this.size - this.strokeWidth) / 2;
+  },
   circumference() {
     const r = (this.size - this.strokeWidth) / 2;
     return 2 * Math.PI * r;
@@ -280,7 +301,7 @@ Template.progressRing.helpers({
           {{field.label}}
           {{#if field.required}}<span class="required">*</span>{{/if}}
         </label>
-        
+
         {{#if (eq field.type "text")}}
           <input id="field-{{field.name}}"
                  type="text"
@@ -291,7 +312,7 @@ Template.progressRing.helpers({
                  {{#if field.maxLength}}maxlength="{{field.maxLength}}"{{/if}}
                  class="form-input">
         {{/if}}
-        
+
         {{#if (eq field.type "textarea")}}
           <textarea id="field-{{field.name}}"
                     name="{{field.name}}"
@@ -300,7 +321,7 @@ Template.progressRing.helpers({
                     {{#if field.required}}required{{/if}}
                     class="form-input">{{fieldValue field.name}}</textarea>
         {{/if}}
-        
+
         {{#if (eq field.type "select")}}
           <select id="field-{{field.name}}"
                   name="{{field.name}}"
@@ -308,14 +329,14 @@ Template.progressRing.helpers({
                   class="form-input">
             <option value="">{{field.placeholder}}</option>
             {{#each option in field.options}}
-              <option value="{{option.value}}" 
+              <option value="{{option.value}}"
                       {{#if (eq (fieldValue ../field.name) option.value)}}selected{{/if}}>
                 {{option.label}}
               </option>
             {{/each}}
           </select>
         {{/if}}
-        
+
         {{#if (eq field.type "checkbox")}}
           <label class="checkbox-label">
             <input type="checkbox"
@@ -324,7 +345,7 @@ Template.progressRing.helpers({
             {{field.checkboxLabel}}
           </label>
         {{/if}}
-        
+
         {{#if field.helpText}}
           <small class="help-text">{{field.helpText}}</small>
         {{/if}}
@@ -333,7 +354,7 @@ Template.progressRing.helpers({
         {{/if}}
       </div>
     {{/each}}
-    
+
     <div class="form-actions">
       {{> button label="Submit" variant="primary" type="submit" loading=isSubmitting}}
       {{> button label="Reset" variant="ghost" class="reset-btn"}}
@@ -347,9 +368,9 @@ Template.dynamicForm.onCreated(function () {
   this.values = new ReactiveDict();
   this.errors = new ReactiveDict();
   this.isSubmitting = new ReactiveVar(false);
-  
+
   // Set initial values
-  this.data.fields.forEach(field => {
+  this.data.fields.forEach((field) => {
     if (field.defaultValue != null) {
       this.values.set(field.name, field.defaultValue);
     }
@@ -357,9 +378,15 @@ Template.dynamicForm.onCreated(function () {
 });
 
 Template.dynamicForm.helpers({
-  fieldValue(name) { return Template.instance().values.get(name); },
-  fieldError(name) { return Template.instance().errors.get(name); },
-  isSubmitting() { return Template.instance().isSubmitting.get(); },
+  fieldValue(name) {
+    return Template.instance().values.get(name);
+  },
+  fieldError(name) {
+    return Template.instance().errors.get(name);
+  },
+  isSubmitting() {
+    return Template.instance().isSubmitting.get();
+  },
 });
 
 Template.dynamicForm.events({
@@ -373,7 +400,7 @@ Template.dynamicForm.events({
     // Validate and submit...
   },
   'click .reset-btn'(event, instance) {
-    instance.data.fields.forEach(field => {
+    instance.data.fields.forEach((field) => {
       instance.values.set(field.name, field.defaultValue || '');
       instance.errors.set(field.name, null);
     });

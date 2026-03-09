@@ -1,5 +1,15 @@
 import { describe, test, expect } from 'vitest';
-import { Spacebars, kw, SafeString, call, dot, mustache, attrMustache, makeRaw, include } from '../src/index';
+import {
+  Spacebars,
+  kw,
+  SafeString,
+  call,
+  dot,
+  mustache,
+  attrMustache,
+  makeRaw,
+  include,
+} from '../src/index';
 import { Raw } from '@blaze-ng/htmljs';
 
 // ─── Spacebars.dot tests ────────────────────────────────────────────────────
@@ -13,7 +23,12 @@ describe('Spacebars.dot', () => {
 
   test('function property with binding', () => {
     const result = dot(
-      { x: 1, y: function () { return this.x + 1; } },
+      {
+        x: 1,
+        y: function () {
+          return this.x + 1;
+        },
+      },
       'y',
     ) as () => number;
     expect(result()).toBe(2);
@@ -21,7 +36,12 @@ describe('Spacebars.dot', () => {
 
   test('value is a function returning object', () => {
     const result = dot(
-      () => ({ x: 1, y: function () { return this.x + 1; } }),
+      () => ({
+        x: 1,
+        y: function () {
+          return this.x + 1;
+        },
+      }),
       'y',
     ) as () => number;
     expect(result()).toBe(2);
@@ -31,7 +51,9 @@ describe('Spacebars.dot', () => {
     let m = 1;
     const mget = () => ({
       answer: m,
-      getAnswer: function () { return this.answer; },
+      getAnswer: function () {
+        return this.answer;
+      },
     });
 
     const mgetDotAnswer = dot(mget, 'answer');
@@ -49,11 +71,15 @@ describe('Spacebars.dot', () => {
     let m = 5;
     const mget = () => ({
       answer: m,
-      getAnswer: function () { return this.answer; },
+      getAnswer: function () {
+        return this.answer;
+      },
     });
     const closet = {
       mget,
-      mget2: function () { return this.mget(); },
+      mget2: function () {
+        return this.mget();
+      },
     };
 
     m = 5;
@@ -75,13 +101,23 @@ describe('Spacebars.dot', () => {
 
   test('function property that takes arguments', () => {
     const result1 = dot(
-      { one: 1, inc: function (x: number) { return this.one + x; } },
+      {
+        one: 1,
+        inc: function (x: number) {
+          return this.one + x;
+        },
+      },
       'inc',
     ) as (x: number) => number;
     expect(result1(6)).toBe(7);
 
     const result2 = dot(
-      () => ({ one: 1, inc: function (x: number) { return this.one + x; } }),
+      () => ({
+        one: 1,
+        inc: function (x: number) {
+          return this.one + x;
+        },
+      }),
       'inc',
     ) as (x: number) => number;
     expect(result2(8)).toBe(9);
@@ -98,7 +134,13 @@ describe('Spacebars.call', () => {
 
   test('evaluates function args before calling', () => {
     const add = (x: number, y: number) => x + y;
-    expect(call(add, () => 1, () => 2)).toBe(3);
+    expect(
+      call(
+        add,
+        () => 1,
+        () => 2,
+      ),
+    ).toBe(3);
   });
 
   test('returns non-function value as-is', () => {

@@ -21,8 +21,8 @@ If `name` is `<script>alert("xss")</script>`, it renders as the literal text, no
 Inserts raw HTML **without escaping**:
 
 ```handlebars
-<div class="content">{{{markdownToHtml body}}}</div>
-<span class="icon">{{{iconSvg name}}}</span>
+<div class='content'>{{{markdownToHtml body}}}</div>
+<span class='icon'>{{{iconSvg name}}}</span>
 ```
 
 ::: warning
@@ -33,8 +33,8 @@ Only use triple braces with trusted content. Never use with user input.
 
 ```handlebars
 {{! This is a comment — not rendered in output }}
-{{!-- This is a block comment
-     that spans multiple lines --}}
+{{! This is a block comment
+     that spans multiple lines }}
 ```
 
 ## Paths
@@ -42,30 +42,37 @@ Only use triple braces with trusted content. Never use with user input.
 ### Simple Paths
 
 ```handlebars
-{{name}}           {{!-- current data context property --}}
-{{formatName}}     {{!-- helper function --}}
+{{name}}
+{{! current data context property }}
+{{formatName}}
+{{! helper function }}
 ```
 
 ### Dotted Paths
 
 ```handlebars
-{{user.name}}          {{!-- nested property --}}
-{{user.address.city}}  {{!-- deeply nested --}}
-{{post.author.name}}   {{!-- chain of objects --}}
+{{user.name}}
+{{! nested property }}
+{{user.address.city}}
+{{! deeply nested }}
+{{post.author.name}}
+{{! chain of objects }}
 ```
 
 ### `this`
 
 ```handlebars
-{{this}}              {{!-- the entire data context --}}
-{{this.name}}         {{!-- same as {{name}} --}}
+{{this}}
+{{! the entire data context }}
+{{this.name}}
+{{!-- same as {{name}} --}}
 ```
 
 Useful inside `{{#each}}` when iterating simple values:
 
 ```handlebars
 {{#each tags}}
-  <span class="tag">{{this}}</span>
+  <span class='tag'>{{this}}</span>
 {{/each}}
 ```
 
@@ -75,7 +82,7 @@ Useful inside `{{#each}}` when iterating simple values:
 {{#each items}}
   {{!-- Access parent's title from inside each --}}
   <div>{{../title}} — {{name}}</div>
-  
+
   {{#each subItems}}
     {{!-- Go up two levels --}}
     <span>{{../../title}} > {{../name}} > {{this}}</span>
@@ -88,9 +95,9 @@ Useful inside `{{#each}}` when iterating simple values:
 ### Positional Arguments
 
 ```handlebars
-{{formatDate createdAt "YYYY-MM-DD"}}
+{{formatDate createdAt 'YYYY-MM-DD'}}
 {{truncate description 100}}
-{{pluralize count "item" "items"}}
+{{pluralize count 'item' 'items'}}
 ```
 
 ### Keyword Arguments
@@ -104,7 +111,7 @@ Useful inside `{{#each}}` when iterating simple values:
 ### Mixed Arguments
 
 ```handlebars
-{{formatNumber amount currency="USD" decimals=2}}
+{{formatNumber amount currency='USD' decimals=2}}
 ```
 
 Arguments are passed to helpers as positional args, with keyword args as the last parameter's `hash`:
@@ -128,7 +135,7 @@ Template.registerHelper('formatNumber', function (value, options) {
 {{#if isLoggedIn}}
   <p>Welcome back, {{username}}!</p>
 {{else}}
-  <p>Please <a href="/login">log in</a>.</p>
+  <p>Please <a href='/login'>log in</a>.</p>
 {{/if}}
 ```
 
@@ -140,7 +147,7 @@ The inverse of `{{#if}}`:
 
 ```handlebars
 {{#unless hasPermission}}
-  <div class="alert">You don't have permission to view this.</div>
+  <div class='alert'>You don't have permission to view this.</div>
 {{/unless}}
 ```
 
@@ -165,10 +172,10 @@ Named iteration variable (avoids `../` confusion):
 
 ```handlebars
 {{#each task in tasks}}
-  <div class="task">
+  <div class='task'>
     <span>{{task.text}}</span>
     <span>by {{task.author}}</span>
-    {{!-- Can still access outer context directly --}}
+    {{! Can still access outer context directly }}
     <span>Project: {{projectName}}</span>
   </div>
 {{/each}}
@@ -180,7 +187,7 @@ Change the data context:
 
 ```handlebars
 {{#with selectedUser}}
-  <div class="profile">
+  <div class='profile'>
     <h2>{{name}}</h2>
     <p>{{email}}</p>
     <p>Joined {{formatDate joinedAt}}</p>
@@ -195,7 +202,7 @@ Change the data context:
 Define local variables:
 
 ```handlebars
-{{#let fullName=(concat firstName " " lastName)}}
+{{#let fullName=(concat firstName ' ' lastName)}}
   <h1>{{fullName}}</h1>
   <title>Profile — {{fullName}}</title>
 {{/let}}
@@ -242,7 +249,7 @@ Define a wrapper template:
 Use it with block syntax:
 
 ```handlebars
-{{#card title="User Info"}}
+{{#card title='User Info'}}
   <p>{{user.name}}</p>
   <p>{{user.email}}</p>
 {{/card}}
@@ -281,8 +288,8 @@ Template.myComponent.helpers({
 ```
 
 ```handlebars
-<input {{inputAttrs}}>
-{{!-- Renders: <input type="text" class="form-input" placeholder="Enter value..." data-id="abc" aria-label="Name"> --}}
+<input {{inputAttrs}} />
+{{! Renders: <input type="text" class="form-input" placeholder="Enter value..." data-id="abc" aria-label="Name"> }}
 ```
 
 ### Boolean Attributes
@@ -329,7 +336,9 @@ When you write `{{name}}`, Blaze resolves it in this order:
 ```ts
 // 1. Template helper (highest priority)
 Template.myComponent.helpers({
-  name() { return 'from helper'; },
+  name() {
+    return 'from helper';
+  },
 });
 
 // 3. Global helper (lowest priority)
@@ -359,5 +368,5 @@ Template.registerHelper('literal', function (text) {
 ```
 
 ```handlebars
-{{literal "{{example}}"}}
+{{literal '{{example}}'}}
 ```

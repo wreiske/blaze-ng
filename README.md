@@ -11,16 +11,16 @@ Blaze-NG is a ground-up rewrite of Meteor's Blaze templating engine in modern Ty
 
 ## Why Blaze-NG?
 
-| | Original Blaze | Blaze-NG |
-|---|---|---|
-| **Language** | JavaScript (ES5) | TypeScript (strict) |
-| **Dependencies** | jQuery, lodash, uglify-js | **Zero runtime deps** |
-| **Bundle size** | ~25KB gzip | **<15KB gzip** |
-| **DOM manipulation** | jQuery wrappers | Native `classList`, `addEventListener` |
-| **Reactivity** | Meteor Tracker only | **Any reactive system** (Tracker, signals, etc.) |
-| **Module format** | Meteor packages | **ESM + CJS** (tree-shakeable) |
-| **Type safety** | None | Full TypeScript with strict mode |
-| **Testing** | Tinytest | Vitest (435+ tests) |
+|                      | Original Blaze            | Blaze-NG                                         |
+| -------------------- | ------------------------- | ------------------------------------------------ |
+| **Language**         | JavaScript (ES5)          | TypeScript (strict)                              |
+| **Dependencies**     | jQuery, lodash, uglify-js | **Zero runtime deps**                            |
+| **Bundle size**      | ~25KB gzip                | **<15KB gzip**                                   |
+| **DOM manipulation** | jQuery wrappers           | Native `classList`, `addEventListener`           |
+| **Reactivity**       | Meteor Tracker only       | **Any reactive system** (Tracker, signals, etc.) |
+| **Module format**    | Meteor packages           | **ESM + CJS** (tree-shakeable)                   |
+| **Type safety**      | None                      | Full TypeScript with strict mode                 |
+| **Testing**          | Tinytest                  | Vitest (435+ tests)                              |
 
 ## Quick Start
 
@@ -51,7 +51,7 @@ import { Spacebars } from '@blaze-ng/spacebars';
 ### Hello World
 
 ```handlebars
-<template name="hello">
+<template name='hello'>
   <h1>Hello, {{name}}!</h1>
   <button>Click me</button>
   <p>You've clicked {{count}} times.</p>
@@ -62,8 +62,12 @@ import { Spacebars } from '@blaze-ng/spacebars';
 import { Template } from '@blaze-ng/core';
 
 Template.hello.helpers({
-  name() { return 'World'; },
-  count() { return Session.get('count') || 0; },
+  name() {
+    return 'World';
+  },
+  count() {
+    return Session.get('count') || 0;
+  },
 });
 
 Template.hello.events({
@@ -109,17 +113,17 @@ Template.todoList.events({
 ### Conditional Rendering
 
 ```handlebars
-<template name="userProfile">
+<template name='userProfile'>
   {{#if currentUser}}
-    <div class="profile">
-      <img src="{{currentUser.avatar}}" alt="{{currentUser.name}}">
+    <div class='profile'>
+      <img src='{{currentUser.avatar}}' alt='{{currentUser.name}}' />
       <h2>{{currentUser.name}}</h2>
       {{#if isAdmin}}
-        <span class="badge">Admin</span>
+        <span class='badge'>Admin</span>
       {{/if}}
     </div>
   {{else}}
-    <p>Please <a href="/login">sign in</a>.</p>
+    <p>Please <a href='/login'>sign in</a>.</p>
   {{/if}}
 </template>
 ```
@@ -127,12 +131,8 @@ Template.todoList.events({
 ### Dynamic Attributes
 
 ```handlebars
-<template name="dynamicButton">
-  <button
-    class="btn {{buttonClass}}"
-    disabled={{isDisabled}}
-    data-loading="{{isLoading}}"
-  >
+<template name='dynamicButton'>
+  <button class='btn {{buttonClass}}' disabled={{isDisabled}} data-loading='{{isLoading}}'>
     {{#if isLoading}}
       Loading...
     {{else}}
@@ -198,7 +198,9 @@ Template.myComponent.onCreated(function () {
 Template.myComponent.onRendered(function () {
   // DOM is now available
   const canvas = this.find('canvas');
-  this.chart = new Chart(canvas, { /* ... */ });
+  this.chart = new Chart(canvas, {
+    /* ... */
+  });
 });
 
 Template.myComponent.onDestroyed(function () {
@@ -212,8 +214,8 @@ Template.myComponent.onDestroyed(function () {
 ### Raw HTML with `{{{triple}}}`
 
 ```handlebars
-<template name="richContent">
-  <div class="content">
+<template name='richContent'>
+  <div class='content'>
     {{{htmlContent}}}
   </div>
   <p>Escaped: {{htmlContent}}</p>
@@ -233,16 +235,12 @@ Template.richContent.helpers({
 ### `{{#let}}` Block for Local Variables
 
 ```handlebars
-<template name="calculations">
-  {{#let
-    total=calculateTotal
-    tax=calculateTax
-    shipping=shippingCost
-  }}
+<template name='calculations'>
+  {{#let total=calculateTotal tax=calculateTax shipping=shippingCost}}
     <p>Subtotal: ${{total}}</p>
     <p>Tax: ${{tax}}</p>
     <p>Shipping: ${{shipping}}</p>
-    <hr>
+    <hr />
     <p><strong>Total: ${{grandTotal total tax shipping}}</strong></p>
   {{/let}}
 </template>
@@ -251,15 +249,18 @@ Template.richContent.helpers({
 ### `{{#with}}` Data Context
 
 ```handlebars
-<template name="orderDetails">
+<template name='orderDetails'>
   {{#with selectedOrder}}
-    <div class="order">
+    <div class='order'>
       <h3>Order #{{_id}}</h3>
       <p>Customer: {{customer.name}}</p>
       <p>Status: {{status}}</p>
       {{#each item in items}}
-        <div class="line-item">
-          {{item.name}} × {{item.qty}} = ${{item.total}}
+        <div class='line-item'>
+          {{item.name}}
+          ×
+          {{item.qty}}
+          = ${{item.total}}
         </div>
       {{/each}}
     </div>
@@ -291,7 +292,7 @@ Blaze.registerHelper('formatDate', (date) => {
 });
 
 Blaze.registerHelper('pluralize', (count, singular, plural) => {
-  return count === 1 ? singular : (plural || singular + 's');
+  return count === 1 ? singular : plural || singular + 's';
 });
 
 Blaze.registerHelper('eq', (a, b) => a === b);
@@ -302,8 +303,8 @@ Blaze.registerHelper('or', (a, b) => a || b);
 
 ```handlebars
 <p>{{formatDate createdAt}}</p>
-<p>{{pluralize count "item"}}</p>
-{{#if (eq status "active")}}Active!{{/if}}
+<p>{{pluralize count 'item'}}</p>
+{{#if (eq status 'active')}}Active!{{/if}}
 ```
 
 ### Programmatic Rendering
@@ -342,9 +343,15 @@ Blaze.setReactiveSystem(new SimpleReactiveSystem());
 
 // Or implement your own:
 Blaze.setReactiveSystem({
-  autorun(fn) { /* ... */ },
-  nonReactive(fn) { /* ... */ },
-  ReactiveVar(initialValue) { /* ... */ },
+  autorun(fn) {
+    /* ... */
+  },
+  nonReactive(fn) {
+    /* ... */
+  },
+  ReactiveVar(initialValue) {
+    /* ... */
+  },
 });
 ```
 
@@ -480,18 +487,18 @@ pnpm format
 
 ## Project Status
 
-| Phase | Status | Details |
-|-------|--------|---------|
-| Phase 0: Scaffolding | ✅ Complete | pnpm monorepo, TypeScript, Vitest |
-| Phase 1: Foundation | ✅ Complete | htmljs, blaze-tools, observe-sequence |
-| Phase 2: Parsers | ✅ Complete | html-tools, spacebars-compiler, templating-tools |
-| Phase 3: Core Runtime | ✅ Complete | View, DOMRange, Template, Events, Builtins |
-| Phase 4: Spacebars | ✅ Complete | Spacebars runtime, templating runtime |
-| Phase 5: Meteor Adapter | ✅ Complete | TrackerAdapter, HMR, compat aliases |
-| Phase 6: Integration Tests | ✅ Complete | 435+ tests across 14 test files |
-| Phase 7: WASM | ✅ Complete | JS fallbacks + WASM acceleration ready |
-| Phase 8: Documentation | ✅ Complete | VitePress site, API docs, examples |
-| Phase 9: Release | 🚧 In Progress | npm publish, Atmosphere publish |
+| Phase                      | Status         | Details                                          |
+| -------------------------- | -------------- | ------------------------------------------------ |
+| Phase 0: Scaffolding       | ✅ Complete    | pnpm monorepo, TypeScript, Vitest                |
+| Phase 1: Foundation        | ✅ Complete    | htmljs, blaze-tools, observe-sequence            |
+| Phase 2: Parsers           | ✅ Complete    | html-tools, spacebars-compiler, templating-tools |
+| Phase 3: Core Runtime      | ✅ Complete    | View, DOMRange, Template, Events, Builtins       |
+| Phase 4: Spacebars         | ✅ Complete    | Spacebars runtime, templating runtime            |
+| Phase 5: Meteor Adapter    | ✅ Complete    | TrackerAdapter, HMR, compat aliases              |
+| Phase 6: Integration Tests | ✅ Complete    | 435+ tests across 14 test files                  |
+| Phase 7: WASM              | ✅ Complete    | JS fallbacks + WASM acceleration ready           |
+| Phase 8: Documentation     | ✅ Complete    | VitePress site, API docs, examples               |
+| Phase 9: Release           | 🚧 In Progress | npm publish, Atmosphere publish                  |
 
 ## License
 

@@ -104,15 +104,15 @@ Template.pluginHost.events({
   async 'click .plugin-tab'(event, instance) {
     const pluginId = event.currentTarget.dataset.pluginId;
     instance.activePluginId.set(pluginId);
-    
+
     const plugin = pluginRegistry.get(pluginId);
     if (plugin && !plugin.loaded && plugin.loader) {
       instance.isPluginLoading.set(true);
-      
+
       // Load the plugin (registers its template)
       await plugin.loader();
       plugin.loaded = true;
-      
+
       instance.isPluginLoading.set(false);
       // Force reactivity update
       instance.activePluginId.set(pluginId);
@@ -162,17 +162,28 @@ These plugins are registered and available immediately:
 Template.notesPlugin.onCreated(function () {
   this.notes = new ReactiveVar([
     { id: '1', title: 'Getting Started', body: 'Welcome to Notes!', updatedAt: new Date() },
-    { id: '2', title: 'Ideas', body: 'Some ideas for the project...', updatedAt: new Date(Date.now() - 86400000) },
+    {
+      id: '2',
+      title: 'Ideas',
+      body: 'Some ideas for the project...',
+      updatedAt: new Date(Date.now() - 86400000),
+    },
   ]);
   this.activeNoteId = new ReactiveVar(null);
 });
 
 Template.notesPlugin.helpers({
-  notes() { return Template.instance().notes.get(); },
-  activeNoteId() { return Template.instance().activeNoteId.get(); },
+  notes() {
+    return Template.instance().notes.get();
+  },
+  activeNoteId() {
+    return Template.instance().activeNoteId.get();
+  },
   activeNote() {
     const id = Template.instance().activeNoteId.get();
-    return Template.instance().notes.get().find(n => n.id === id);
+    return Template.instance()
+      .notes.get()
+      .find((n) => n.id === id);
   },
 });
 
@@ -201,9 +212,9 @@ Template.notesPlugin.events({
 
 function updateNote(instance, field, value) {
   const id = instance.activeNoteId.get();
-  const notes = instance.notes.get().map(n =>
-    n.id === id ? { ...n, [field]: value, updatedAt: new Date() } : n
-  );
+  const notes = instance.notes
+    .get()
+    .map((n) => (n.id === id ? { ...n, [field]: value, updatedAt: new Date() } : n));
   instance.notes.set(notes);
 }
 
@@ -265,9 +276,15 @@ Template.timerPlugin.onDestroyed(function () {
 });
 
 Template.timerPlugin.helpers({
-  elapsed() { return Template.instance().elapsed.get(); },
-  isRunning() { return Template.instance().isRunning.get(); },
-  laps() { return Template.instance().laps.get(); },
+  elapsed() {
+    return Template.instance().elapsed.get();
+  },
+  isRunning() {
+    return Template.instance().isRunning.get();
+  },
+  laps() {
+    return Template.instance().laps.get();
+  },
 });
 
 Template.timerPlugin.events({
@@ -318,14 +335,13 @@ registerPlugin({
   template: 'weatherPlugin',
   loader: async () => {
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     // Define the template at runtime
     Template.__define__('weatherPlugin', () => {
       // Return the template's render function
-      return Blaze._TemplateWith(
-        { cities: () => Template.instance().cities.get() },
-        () => Template.weatherPluginContent()
+      return Blaze._TemplateWith({ cities: () => Template.instance().cities.get() }, () =>
+        Template.weatherPluginContent(),
       );
     });
   },
@@ -334,15 +350,15 @@ registerPlugin({
 
 ```handlebars
 <!-- This template is loaded lazily -->
-<template name="weatherPluginContent">
-  <div class="weather-plugin">
-    <div class="weather-grid">
+<template name='weatherPluginContent'>
+  <div class='weather-plugin'>
+    <div class='weather-grid'>
       {{#each city in cities}}
-        <div class="weather-card">
+        <div class='weather-card'>
           <h4>{{city.name}}</h4>
-          <div class="weather-icon">{{city.icon}}</div>
-          <div class="temperature">{{city.temp}}°</div>
-          <div class="condition">{{city.condition}}</div>
+          <div class='weather-icon'>{{city.icon}}</div>
+          <div class='temperature'>{{city.temp}}°</div>
+          <div class='condition'>{{city.condition}}</div>
         </div>
       {{/each}}
     </div>
@@ -398,12 +414,14 @@ Template.fileTree.helpers({
       path: '/',
       children: [
         {
-          name: 'src', path: '/src',
+          name: 'src',
+          path: '/src',
           children: [
             { name: 'index.ts', path: '/src/index.ts', size: 2048 },
             { name: 'utils.ts', path: '/src/utils.ts', size: 1024 },
             {
-              name: 'components', path: '/src/components',
+              name: 'components',
+              path: '/src/components',
               children: [
                 { name: 'App.ts', path: '/src/components/App.ts', size: 3072 },
                 { name: 'Header.ts', path: '/src/components/Header.ts', size: 1536 },
@@ -450,7 +468,7 @@ Template.fileNode.events({
   'click .folder'(event, instance) {
     event.stopPropagation();
     const path = event.currentTarget.dataset.path;
-    
+
     // Find the root fileTree instance
     let view = instance.view;
     while (view && !view.template?.viewName?.includes('fileTree')) {
@@ -458,7 +476,7 @@ Template.fileNode.events({
     }
     const fileTree = view?.templateInstance();
     if (!fileTree) return;
-    
+
     const expanded = new Set(fileTree.expandedPaths.get());
     if (expanded.has(path)) {
       expanded.delete(path);
@@ -502,8 +520,14 @@ Template.fileNode.events({
   text-align: left;
 }
 
-.plugin-tab:hover { background: #313244; color: white; }
-.plugin-tab.active { background: #4f46e5; color: white; }
+.plugin-tab:hover {
+  background: #313244;
+  color: white;
+}
+.plugin-tab.active {
+  background: #4f46e5;
+  color: white;
+}
 
 .badge {
   margin-left: auto;
@@ -514,10 +538,13 @@ Template.fileNode.events({
   font-size: 0.6875rem;
 }
 
-.plugin-content { padding: 2rem; }
+.plugin-content {
+  padding: 2rem;
+}
 
 /* Loading & welcome */
-.loading-state, .welcome-state {
+.loading-state,
+.welcome-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -535,38 +562,139 @@ Template.fileNode.events({
   animation: spin 0.6s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* Notes */
-.notes-layout { display: grid; grid-template-columns: 200px 1fr; gap: 1rem; margin-top: 1rem; }
-.notes-list { list-style: none; padding: 0; margin: 0; }
-.note-item { padding: 0.75rem; border-radius: 8px; cursor: pointer; }
-.note-item:hover { background: #f1f5f9; }
-.note-item.active { background: #eef2ff; }
-.note-title-input { width: 100%; font-size: 1.25rem; font-weight: 600; border: none; border-bottom: 2px solid #e2e8f0; padding: 0.5rem 0; margin-bottom: 1rem; }
-.note-body-input { width: 100%; min-height: 300px; border: none; resize: vertical; font-size: 1rem; line-height: 1.6; }
+.notes-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.notes-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.note-item {
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.note-item:hover {
+  background: #f1f5f9;
+}
+.note-item.active {
+  background: #eef2ff;
+}
+.note-title-input {
+  width: 100%;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: none;
+  border-bottom: 2px solid #e2e8f0;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+}
+.note-body-input {
+  width: 100%;
+  min-height: 300px;
+  border: none;
+  resize: vertical;
+  font-size: 1rem;
+  line-height: 1.6;
+}
 
 /* Timer */
-.timer-plugin { text-align: center; padding: 2rem; }
-.timer-display { font-size: 4rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
-.timer-controls { display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 2rem; }
-.lap-table { width: 100%; max-width: 400px; margin: 0 auto; border-collapse: collapse; }
-.lap-table th, .lap-table td { padding: 0.5rem 1rem; text-align: right; border-bottom: 1px solid #e2e8f0; }
+.timer-plugin {
+  text-align: center;
+  padding: 2rem;
+}
+.timer-display {
+  font-size: 4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+.timer-controls {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+.lap-table {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+.lap-table th,
+.lap-table td {
+  padding: 0.5rem 1rem;
+  text-align: right;
+  border-bottom: 1px solid #e2e8f0;
+}
 
 /* Weather */
-.weather-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
-.weather-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 1.5rem; border-radius: 12px; text-align: center; }
-.weather-icon { font-size: 3rem; margin: 0.5rem 0; }
-.temperature { font-size: 2rem; font-weight: 700; }
+.weather-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+.weather-card {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+}
+.weather-icon {
+  font-size: 3rem;
+  margin: 0.5rem 0;
+}
+.temperature {
+  font-size: 2rem;
+  font-weight: 700;
+}
 
 /* File Tree */
-.file-tree { background: #1e1e2e; color: #d4d4d8; padding: 1rem; border-radius: 8px; font-family: 'SF Mono', monospace; font-size: 0.875rem; }
-.file-node { cursor: default; }
-.folder { cursor: pointer; padding: 0.25rem 0; }
-.folder:hover { background: #313244; border-radius: 4px; }
-.file { padding: 0.25rem 0; display: flex; gap: 0.5rem; }
-.file .size { margin-left: auto; color: #71717a; }
-.toggle { width: 1em; display: inline-block; }
+.file-tree {
+  background: #1e1e2e;
+  color: #d4d4d8;
+  padding: 1rem;
+  border-radius: 8px;
+  font-family: 'SF Mono', monospace;
+  font-size: 0.875rem;
+}
+.file-node {
+  cursor: default;
+}
+.folder {
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+.folder:hover {
+  background: #313244;
+  border-radius: 4px;
+}
+.file {
+  padding: 0.25rem 0;
+  display: flex;
+  gap: 0.5rem;
+}
+.file .size {
+  margin-left: auto;
+  color: #71717a;
+}
+.toggle {
+  width: 1em;
+  display: inline-block;
+}
 ```
 
 ## What This Demonstrates

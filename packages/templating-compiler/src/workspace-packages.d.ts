@@ -30,10 +30,7 @@ declare module '@blaze-ng/templating-tools' {
     sourceName: string,
     options?: ScanOptions,
   ): ScannedTag[];
-  export function compileTagsWithSpacebars(
-    tags: ScannedTag[],
-    sourceName: string,
-  ): CompileResult;
+  export function compileTagsWithSpacebars(tags: ScannedTag[], sourceName: string): CompileResult;
   export const TemplatingTools: {
     scanHtmlForTags: typeof scanHtmlForTags;
     compileTagsWithSpacebars: typeof compileTagsWithSpacebars;

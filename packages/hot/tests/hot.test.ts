@@ -21,9 +21,7 @@ describe('hot', () => {
   describe('template module tracking', () => {
     it('setTemplateModule associates a module ID', () => {
       setTemplateModule('myTemplate', '/imports/ui/my-template.js');
-      expect(getTemplateModule('myTemplate')).toBe(
-        '/imports/ui/my-template.js',
-      );
+      expect(getTemplateModule('myTemplate')).toBe('/imports/ui/my-template.js');
     });
 
     it('getTemplateModule returns undefined for unknown templates', () => {

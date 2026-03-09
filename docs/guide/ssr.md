@@ -44,7 +44,7 @@ const html = Blaze.toHTMLWithData(tmpl, { name: 'World' });
 ```ts
 function renderPage(templateName, data) {
   const content = Blaze.toHTMLWithData(Template[templateName], data);
-  
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -85,12 +85,14 @@ app.get('/users/:id', async (req, res) => {
     const html = Blaze.toHTML(Template.notFound);
     return res.status(404).send(renderShell(html, { title: 'Not Found' }));
   }
-  
+
   const html = Blaze.toHTMLWithData(Template.userProfile, { user });
-  res.send(renderShell(html, { 
-    title: `${user.name} — Profile`,
-    description: user.bio,
-  }));
+  res.send(
+    renderShell(html, {
+      title: `${user.name} — Profile`,
+      description: user.bio,
+    }),
+  );
 });
 ```
 
@@ -106,7 +108,7 @@ WebApp.connectHandlers.use('/ssr', (req, res) => {
     url: req.url,
     user: req.user,
   });
-  
+
   res.writeHead(200, { 'Content-Type': 'text/html' });
   res.end(html);
 });
@@ -117,32 +119,36 @@ WebApp.connectHandlers.use('/ssr', (req, res) => {
 SSR is perfect for generating HTML emails:
 
 ```handlebars
-<template name="welcomeEmail">
-  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: #4f46e5; color: white; padding: 32px; text-align: center;">
-      <h1 style="margin: 0;">Welcome to {{appName}}!</h1>
+<template name='welcomeEmail'>
+  <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+    <div style='background: #4f46e5; color: white; padding: 32px; text-align: center;'>
+      <h1 style='margin: 0;'>Welcome to {{appName}}!</h1>
     </div>
-    <div style="padding: 32px;">
+    <div style='padding: 32px;'>
       <p>Hi {{user.name}},</p>
       <p>Thanks for signing up! Here's what you can do next:</p>
       <ul>
         {{#each step in steps}}
-          <li style="margin-bottom: 8px;">
-            <strong>{{step.title}}</strong> — {{step.description}}
+          <li style='margin-bottom: 8px;'>
+            <strong>{{step.title}}</strong>
+            —
+            {{step.description}}
           </li>
         {{/each}}
       </ul>
-      <div style="text-align: center; margin: 32px 0;">
-        <a href="{{dashboardUrl}}" 
-           style="background: #4f46e5; color: white; padding: 12px 24px; 
-                  text-decoration: none; border-radius: 6px;">
+      <div style='text-align: center; margin: 32px 0;'>
+        <a
+          href='{{dashboardUrl}}'
+          style='background: #4f46e5; color: white; padding: 12px 24px; 
+                  text-decoration: none; border-radius: 6px;'
+        >
           Go to Dashboard
         </a>
       </div>
     </div>
-    <div style="background: #f3f4f6; padding: 16px; text-align: center; font-size: 12px;">
+    <div style='background: #f3f4f6; padding: 16px; text-align: center; font-size: 12px;'>
       <p>{{appName}} — {{tagline}}</p>
-      <a href="{{unsubscribeUrl}}">Unsubscribe</a>
+      <a href='{{unsubscribeUrl}}'>Unsubscribe</a>
     </div>
   </div>
 </template>
@@ -162,7 +168,7 @@ function sendWelcomeEmail(user) {
       { title: 'Invite your team', description: 'Collaborate in real-time' },
     ],
   });
-  
+
   Email.send({
     to: user.email,
     from: 'hello@myapp.com',
@@ -185,7 +191,7 @@ async function generateInvoicePdf(invoice) {
     company: getCompanyInfo(),
     formatCurrency: (amount) => `$${amount.toFixed(2)}`,
   });
-  
+
   const fullHtml = `
     <!DOCTYPE html>
     <html>
@@ -193,13 +199,13 @@ async function generateInvoicePdf(invoice) {
     <body>${html}</body>
     </html>
   `;
-  
+
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.setContent(fullHtml);
   const pdf = await page.pdf({ format: 'A4' });
   await browser.close();
-  
+
   return pdf;
 }
 ```
@@ -223,7 +229,7 @@ const pages = [
 for (const page of pages) {
   const content = Blaze.toHTMLWithData(Template[page.template], page.data);
   const html = renderShell(content, page.data);
-  
+
   const dir = `dist${page.path}`;
   mkdirSync(dir, { recursive: true });
   writeFileSync(`${dir}/index.html`, html);
@@ -248,28 +254,28 @@ describe('UserCard', () => {
       email: 'alice@example.com',
       role: 'Admin',
     });
-    
+
     expect(html).toContain('Alice');
     expect(html).toContain('alice@example.com');
     expect(html).toContain('Admin');
   });
-  
+
   it('shows placeholder for missing avatar', () => {
     const html = Blaze.toHTMLWithData(Template.userCard, {
       name: 'Bob',
       avatar: null,
     });
-    
+
     expect(html).toContain('avatar-placeholder');
     expect(html).not.toContain('<img');
   });
-  
+
   it('matches snapshot', () => {
     const html = Blaze.toHTMLWithData(Template.userCard, {
       name: 'Test User',
       email: 'test@example.com',
     });
-    
+
     expect(html).toMatchSnapshot();
   });
 });

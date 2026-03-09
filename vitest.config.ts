@@ -4,6 +4,16 @@ import { resolve } from 'node:path';
 export default defineConfig({
   resolve: {
     alias: {
+      // Shims for loading original Blaze packages in comparative benchmarks
+      'meteor/meteor': resolve(__dirname, 'benchmarks/comparative/shims/meteor.js'),
+      'meteor/htmljs': resolve(__dirname, '../blaze/packages/htmljs/preamble.js'),
+      'meteor/html-tools': resolve(__dirname, 'benchmarks/comparative/shims/html-tools.js'),
+      'meteor/blaze-tools': resolve(__dirname, 'benchmarks/comparative/shims/blaze-tools.js'),
+      'meteor/spacebars-compiler': resolve(
+        __dirname,
+        'benchmarks/comparative/shims/spacebars-compiler.js',
+      ),
+
       '@blaze-ng/blaze-tools': resolve(__dirname, 'packages/blaze-tools/src/index.ts'),
       '@blaze-ng/compat': resolve(__dirname, 'packages/compat/src/index.ts'),
       '@blaze-ng/core': resolve(__dirname, 'packages/core/src/index.ts'),

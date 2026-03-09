@@ -49,49 +49,50 @@ Deep dive into how Blaze-ng is structured and how the packages work together.
 
 ### Core Runtime
 
-| Package | Purpose | Size |
-|---------|---------|------|
-| **@blaze-ng/blaze** | Core rendering engine — `Blaze.View`, `Blaze.render`, `Blaze.toHTML` | ~8 KB |
-| **@blaze-ng/htmljs** | HTML object representation — `HTML.DIV()`, `HTML.Raw()`, etc. | ~2 KB |
-| **@blaze-ng/observe-sequence** | Reactive list diffing with `_id`-based tracking | ~3 KB |
+| Package                        | Purpose                                                              | Size  |
+| ------------------------------ | -------------------------------------------------------------------- | ----- |
+| **@blaze-ng/blaze**            | Core rendering engine — `Blaze.View`, `Blaze.render`, `Blaze.toHTML` | ~8 KB |
+| **@blaze-ng/htmljs**           | HTML object representation — `HTML.DIV()`, `HTML.Raw()`, etc.        | ~2 KB |
+| **@blaze-ng/observe-sequence** | Reactive list diffing with `_id`-based tracking                      | ~3 KB |
 
 ### Template System
 
-| Package | Purpose | Size |
-|---------|---------|------|
-| **@blaze-ng/templating-runtime** | `Template` class, helpers, events, lifecycle callbacks | ~4 KB |
-| **@blaze-ng/templating-compiler** | Compiles `.html` files to JavaScript at build time | ~3 KB |
-| **@blaze-ng/templating-tools** | Shared utilities for template compilation | ~2 KB |
-| **@blaze-ng/caching-html-compiler** | Caching layer for build-time compilation | ~1 KB |
+| Package                             | Purpose                                                | Size  |
+| ----------------------------------- | ------------------------------------------------------ | ----- |
+| **@blaze-ng/templating-runtime**    | `Template` class, helpers, events, lifecycle callbacks | ~4 KB |
+| **@blaze-ng/templating-compiler**   | Compiles `.html` files to JavaScript at build time     | ~3 KB |
+| **@blaze-ng/templating-tools**      | Shared utilities for template compilation              | ~2 KB |
+| **@blaze-ng/caching-html-compiler** | Caching layer for build-time compilation               | ~1 KB |
 
 ### Spacebars (Template Language)
 
-| Package | Purpose | Size |
-|---------|---------|------|
-| **@blaze-ng/spacebars** | Runtime for Spacebars expressions | ~3 KB |
+| Package                          | Purpose                                          | Size   |
+| -------------------------------- | ------------------------------------------------ | ------ |
+| **@blaze-ng/spacebars**          | Runtime for Spacebars expressions                | ~3 KB  |
 | **@blaze-ng/spacebars-compiler** | Compiles Spacebars templates to render functions | ~12 KB |
 
 ### Parsing
 
-| Package | Purpose | Size |
-|---------|---------|------|
-| **@blaze-ng/html-tools** | Tokenizer and parser for HTML | ~5 KB |
+| Package                   | Purpose                                       | Size  |
+| ------------------------- | --------------------------------------------- | ----- |
+| **@blaze-ng/html-tools**  | Tokenizer and parser for HTML                 | ~5 KB |
 | **@blaze-ng/blaze-tools** | Scanner utilities for parsing Blaze templates | ~2 KB |
 
 ### Optional
 
-| Package | Purpose | Size |
-|---------|---------|------|
-| **@blaze-ng/wasm** | Optional WASM accelerators for diffing and tokenization | ~1 KB (JS fallback) |
-| **@blaze-ng/meteor** | Meteor-specific integration (Tracker, ReactiveVar, Mongo) | ~2 KB |
+| Package              | Purpose                                                   | Size                |
+| -------------------- | --------------------------------------------------------- | ------------------- |
+| **@blaze-ng/wasm**   | Optional WASM accelerators for diffing and tokenization   | ~1 KB (JS fallback) |
+| **@blaze-ng/meteor** | Meteor-specific integration (Tracker, ReactiveVar, Mongo) | ~2 KB               |
 
 ## How Rendering Works
 
 ### 1. Template Compilation
 
 Spacebars template:
+
 ```handlebars
-<template name="greeting">
+<template name='greeting'>
   <h1>Hello, {{name}}!</h1>
   {{#if showDetails}}
     <p>{{email}}</p>
@@ -107,7 +108,7 @@ function render() {
   return HTML.H1(
     'Hello, ',
     Blaze.View('lookup:name', () => Spacebars.mustache(view.lookup('name'))),
-    '!'
+    '!',
   );
   // ... plus the #if block
 }
@@ -199,17 +200,14 @@ Instead of string concatenation, Blaze uses a structured HTML representation:
 
 ```ts
 // HTMLJS objects
-HTML.DIV({ class: 'card' }, 
-  HTML.H2('Title'),
-  HTML.P('Content'),
-  HTML.Raw('<svg>...</svg>')
-);
+HTML.DIV({ class: 'card' }, HTML.H2('Title'), HTML.P('Content'), HTML.Raw('<svg>...</svg>'));
 
 // Renders to:
 // <div class="card"><h2>Title</h2><p>Content</p><svg>...</svg></div>
 ```
 
 Benefits:
+
 - **Type-safe** — catch errors at compile time
 - **Transformable** — manipulate structure before rendering
 - **Efficient** — no string parsing needed
@@ -221,23 +219,20 @@ The `observe-sequence` package watches reactive arrays/cursors and emits granula
 ```ts
 import { ObserveSequence } from '@blaze-ng/observe-sequence';
 
-const handle = ObserveSequence.observe(
-  () => Items.find({}, { sort: { position: 1 } }),
-  {
-    addedAt(id, item, index) {
-      // Insert DOM node at index
-    },
-    removedAt(id, item, index) {
-      // Remove DOM node at index
-    },
-    movedTo(id, item, fromIndex, toIndex) {
-      // Move DOM node from fromIndex to toIndex
-    },
-    changedAt(id, newItem, oldItem, index) {
-      // Update DOM node at index
-    },
-  }
-);
+const handle = ObserveSequence.observe(() => Items.find({}, { sort: { position: 1 } }), {
+  addedAt(id, item, index) {
+    // Insert DOM node at index
+  },
+  removedAt(id, item, index) {
+    // Remove DOM node at index
+  },
+  movedTo(id, item, fromIndex, toIndex) {
+    // Move DOM node from fromIndex to toIndex
+  },
+  changedAt(id, newItem, oldItem, index) {
+    // Update DOM node at index
+  },
+});
 ```
 
 ## Compilation Pipeline
@@ -281,10 +276,7 @@ const handle = ObserveSequence.observe(
 ```ts
 // Create a custom view
 const myView = Blaze.View('myCustomView', function () {
-  return HTML.DIV(
-    { class: 'custom' },
-    this.lookup('content')
-  );
+  return HTML.DIV({ class: 'custom' }, this.lookup('content'));
 });
 
 // Set up lifecycle hooks

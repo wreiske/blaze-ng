@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: "Blaze-NG"
+  name: 'Blaze-NG'
   text: "Reactive Templating,\nRewritten in TypeScript"
   tagline: A modern, zero-dependency rewrite of Meteor Blaze — faster, smaller, fully typed.
   actions:
@@ -19,13 +19,13 @@ hero:
 features:
   - icon: 🚀
     title: Zero Dependencies
-    details: No jQuery, no lodash, no uglify-js. Pure native DOM APIs. Under 15KB gzipped.
+    details: No jQuery, no lodash, no uglify-js. Pure native DOM APIs with zero runtime deps.
   - icon: 🔒
     title: Full TypeScript
     details: Strict TypeScript from the ground up. Every API is fully typed with rich IntelliSense.
   - icon: ⚡
-    title: 2-5x Faster Updates
-    details: Native classList, style.setProperty, addEventListener. V8-optimized hidden classes.
+    title: 10K+ Reactive Updates/sec
+    details: Single text update in 0.10ms. 100 batched updates in 0.08ms. Native classList, style.setProperty, addEventListener.
   - icon: 🔌
     title: Framework Agnostic
     details: Bring your own reactive system. Works with Meteor Tracker, signals, or any custom system.
@@ -33,8 +33,8 @@ features:
     title: 100% API Compatible
     details: Drop-in replacement for Blaze. Your existing templates, helpers, and events just work.
   - icon: 🧪
-    title: 435+ Tests
-    details: Extensively tested with Vitest. Every original Blaze test ported and passing.
+    title: 490 Tests, 34 Benchmarks
+    details: Extensively tested with Vitest. Every original Blaze test ported and passing. Full benchmark suite included.
 ---
 
 <style>
@@ -53,12 +53,12 @@ Here's what Blaze-NG looks like in action:
 :::code-group
 
 ```handlebars [counter.html]
-<template name="counter">
-  <div class="counter">
+<template name='counter'>
+  <div class='counter'>
     <h2>Count: {{count}}</h2>
-    <button class="increment">+1</button>
-    <button class="decrement">-1</button>
-    <button class="reset">Reset</button>
+    <button class='increment'>+1</button>
+    <button class='decrement'>-1</button>
+    <button class='reset'>Reset</button>
   </div>
 </template>
 ```
@@ -95,16 +95,45 @@ Template.counter.events({
 
 <div class="comparison-table">
 
-| Feature | Original Blaze | Blaze-NG |
-|---------|---------------|----------|
-| Language | JavaScript (ES5) | **TypeScript (strict)** |
-| Dependencies | jQuery + lodash + uglify-js | **Zero** |
-| Bundle size | ~25KB gzip | **<15KB gzip** |
-| DOM manipulation | jQuery wrappers | **Native APIs** |
-| Reactivity | Tracker only | **Any reactive system** |
-| Module format | Meteor packages | **ESM + CJS** |
-| Testing | Tinytest | **Vitest (435+ tests)** |
-| SSR | Limited | **Full support** |
-| WASM acceleration | None | **Optional** |
+| Feature           | Original Blaze              | Blaze-NG                      |
+| ----------------- | --------------------------- | ----------------------------- |
+| Language          | JavaScript (ES5)            | **TypeScript (strict)**       |
+| Dependencies      | jQuery + lodash + uglify-js | **Zero**                      |
+| Bundle size       | ~25KB gzip                  | **29 KB gzip** (core runtime) |
+| DOM manipulation  | jQuery wrappers             | **Native APIs**               |
+| Reactivity        | Tracker only                | **Any reactive system**       |
+| Module format     | Meteor packages             | **ESM + CJS**                 |
+| Testing           | Tinytest                    | **Vitest (490 tests)**        |
+| SSR               | Limited                     | **Full support**              |
+| WASM acceleration | None                        | **Optional**                  |
 
 </div>
+
+## Performance at a Glance
+
+Real numbers from the [benchmark suite](/guide/performance):
+
+<div class="benchmark-highlights">
+
+| Category            | Highlight              |     ops/sec |
+| ------------------- | ---------------------- | ----------: |
+| **First Render**    | Static div → DOM       |  **10,151** |
+| **Reactive Update** | Single text change     |  **10,220** |
+| **Batched Updates** | 100 updates, 1 flush   |  **12,022** |
+| **Attribute**       | Style property update  |  **11,714** |
+| **List**            | Create 100 rows        |     **660** |
+| **Lifecycle**       | Create + destroy cycle |  **10,001** |
+| **Compilation**     | Simple template → JS   | **117,950** |
+| **Diff**            | Shuffle 100 items      | **129,568** |
+
+</div>
+
+Run benchmarks yourself:
+
+```bash
+pnpm bench:run      # Full benchmark suite (34 suites)
+pnpm bench:compare  # Old vs New head-to-head comparison
+pnpm bundle-size    # Bundle size analysis
+```
+
+See the full [Performance & Benchmarks](/guide/performance) page for all results, including [head-to-head comparisons with original Blaze](/guide/performance#old-vs-new-head-to-head-comparison).

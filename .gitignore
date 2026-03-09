@@ -4,3 +4,4 @@ _build
 *.tsbuildinfo
 .turbo
 coverage
+docs/.vitepress/cache/

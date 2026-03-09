@@ -42,11 +42,11 @@ function toJSLiteral(value: unknown): string;
 ```
 
 ```ts
-toJSLiteral('hello')     // => '"hello"'
-toJSLiteral(42)          // => '42'
-toJSLiteral(true)        // => 'true'
-toJSLiteral(null)        // => 'null'
-toJSLiteral(undefined)   // => 'undefined'
+toJSLiteral('hello'); // => '"hello"'
+toJSLiteral(42); // => '42'
+toJSLiteral(true); // => 'true'
+toJSLiteral(null); // => 'null'
+toJSLiteral(undefined); // => 'undefined'
 ```
 
 ### `toObjectLiteralKey()`
@@ -58,9 +58,9 @@ function toObjectLiteralKey(key: string): string;
 ```
 
 ```ts
-toObjectLiteralKey('class')      // => '"class"'
-toObjectLiteralKey('validName')  // => 'validName'
-toObjectLiteralKey('data-id')    // => '"data-id"'
+toObjectLiteralKey('class'); // => '"class"'
+toObjectLiteralKey('validName'); // => 'validName'
+toObjectLiteralKey('data-id'); // => '"data-id"'
 ```
 
 ## Classes

@@ -32,18 +32,18 @@ Blaze.remove(view);
 
 ## Exports
 
-| Export | Description |
-|--------|-------------|
-| `Blaze` | Main namespace — `render`, `renderWithData`, `remove`, `toHTML`, `toHTMLWithData`, `currentView`, `getView`, `With`, `If`, `Unless`, `Each` |
-| `Template` | Template registry and definition |
-| `TemplateInstance` | Instance class with `find`, `findAll`, `data`, `autorun` |
-| `View` | Core view class — the fundamental rendering unit |
-| `DOMRange` | DOM range management for efficient updates |
-| `AttributeHandler` | Dynamic attribute binding |
-| `EventSupport` | Event delegation system |
-| `SimpleReactiveSystem` | Built-in reactive system implementation |
-| `ReactiveVar` | Simple reactive variable |
-| `Computation` | Reactive computation tracking |
+| Export                 | Description                                                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Blaze`                | Main namespace — `render`, `renderWithData`, `remove`, `toHTML`, `toHTMLWithData`, `currentView`, `getView`, `With`, `If`, `Unless`, `Each` |
+| `Template`             | Template registry and definition                                                                                                            |
+| `TemplateInstance`     | Instance class with `find`, `findAll`, `data`, `autorun`                                                                                    |
+| `View`                 | Core view class — the fundamental rendering unit                                                                                            |
+| `DOMRange`             | DOM range management for efficient updates                                                                                                  |
+| `AttributeHandler`     | Dynamic attribute binding                                                                                                                   |
+| `EventSupport`         | Event delegation system                                                                                                                     |
+| `SimpleReactiveSystem` | Built-in reactive system implementation                                                                                                     |
+| `ReactiveVar`          | Simple reactive variable                                                                                                                    |
+| `Computation`          | Reactive computation tracking                                                                                                               |
 
 ## Bring Your Own Reactive System
 

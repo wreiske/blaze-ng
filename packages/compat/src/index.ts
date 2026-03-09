@@ -29,9 +29,7 @@ const _warned = new Set<string>();
 function _deprecate(api: string, replacement: string): void {
   if (_warned.has(api)) return;
   _warned.add(api);
-  console.warn(
-    `[blaze-ng] "${api}" is deprecated. Use "${replacement}" instead.`,
-  );
+  console.warn(`[blaze-ng] "${api}" is deprecated. Use "${replacement}" instead.`);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -51,9 +49,7 @@ export const UI = {
   },
 
   /** @deprecated Use `Blaze.render()` */
-  render(
-    ...args: Parameters<typeof Blaze.render>
-  ): ReturnType<typeof Blaze.render> {
+  render(...args: Parameters<typeof Blaze.render>): ReturnType<typeof Blaze.render> {
     _deprecate('UI.render', 'Blaze.render()');
     return Blaze.render(...args);
   },

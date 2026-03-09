@@ -132,7 +132,7 @@ export function compileToRenderFunc(source: string): (this: View) => unknown {
   const htmlProxy = createHtmlProxy();
   const spacebarsProxy = createSpacebarsProxy();
 
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval
+   
   const fn = new Function('HTML', 'Spacebars', 'Blaze', 'Template', `return ${code}`)(
     htmlProxy,
     spacebarsProxy,

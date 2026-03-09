@@ -22,12 +22,12 @@ Template.myComponent.onCreated(function () {
   this.count = new ReactiveVar(0);
   this.filter = new ReactiveVar('all');
   this.searchQuery = new ReactiveVar('');
-  
+
   // Set up subscriptions
   this.autorun(() => {
     this.subscribe('todos', this.filter.get());
   });
-  
+
   // Fetch initial data
   Meteor.call('getConfig', (err, config) => {
     if (!err) this.config = config;
@@ -36,6 +36,7 @@ Template.myComponent.onCreated(function () {
 ```
 
 ### What you CAN do in `onCreated`:
+
 - Initialize `ReactiveVar`s and other state
 - Set up `autorun` computations
 - Start subscriptions
@@ -43,6 +44,7 @@ Template.myComponent.onCreated(function () {
 - Access `this.data` (the data context)
 
 ### What you CANNOT do in `onCreated`:
+
 - Access DOM elements (they don't exist yet)
 - Use `this.find()` or `this.findAll()`
 - Use `this.firstNode` or `this.lastNode`
@@ -59,7 +61,7 @@ Template.chart.onRendered(function () {
     type: 'bar',
     data: this.data.chartData,
   });
-  
+
   // Set up resize observer
   this.resizeObserver = new ResizeObserver(() => {
     this.chart.resize();
@@ -69,6 +71,7 @@ Template.chart.onRendered(function () {
 ```
 
 ### Common Uses
+
 - Initialize third-party libraries (charts, maps, editors)
 - Set up DOM observers (IntersectionObserver, ResizeObserver)
 - Focus an input field
@@ -84,14 +87,14 @@ Template.autoFocusForm.onRendered(function () {
 Template.scrollTracker.onRendered(function () {
   // Track when element becomes visible
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting) {
         analytics.track('section_viewed', { id: entry.target.id });
       }
     });
   });
-  
-  this.findAll('.trackable').forEach(el => observer.observe(el));
+
+  this.findAll('.trackable').forEach((el) => observer.observe(el));
   this._observer = observer;
 });
 ```
@@ -106,7 +109,7 @@ Template.chart.onDestroyed(function () {
   if (this.chart) {
     this.chart.destroy();
   }
-  
+
   // Disconnect observer
   if (this.resizeObserver) {
     this.resizeObserver.disconnect();
@@ -115,6 +118,7 @@ Template.chart.onDestroyed(function () {
 ```
 
 ### What to Clean Up
+
 - Third-party library instances
 - DOM observers
 - Timers (`setInterval`, `setTimeout`)
@@ -127,7 +131,7 @@ Template.liveUpdates.onCreated(function () {
   this.interval = setInterval(() => {
     Meteor.call('checkUpdates');
   }, 5000);
-  
+
   // Listen for window resize
   this._onResize = () => this.handleResize();
   window.addEventListener('resize', this._onResize);
@@ -148,25 +152,25 @@ Inside lifecycle callbacks, `this` is the `TemplateInstance`:
 Template.myComponent.onRendered(function () {
   // this.data — the data context
   console.log(this.data);
-  
+
   // this.find(selector) — find one element
   const header = this.find('h1');
-  
+
   // this.findAll(selector) — find all elements
   const items = this.findAll('.item');
-  
+
   // this.firstNode — first DOM node
   // this.lastNode — last DOM node
-  
+
   // this.autorun(fn) — reactive computation (auto-stopped on destroy)
   this.autorun(() => {
     const count = this.data.count;
     this.find('.counter').textContent = String(count);
   });
-  
+
   // this.subscribe(name, ...args) — subscription (auto-stopped on destroy)
   this.subscribe('messages', this.data.channelId);
-  
+
   // this.view — the underlying Blaze.View
 });
 ```
@@ -189,15 +193,15 @@ Template.myComponent.onCreated(function () {
 ## Complete Example
 
 ```handlebars
-<template name="editableDocument">
-  <div class="document">
-    <div class="toolbar">
-      <button class="save" disabled={{isSaving}}>
+<template name='editableDocument'>
+  <div class='document'>
+    <div class='toolbar'>
+      <button class='save' disabled={{isSaving}}>
         {{#if isSaving}}Saving...{{else}}Save{{/if}}
       </button>
-      <span class="status">{{statusMessage}}</span>
+      <span class='status'>{{statusMessage}}</span>
     </div>
-    <div class="editor" contenteditable="true">
+    <div class='editor' contenteditable='true'>
       {{content}}
     </div>
   </div>
@@ -209,7 +213,7 @@ Template.editableDocument.onCreated(function () {
   this.content = new ReactiveVar(this.data.initialContent || '');
   this.isSaving = new ReactiveVar(false);
   this.lastSaved = new ReactiveVar(null);
-  
+
   // Auto-save every 30 seconds
   this.autorun(() => {
     const content = this.content.get();
@@ -224,7 +228,7 @@ Template.editableDocument.onRendered(function () {
       this.content.set(content);
     },
   });
-  
+
   // Warn before leaving with unsaved changes
   this._beforeUnload = (e) => {
     if (this.hasUnsavedChanges()) {
@@ -238,14 +242,18 @@ Template.editableDocument.onRendered(function () {
 Template.editableDocument.onDestroyed(function () {
   // Clean up editor
   if (this.editor) this.editor.destroy();
-  
+
   // Remove window listener
   window.removeEventListener('beforeunload', this._beforeUnload);
 });
 
 Template.editableDocument.helpers({
-  content() { return Template.instance().content.get(); },
-  isSaving() { return Template.instance().isSaving.get(); },
+  content() {
+    return Template.instance().content.get();
+  },
+  isSaving() {
+    return Template.instance().isSaving.get();
+  },
   statusMessage() {
     const lastSaved = Template.instance().lastSaved.get();
     if (!lastSaved) return 'Not saved yet';
@@ -256,13 +264,17 @@ Template.editableDocument.helpers({
 Template.editableDocument.events({
   'click .save'(event, instance) {
     instance.isSaving.set(true);
-    Meteor.call('saveDocument', {
-      id: instance.data.documentId,
-      content: instance.content.get(),
-    }, (err) => {
-      instance.isSaving.set(false);
-      if (!err) instance.lastSaved.set(new Date());
-    });
+    Meteor.call(
+      'saveDocument',
+      {
+        id: instance.data.documentId,
+        content: instance.content.get(),
+      },
+      (err) => {
+        instance.isSaving.set(false);
+        if (!err) instance.lastSaved.set(new Date());
+      },
+    );
   },
 });
 ```

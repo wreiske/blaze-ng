@@ -10,10 +10,7 @@
  * compilation pipeline as a library function.
  */
 
-import {
-  scanHtmlForTags,
-  compileTagsWithSpacebars,
-} from '@blaze-ng/templating-tools';
+import { scanHtmlForTags, compileTagsWithSpacebars } from '@blaze-ng/templating-tools';
 import type { ScanOptions, ScannedTag, CompileResult } from '@blaze-ng/templating-tools';
 
 export type { ScanOptions, ScannedTag, CompileResult };

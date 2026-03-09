@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress';
 export default defineConfig({
   title: 'Blaze-NG',
   description: 'A modern TypeScript rewrite of Meteor Blaze — the reactive templating engine',
-  
+
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
     ['meta', { name: 'theme-color', content: '#e25822' }],
@@ -14,7 +14,7 @@ export default defineConfig({
 
   themeConfig: {
     logo: '/logo.svg',
-    
+
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'API', link: '/api/' },
@@ -105,9 +105,7 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/wreiske/blaze-ng' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/wreiske/blaze-ng' }],
 
     footer: {
       message: 'Released under the MIT License.',
@@ -121,6 +119,28 @@ export default defineConfig({
     editLink: {
       pattern: 'https://github.com/wreiske/blaze-ng/edit/main/docs/:path',
       text: 'Edit this page on GitHub',
+    },
+  },
+
+  markdown: {
+    config(md) {
+      // Escape {{ }} in prose and inline code so Vue doesn't treat them as
+      // interpolation.  Fenced code blocks already get v-pre from VitePress.
+      const defaultText = md.renderer.rules.text;
+      md.renderer.rules.text = (tokens, idx, options, env, self) => {
+        const html = defaultText
+          ? defaultText(tokens, idx, options, env, self)
+          : md.utils.escapeHtml(tokens[idx].content);
+        return html.replace(/\{\{/g, '&#123;&#123;').replace(/\}\}/g, '&#125;&#125;');
+      };
+
+      const defaultCodeInline = md.renderer.rules.code_inline;
+      md.renderer.rules.code_inline = (tokens, idx, options, env, self) => {
+        const html = defaultCodeInline
+          ? defaultCodeInline(tokens, idx, options, env, self)
+          : `<code>${md.utils.escapeHtml(tokens[idx].content)}</code>`;
+        return html.replace(/\{\{/g, '&#123;&#123;').replace(/\}\}/g, '&#125;&#125;');
+      };
     },
   },
 });

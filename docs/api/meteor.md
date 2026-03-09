@@ -29,11 +29,12 @@ Create a `ReactiveSystem` that wraps Meteor's Tracker.
 ```ts
 function createTrackerAdapter(
   tracker: MeteorTracker,
-  ReactiveVarCtor: MeteorReactiveVarConstructor
+  ReactiveVarCtor: MeteorReactiveVarConstructor,
 ): ReactiveSystem;
 ```
 
 **Parameters:**
+
 - `tracker` — Meteor's `Tracker` object
 - `ReactiveVarCtor` — Meteor's `ReactiveVar` constructor
 
@@ -46,7 +47,7 @@ Class that implements the adapter:
 ```ts
 class TrackerAdapter implements ReactiveSystem {
   constructor(tracker: MeteorTracker, ReactiveVarCtor: MeteorReactiveVarConstructor);
-  
+
   autorun(fn: () => void): { stop: () => void };
   createVar<T>(initialValue: T): { get: () => T; set: (v: T) => void };
   nonReactive<T>(fn: () => T): T;

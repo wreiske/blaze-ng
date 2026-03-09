@@ -19,11 +19,11 @@ const result = compileTemplates(htmlSource, { isBody: false });
 
 ## Exports
 
-| Export | Description |
-|--------|-------------|
-| `compileTemplates` | Compile HTML source to JavaScript template modules |
-| `scanHtmlForTags` | Re-exported from `@blaze-ng/templating-tools` |
-| `compileTagsWithSpacebars` | Re-exported from `@blaze-ng/templating-tools` |
+| Export                     | Description                                        |
+| -------------------------- | -------------------------------------------------- |
+| `compileTemplates`         | Compile HTML source to JavaScript template modules |
+| `scanHtmlForTags`          | Re-exported from `@blaze-ng/templating-tools`      |
+| `compileTagsWithSpacebars` | Re-exported from `@blaze-ng/templating-tools`      |
 
 ## License
 

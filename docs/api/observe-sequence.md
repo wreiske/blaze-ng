@@ -22,6 +22,7 @@ ObserveSequence.observe(
 ```
 
 **Parameters:**
+
 - `sequenceFunc` — Reactive function returning an array, cursor, or single value
 - `callbacks` — Object with change notification handlers
 
@@ -30,23 +31,20 @@ ObserveSequence.observe(
 ```ts
 import { ObserveSequence } from '@blaze-ng/observe-sequence';
 
-const handle = ObserveSequence.observe(
-  () => Items.find({}, { sort: { position: 1 } }),
-  {
-    addedAt(id, item, index, beforeId) {
-      // Insert DOM node at index
-    },
-    removedAt(id, item, index) {
-      // Remove DOM node at index
-    },
-    movedTo(id, item, fromIndex, toIndex, beforeId) {
-      // Move DOM node
-    },
-    changedAt(id, newItem, oldItem, index) {
-      // Update DOM node
-    },
-  }
-);
+const handle = ObserveSequence.observe(() => Items.find({}, { sort: { position: 1 } }), {
+  addedAt(id, item, index, beforeId) {
+    // Insert DOM node at index
+  },
+  removedAt(id, item, index) {
+    // Remove DOM node at index
+  },
+  movedTo(id, item, fromIndex, toIndex, beforeId) {
+    // Move DOM node
+  },
+  changedAt(id, newItem, oldItem, index) {
+    // Update DOM node
+  },
+});
 
 // Stop observing
 handle.stop();
@@ -58,13 +56,13 @@ handle.stop();
 interface SequenceCallbacks {
   /** An item was added at the given index */
   addedAt(id: string, item: unknown, index: number, beforeId?: string): void;
-  
+
   /** An item was removed from the given index */
   removedAt(id: string, item: unknown, index: number): void;
-  
+
   /** An item was moved from one index to another */
   movedTo(id: string, item: unknown, fromIndex: number, toIndex: number, beforeId?: string): void;
-  
+
   /** An item at the given index was changed */
   changedAt(id: string, newItem: unknown, oldItem: unknown, index: number): void;
 }
@@ -80,7 +78,7 @@ Compute the minimal set of operations to transform one ordered sequence into ano
 function diffQueryOrderedChanges(
   oldResults: Map<string, unknown>,
   newResults: Map<string, unknown>,
-  callbacks: DiffCallbacks
+  callbacks: DiffCallbacks,
 ): void;
 ```
 
@@ -116,9 +114,9 @@ function idStringify(id: unknown): string;
 Handles strings, numbers, `ObjectID` instances, and `null`:
 
 ```ts
-idStringify('abc')       // => '"abc"'
-idStringify(123)         // => '123'
-idStringify(null)        // => 'null'
+idStringify('abc'); // => '"abc"'
+idStringify(123); // => '123'
+idStringify(null); // => 'null'
 ```
 
 ### `idParse()`
@@ -130,9 +128,9 @@ function idParse(idString: string): unknown;
 ```
 
 ```ts
-idParse('"abc"')  // => 'abc'
-idParse('123')    // => 123
-idParse('null')   // => null
+idParse('"abc"'); // => 'abc'
+idParse('123'); // => 123
+idParse('null'); // => null
 ```
 
 ## Supported Data Sources
@@ -174,13 +172,19 @@ This is compatible with Meteor's `Mongo.Cursor`.
 
 ## How Blaze Uses ObserveSequence
 
-The `{{#each}}` block helper uses `ObserveSequence` internally:
+The each block helper uses `ObserveSequence` internally:
 
-```
+::: v-pre
+
+```handlebars
 {{#each items}}
   <div>{{name}}</div>
 {{/each}}
+```
 
+:::
+
+```
 ↓ Blaze internally calls:
 
 ObserveSequence.observe(

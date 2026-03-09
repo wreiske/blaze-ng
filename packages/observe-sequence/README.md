@@ -11,18 +11,28 @@ npm install @blaze-ng/observe-sequence
 ## Usage
 
 ```ts
-import { ObserveSequence, diffQueryOrderedChanges, idStringify, idParse } from '@blaze-ng/observe-sequence';
+import {
+  ObserveSequence,
+  diffQueryOrderedChanges,
+  idStringify,
+  idParse,
+} from '@blaze-ng/observe-sequence';
 
 // Observe changes to a reactive sequence
-const handle = ObserveSequence.observe(
-  () => myReactiveArray.get(),
-  {
-    addedAt(id, item, index) { /* item added at index */ },
-    changedAt(id, newItem, oldItem, index) { /* item changed */ },
-    removedAt(id, item, index) { /* item removed */ },
-    movedTo(id, item, fromIndex, toIndex) { /* item moved */ },
-  }
-);
+const handle = ObserveSequence.observe(() => myReactiveArray.get(), {
+  addedAt(id, item, index) {
+    /* item added at index */
+  },
+  changedAt(id, newItem, oldItem, index) {
+    /* item changed */
+  },
+  removedAt(id, item, index) {
+    /* item removed */
+  },
+  movedTo(id, item, fromIndex, toIndex) {
+    /* item moved */
+  },
+});
 
 // Stop observing
 handle.stop();
@@ -30,12 +40,12 @@ handle.stop();
 
 ## Exports
 
-| Export | Description |
-|--------|-------------|
-| `ObserveSequence` | Main namespace with `observe` for sequence tracking |
+| Export                    | Description                                            |
+| ------------------------- | ------------------------------------------------------ |
+| `ObserveSequence`         | Main namespace with `observe` for sequence tracking    |
 | `diffQueryOrderedChanges` | Compute minimal diff between two ordered query results |
-| `idStringify` | Convert an ID value to a string key |
-| `idParse` | Parse a string key back to an ID value |
+| `idStringify`             | Convert an ID value to a string key                    |
+| `idParse`                 | Parse a string key back to an ID value                 |
 
 ### Supported Data Sources
 

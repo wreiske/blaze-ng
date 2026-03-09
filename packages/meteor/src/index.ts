@@ -17,12 +17,7 @@
  * ```
  */
 
-import type {
-  ReactiveSystem,
-  Computation,
-  ReactiveVar,
-  Dependency,
-} from '@blaze-ng/core';
+import type { ReactiveSystem, Computation, ReactiveVar, Dependency } from '@blaze-ng/core';
 
 /* -------------------------------------------------------------------------- */
 /*  Meteor type stubs (avoid hard dependency on @types/meteor)                */

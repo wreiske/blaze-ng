@@ -21,9 +21,9 @@ import { UI, Handlebars } from '@blaze-ng/compat';
 
 ## Exports
 
-| Export | Description |
-|--------|-------------|
-| `UI` | Deprecated namespace — aliases for `Blaze.render`, `Blaze.renderWithData`, etc. |
+| Export       | Description                                                                      |
+| ------------ | -------------------------------------------------------------------------------- |
+| `UI`         | Deprecated namespace — aliases for `Blaze.render`, `Blaze.renderWithData`, etc.  |
 | `Handlebars` | Deprecated namespace — aliases for `Template.registerHelper`, `SafeString`, etc. |
 
 > **Note:** These aliases exist only for migration convenience. New code should use `Blaze` and `Template` directly from `@blaze-ng/core`.

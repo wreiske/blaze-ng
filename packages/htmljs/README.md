@@ -28,19 +28,19 @@ const charRef = new CharRef({ html: '&amp;', str: '&' });
 
 ## Exports
 
-| Export | Description |
-|--------|-------------|
-| `HTML` | Namespace with all tag constructors (`HTML.DIV`, `HTML.SPAN`, `HTML.A`, etc.) |
-| `Tag` | Base class for all HTML tags |
-| `Raw` | Raw HTML content (not escaped) |
-| `Comment` | HTML comment node |
-| `CharRef` | Character reference node |
-| `Visitor` | Base visitor class for AST traversal |
-| `ToHTMLVisitor` | Visitor that converts AST to HTML strings |
-| `ToTextVisitor` | Visitor that converts AST to plain text |
-| `toHTML` | Shorthand to render AST to HTML |
-| `toText` | Shorthand to render AST to text |
-| `TEXTMODE` | Text mode constants for parser context |
+| Export          | Description                                                                   |
+| --------------- | ----------------------------------------------------------------------------- |
+| `HTML`          | Namespace with all tag constructors (`HTML.DIV`, `HTML.SPAN`, `HTML.A`, etc.) |
+| `Tag`           | Base class for all HTML tags                                                  |
+| `Raw`           | Raw HTML content (not escaped)                                                |
+| `Comment`       | HTML comment node                                                             |
+| `CharRef`       | Character reference node                                                      |
+| `Visitor`       | Base visitor class for AST traversal                                          |
+| `ToHTMLVisitor` | Visitor that converts AST to HTML strings                                     |
+| `ToTextVisitor` | Visitor that converts AST to plain text                                       |
+| `toHTML`        | Shorthand to render AST to HTML                                               |
+| `toText`        | Shorthand to render AST to text                                               |
+| `TEXTMODE`      | Text mode constants for parser context                                        |
 
 ## License
 

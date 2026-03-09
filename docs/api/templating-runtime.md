@@ -23,9 +23,7 @@ import { __define__ } from '@blaze-ng/templating-runtime';
 
 __define__('myComponent', function () {
   const view = this;
-  return HTML.DIV({ class: 'component' }, 
-    Spacebars.mustache(view.lookup('content'))
-  );
+  return HTML.DIV({ class: 'component' }, Spacebars.mustache(view.lookup('content')));
 });
 ```
 

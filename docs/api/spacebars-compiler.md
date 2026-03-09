@@ -21,13 +21,11 @@ import { SpacebarsCompiler } from '@blaze-ng/spacebars-compiler';
 Compile a Spacebars template string into a JavaScript code string.
 
 ```ts
-function compile(
-  input: string,
-  options?: CompileOptions
-): string;
+function compile(input: string, options?: CompileOptions): string;
 ```
 
 **Parameters:**
+
 - `input` — Spacebars template string
 - `options.isTemplate` — Whether this is a `<template>` body (affects scope)
 - `options.isBody` — Whether this is the `<body>` tag
@@ -61,10 +59,7 @@ const ast = SpacebarsCompiler.parse('<div>{{name}}</div>');
 Generate JavaScript code from a parsed AST.
 
 ```ts
-function codeGen(
-  ast: HTMLNode[],
-  options?: CompileOptions
-): string;
+function codeGen(ast: HTMLNode[], options?: CompileOptions): string;
 ```
 
 ### `optimize()`
@@ -105,15 +100,15 @@ interface CompileOptions {
 ### `TemplateTagType`
 
 ```ts
-type TemplateTagType = 
-  | 'DOUBLE'      // {{expression}}
-  | 'TRIPLE'      // {{{expression}}}
-  | 'EXPR'        // (expression)
-  | 'BLOCKOPEN'   // {{#block}}
-  | 'BLOCKCLOSE'  // {{/block}}
-  | 'ELSE'        // {{else}}
-  | 'COMMENT'     // {{! comment}}
-  | 'INCLUSION';  // {{> template}}
+type TemplateTagType =
+  | 'DOUBLE' // {{expression}}
+  | 'TRIPLE' // {{{expression}}}
+  | 'EXPR' // (expression)
+  | 'BLOCKOPEN' // {{#block}}
+  | 'BLOCKCLOSE' // {{/block}}
+  | 'ELSE' // {{else}}
+  | 'COMMENT' // {{! comment}}
+  | 'INCLUSION'; // {{> template}}
 ```
 
 ## Classes
@@ -191,7 +186,9 @@ const code = SpacebarsCompiler.compile(`
 
 // Create render function
 const renderFn = new Function('HTML', 'Spacebars', 'Blaze', `return ${code}`)(
-  HTML, Spacebars, Blaze
+  HTML,
+  Spacebars,
+  Blaze,
 );
 
 // Create and use template
@@ -212,13 +209,16 @@ import { readFileSync, writeFileSync } from 'fs';
 const templateSource = readFileSync('template.html', 'utf8');
 const jsCode = SpacebarsCompiler.compile(templateSource, { isTemplate: true });
 
-writeFileSync('template.js', `
+writeFileSync(
+  'template.js',
+  `
   import { HTML } from '@blaze-ng/htmljs';
   import { Spacebars } from '@blaze-ng/spacebars';
   import { Blaze, Template } from '@blaze-ng/core';
   
   export default new Template('myTemplate', ${jsCode});
-`);
+`,
+);
 ```
 
 ### AST Inspection

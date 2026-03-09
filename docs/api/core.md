@@ -19,11 +19,12 @@ function render(
   content: Template | View | (() => unknown),
   parentElement: Element,
   nextNode?: Node | null,
-  parentView?: View
+  parentView?: View,
 ): View;
 ```
 
 **Parameters:**
+
 - `content` — Template, View, or render function to render
 - `parentElement` — DOM element to render into
 - `nextNode` — Insert before this node (default: append)
@@ -47,7 +48,7 @@ function renderWithData(
   data: object | (() => object),
   parentElement: Element,
   nextNode?: Node | null,
-  parentView?: View
+  parentView?: View,
 ): View;
 ```
 
@@ -55,7 +56,7 @@ function renderWithData(
 const view = Blaze.renderWithData(
   Template.userCard,
   { name: 'Alice', email: 'alice@example.com' },
-  document.getElementById('app')
+  document.getElementById('app'),
 );
 ```
 
@@ -93,7 +94,7 @@ Render to HTML with a data context.
 ```ts
 function toHTMLWithData(
   content: Template | View | (() => unknown),
-  data: object | (() => object)
+  data: object | (() => object),
 ): string;
 ```
 
@@ -116,20 +117,20 @@ class View {
 
 ### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `name` | `string` | View name (e.g., `'Template.myComponent'`, `'if'`, `'each'`) |
-| `parentView` | `View \| null` | Parent in the view tree |
-| `isCreated` | `boolean` | Whether the view has been created |
-| `isRendered` | `boolean` | Whether the view is in the document |
-| `isDestroyed` | `boolean` | Whether the view has been destroyed |
-| `renderCount` | `number` | Number of times the view has re-rendered |
-| `template` | `Template \| null` | Associated template (if any) |
-| `templateInstance` | `TemplateInstance \| null` | Template instance (if any) |
-| `firstNode` | `Node` | First DOM node |
-| `lastNode` | `Node` | Last DOM node |
+| Property           | Type                       | Description                                                  |
+| ------------------ | -------------------------- | ------------------------------------------------------------ |
+| `name`             | `string`                   | View name (e.g., `'Template.myComponent'`, `'if'`, `'each'`) |
+| `parentView`       | `View \| null`             | Parent in the view tree                                      |
+| `isCreated`        | `boolean`                  | Whether the view has been created                            |
+| `isRendered`       | `boolean`                  | Whether the view is in the document                          |
+| `isDestroyed`      | `boolean`                  | Whether the view has been destroyed                          |
+| `renderCount`      | `number`                   | Number of times the view has re-rendered                     |
+| `template`         | `Template \| null`         | Associated template (if any)                                 |
+| `templateInstance` | `TemplateInstance \| null` | Template instance (if any)                                   |
+| `firstNode`        | `Node`                     | First DOM node                                               |
+| `lastNode`         | `Node`                     | Last DOM node                                                |
 
-### Lifecycle Callbacks
+### View Lifecycle Callbacks {#view-lifecycle-callbacks}
 
 ```ts
 view.onViewCreated(callback: () => void): void;
@@ -220,12 +221,12 @@ Available inside lifecycle callbacks and event handlers as `this` (lifecycle) or
 
 ### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `data` | `object` | Current data context |
-| `view` | `View` | The underlying view |
-| `firstNode` | `Node` | First DOM node |
-| `lastNode` | `Node` | Last DOM node |
+| Property    | Type     | Description          |
+| ----------- | -------- | -------------------- |
+| `data`      | `object` | Current data context |
+| `view`      | `View`   | The underlying view  |
+| `firstNode` | `Node`   | First DOM node       |
+| `lastNode`  | `Node`   | Last DOM node        |
 
 ### Methods
 
@@ -287,7 +288,11 @@ function With(data: () => unknown, contentFunc: () => unknown, elseFunc?: () => 
 
 ```ts
 function If(condition: () => unknown, contentFunc: () => unknown, elseFunc?: () => unknown): View;
-function Unless(condition: () => unknown, contentFunc: () => unknown, elseFunc?: () => unknown): View;
+function Unless(
+  condition: () => unknown,
+  contentFunc: () => unknown,
+  elseFunc?: () => unknown,
+): View;
 ```
 
 ### `Each()`

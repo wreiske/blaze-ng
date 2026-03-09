@@ -26,9 +26,7 @@ describe('compat', () => {
     it('UI.Template accesses core Template with deprecation', () => {
       const T = UI.Template;
       expect(T).toBeDefined();
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('UI.Template'),
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('UI.Template'));
     });
 
     it('only warns once per API', () => {
@@ -54,9 +52,7 @@ describe('compat', () => {
     it('_escape works via Blaze._escape', () => {
       const result = Handlebars._escape('<div>');
       expect(result).toBe('&lt;div&gt;');
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Handlebars._escape'),
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Handlebars._escape'));
     });
 
     it('has SafeString', () => {

@@ -24,10 +24,10 @@ Blaze.setReactiveSystem(adapter);
 
 ## Exports
 
-| Export | Description |
-|--------|-------------|
+| Export                 | Description                                                       |
+| ---------------------- | ----------------------------------------------------------------- |
 | `createTrackerAdapter` | Create a reactive system adapter from a Meteor `Tracker` instance |
-| `TrackerAdapter` | The adapter class implementing `ReactiveSystem` |
+| `TrackerAdapter`       | The adapter class implementing `ReactiveSystem`                   |
 
 ## How It Works
 

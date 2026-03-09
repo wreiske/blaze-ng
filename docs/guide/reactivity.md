@@ -51,14 +51,20 @@ Template.profile.onCreated(function () {
 });
 
 Template.profile.helpers({
-  name() { return Template.instance().name.get(); },
-  age() { return Template.instance().age.get(); },
-  isAdult() { return Template.instance().age.get() >= 18; },
+  name() {
+    return Template.instance().name.get();
+  },
+  age() {
+    return Template.instance().age.get();
+  },
+  isAdult() {
+    return Template.instance().age.get() >= 18;
+  },
 });
 ```
 
 ```handlebars
-<template name="profile">
+<template name='profile'>
   <p>Name: {{name}}, Age: {{age}}</p>
   {{#if isAdult}}<span>Adult</span>{{/if}}
 </template>
@@ -71,12 +77,12 @@ Run code automatically whenever its dependencies change:
 ```ts
 Template.dashboard.onCreated(function () {
   this.filter = new ReactiveVar('all');
-  
+
   // Re-runs whenever filter changes
   this.autorun(() => {
     const filter = this.filter.get();
     console.log('Filter changed to:', filter);
-    
+
     // Subscribe to new data
     this.subscribe('todos', { filter });
   });
@@ -93,8 +99,8 @@ Template.stats.helpers({
   completedCount() {
     return Todos.find({ completed: true }).count();
   },
-  
-  // Re-runs whenever completedCount or totalCount changes  
+
+  // Re-runs whenever completedCount or totalCount changes
   completionRate() {
     const total = Todos.find().count();
     const completed = Todos.find({ completed: true }).count();
@@ -108,14 +114,18 @@ Template.stats.helpers({
 Blaze only updates the exact DOM nodes that need to change:
 
 ```handlebars
-<template name="userProfile">
-  <div class="header">
-    <h1>{{name}}</h1>             {{!-- Only this text updates --}}
-    <img src="{{avatarUrl}}">     {{!-- Only this attribute updates --}}
+<template name='userProfile'>
+  <div class='header'>
+    <h1>{{name}}</h1>
+    {{! Only this text updates }}
+    <img src='{{avatarUrl}}' />
+    {{! Only this attribute updates }}
   </div>
-  <div class="stats">
-    <span>Posts: {{postCount}}</span>  {{!-- Independent update --}}
-    <span>Likes: {{likeCount}}</span>  {{!-- Independent update --}}
+  <div class='stats'>
+    <span>Posts: {{postCount}}</span>
+    {{! Independent update }}
+    <span>Likes: {{likeCount}}</span>
+    {{! Independent update }}
   </div>
 </template>
 ```
@@ -181,19 +191,23 @@ Blaze.setReactiveSystem({
     // Run fn, track dependencies, re-run when they change
     // Return a computation handle with { stop() }
   },
-  
+
   nonReactive(fn) {
     // Run fn without tracking
     return fn();
   },
-  
+
   ReactiveVar(initialValue) {
     // Return { get(), set(value) }
     let value = initialValue;
     const listeners = new Set();
     return {
-      get() { /* track dependency, return value */ },
-      set(newValue) { /* update value, notify listeners */ },
+      get() {
+        /* track dependency, return value */
+      },
+      set(newValue) {
+        /* update value, notify listeners */
+      },
     };
   },
 });
@@ -212,17 +226,17 @@ Template.cart.helpers({
   items() {
     return Template.instance().items.get();
   },
-  
+
   // Computed from items — automatically updates
   totalPrice() {
     const items = Template.instance().items.get();
     return items.reduce((sum, item) => sum + item.price * item.qty, 0);
   },
-  
+
   itemCount() {
     return Template.instance().items.get().length;
   },
-  
+
   isEmpty() {
     return Template.instance().items.get().length === 0;
   },
@@ -235,17 +249,17 @@ Template.cart.helpers({
 Template.search.onCreated(function () {
   this.query = new ReactiveVar('');
   this.results = new ReactiveVar([]);
-  
+
   let timeout;
   this.autorun(() => {
     const query = this.query.get();
     clearTimeout(timeout);
-    
+
     if (query.length < 2) {
       this.results.set([]);
       return;
     }
-    
+
     // Debounce: wait 300ms after last keystroke
     timeout = setTimeout(() => {
       Meteor.call('search', query, (err, results) => {
@@ -261,7 +275,7 @@ Template.search.onCreated(function () {
 ```ts
 Template.dataView.onCreated(function () {
   this.isLoading = new ReactiveVar(true);
-  
+
   this.autorun(() => {
     const handle = this.subscribe('myData');
     this.isLoading.set(!handle.ready());
@@ -270,12 +284,12 @@ Template.dataView.onCreated(function () {
 ```
 
 ```handlebars
-<template name="dataView">
+<template name='dataView'>
   {{#if isLoading}}
-    <div class="spinner">Loading...</div>
+    <div class='spinner'>Loading...</div>
   {{else}}
     {{#each items}}
-      <div class="item">{{name}}</div>
+      <div class='item'>{{name}}</div>
     {{/each}}
   {{/if}}
 </template>

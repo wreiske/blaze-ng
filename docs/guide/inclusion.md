@@ -30,9 +30,9 @@ Pass a data context to the included template:
 The included template receives the passed data as its data context:
 
 ```handlebars
-<template name="userCard">
-  <div class="user-card">
-    <img src="{{user.avatar}}" alt="{{user.name}}">
+<template name='userCard'>
+  <div class='user-card'>
+    <img src='{{user.avatar}}' alt='{{user.name}}' />
     <h3>{{user.name}}</h3>
     <p>{{user.email}}</p>
   </div>
@@ -42,9 +42,9 @@ The included template receives the passed data as its data context:
 ### Multiple Arguments
 
 ```handlebars
-{{> commentItem 
-    comment=this 
-    author=../postAuthor 
+{{> commentItem
+    comment=this
+    author=../postAuthor
     canDelete=../isAdmin
     depth=0
 }}
@@ -73,10 +73,14 @@ Template.app.helpers({
   currentView() {
     const route = Router.current();
     switch (route) {
-      case 'home': return 'homePage';
-      case 'profile': return 'profilePage';
-      case 'settings': return 'settingsPage';
-      default: return 'notFoundPage';
+      case 'home':
+        return 'homePage';
+      case 'profile':
+        return 'profilePage';
+      case 'settings':
+        return 'settingsPage';
+      default:
+        return 'notFoundPage';
     }
   },
   viewData() {
@@ -133,9 +137,9 @@ Templates can accept block content, similar to "slots" in other frameworks.
 ### Using the Wrapper
 
 ```handlebars
-{{#card title="User Profile" class="profile-card"}}
-  <div class="avatar">
-    <img src="{{user.avatar}}" alt="{{user.name}}">
+{{#card title='User Profile' class='profile-card'}}
+  <div class='avatar'>
+    <img src='{{user.avatar}}' alt='{{user.name}}' />
   </div>
   <h2>{{user.name}}</h2>
   <p>{{user.bio}}</p>
@@ -162,12 +166,12 @@ Templates can also accept an `elseBlock`:
 
 ```handlebars
 {{#ifLoaded ready=dataReady}}
-  <div class="content">{{data}}</div>
+  <div class='content'>{{data}}</div>
 {{else}}
-  <div class="custom-loader">
-    <div class="skeleton-line"></div>
-    <div class="skeleton-line"></div>
-    <div class="skeleton-line"></div>
+  <div class='custom-loader'>
+    <div class='skeleton-line'></div>
+    <div class='skeleton-line'></div>
+    <div class='skeleton-line'></div>
   </div>
 {{/ifLoaded}}
 ```
@@ -186,15 +190,15 @@ Build a layout system with content blocks:
         {{> defaultHeader}}
       {{/if}}
     </header>
-    
+
     <nav class="sidebar">
       {{> sidebar}}
     </nav>
-    
+
     <main>
       {{> Template.contentBlock}}
     </main>
-    
+
     <footer>
       {{> footer}}
     </footer>
@@ -221,7 +225,7 @@ Templates can include themselves for tree structures:
         <button class="delete">Delete</button>
       {{/if}}
     </div>
-    
+
     {{!-- Recursive inclusion --}}
     {{#if replies.length}}
       <div class="replies">
@@ -238,7 +242,7 @@ Templates can include themselves for tree structures:
 
 ```handlebars
 <template name="fileNode">
-  <div class="file-node {{#if isDirectory}}directory{{else}}file{{/if}}" 
+  <div class="file-node {{#if isDirectory}}directory{{else}}file{{/if}}"
        style="padding-left: {{multiply depth 16}}px">
     {{#if isDirectory}}
       <span class="toggle {{#if isExpanded}}open{{/if}}" data-path="{{path}}">
@@ -247,9 +251,9 @@ Templates can include themselves for tree structures:
     {{else}}
       <span class="icon">{{fileIcon extension}}</span>
     {{/if}}
-    
+
     <span class="name">{{name}}</span>
-    
+
     {{#if isDirectory}}
       {{#if isExpanded}}
         {{#each child in children}}
@@ -327,10 +331,11 @@ Usage:
 Usage:
 
 ```handlebars
-{{#modal title="Delete Project" isOpen=showDeleteModal 
-         confirmLabel="Delete" showFooter=true size="sm"}}
+{{#modal
+  title='Delete Project' isOpen=showDeleteModal confirmLabel='Delete' showFooter=true size='sm'
+}}
   <p>Are you sure you want to delete <strong>{{project.name}}</strong>?</p>
-  <p class="text-danger">This action cannot be undone.</p>
+  <p class='text-danger'>This action cannot be undone.</p>
 {{/modal}}
 ```
 
@@ -345,17 +350,17 @@ Usage:
         {{#if required}}<span class="required">*</span>{{/if}}
       </label>
     {{/if}}
-    
+
     {{#if Template.contentBlock}}
       {{> Template.contentBlock}}
     {{else}}
-      <input id="{{fieldId}}" 
-             type="{{inputType}}" 
+      <input id="{{fieldId}}"
+             type="{{inputType}}"
              value="{{value}}"
              placeholder="{{placeholder}}"
              {{#if required}}required{{/if}}>
     {{/if}}
-    
+
     {{#if helpText}}
       <small class="help-text">{{helpText}}</small>
     {{/if}}
@@ -370,19 +375,19 @@ Usage:
 
 ```handlebars
 <form>
-  {{> formField label="Email" fieldId="email" inputType="email" 
+  {{> formField label="Email" fieldId="email" inputType="email"
                 placeholder="you@example.com" required=true
                 error=emailError}}
-  
+
   {{> formField label="Password" fieldId="password" inputType="password"
                 helpText="Must be at least 8 characters" required=true
                 error=passwordError}}
-  
+
   {{#formField label="Bio" fieldId="bio"}}
     <textarea id="bio" rows="4" placeholder="Tell us about yourself...">{{bio}}</textarea>
   {{/formField}}
-  
-  {{> button label="Create Account" variant="primary" type="submit" 
+
+  {{> button label="Create Account" variant="primary" type="submit"
              loading=isSubmitting}}
 </form>
 ```

@@ -59,7 +59,7 @@ Template.counter.events({
 });
 
 Template.registerHelper('pluralize', (count, singular, plural) =>
-  count === 1 ? singular : plural
+  count === 1 ? singular : plural,
 );
 
 Blaze.render(Template.counter, document.getElementById('app'));

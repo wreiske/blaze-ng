@@ -15,14 +15,11 @@ npm install @blaze-ng/templating-compiler
 Compile an HTML source string containing templates into JavaScript.
 
 ```ts
-function compileTemplates(
-  source: string, 
-  sourceName: string, 
-  options?: ScanOptions
-): CompileResult;
+function compileTemplates(source: string, sourceName: string, options?: ScanOptions): CompileResult;
 ```
 
 **Parameters:**
+
 - `source` — HTML string containing `<template>` and/or `<body>` tags
 - `sourceName` — Filename for error messages
 - `options` — Scan options
@@ -32,11 +29,14 @@ function compileTemplates(
 ```ts
 import { compileTemplates } from '@blaze-ng/templating-compiler';
 
-const result = compileTemplates(`
+const result = compileTemplates(
+  `
   <template name="hello">
     <h1>Hello, {{name}}!</h1>
   </template>
-`, 'hello.html');
+`,
+  'hello.html',
+);
 
 console.log(result.js);
 // JavaScript code that registers the template

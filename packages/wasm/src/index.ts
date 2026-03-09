@@ -136,9 +136,7 @@ export function diff<T>(
   newArray: readonly T[],
   options: DiffOptions<T> = {},
 ): DiffOp<T>[] {
-  const useWasm =
-    _wasmModule &&
-    oldArray.length + newArray.length > WASM_DIFF_THRESHOLD;
+  const useWasm = _wasmModule && oldArray.length + newArray.length > WASM_DIFF_THRESHOLD;
 
   if (useWasm) {
     return _wasmDiff(oldArray, newArray, options);
@@ -263,9 +261,7 @@ const WASM_TOKENIZE_THRESHOLD = 10_000;
  * ```
  */
 export function tokenize(source: string): Token[] {
-  const useWasm =
-    _wasmModule &&
-    source.length > WASM_TOKENIZE_THRESHOLD;
+  const useWasm = _wasmModule && source.length > WASM_TOKENIZE_THRESHOLD;
 
   if (useWasm) {
     return _wasmTokenize(source);

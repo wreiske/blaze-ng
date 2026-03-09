@@ -7,8 +7,8 @@ Templates are the building blocks of Blaze-NG applications. They define reactive
 Templates are defined in `.html` files using the `<template>` tag:
 
 ```handlebars
-<template name="myComponent">
-  <div class="component">
+<template name='myComponent'>
+  <div class='component'>
     <h2>{{title}}</h2>
     <p>{{description}}</p>
   </div>
@@ -38,22 +38,26 @@ if (Template.myComponent) {
 Every template has a **data context** — an object that provides the default values for `{{expressions}}`:
 
 ```handlebars
-<template name="userCard">
-  <div class="card">
+<template name='userCard'>
+  <div class='card'>
     <h3>{{name}}</h3>
     <p>{{email}}</p>
-    <span class="role">{{role}}</span>
+    <span class='role'>{{role}}</span>
   </div>
 </template>
 ```
 
 ```ts
 // Render with a data context
-Blaze.renderWithData(Template.userCard, {
-  name: 'Jane Doe',
-  email: 'jane@example.com',
-  role: 'Admin',
-}, container);
+Blaze.renderWithData(
+  Template.userCard,
+  {
+    name: 'Jane Doe',
+    email: 'jane@example.com',
+    role: 'Admin',
+  },
+  container,
+);
 ```
 
 Or via inclusion in another template:
@@ -139,9 +143,7 @@ The `<body>` section in your HTML is a special template:
 </head>
 
 <body>
-  <div id="app">
-    {{> App}}
-  </div>
+  <div id="app">{{> App}}</div>
 </body>
 ```
 
@@ -163,7 +165,7 @@ Templates can accept block content using `Template.contentBlock`:
 Use it as a block helper:
 
 ```handlebars
-{{#card title="Settings" class="primary"}}
+{{#card title='Settings' class='primary'}}
   <p>Card content goes here.</p>
   <button>Save</button>
 {{/card}}
@@ -209,9 +211,11 @@ This works perfectly for SSR, email templates, or PDF generation.
 ## Best Practices
 
 ### Keep Templates Small
+
 Each template should represent a single, focused piece of UI. If a template file exceeds 50 lines, consider splitting it.
 
 ### Use Naming Conventions
+
 ```
 Header.html     → Template.Header
 todoItem.html   → Template.todoItem
@@ -219,7 +223,9 @@ adminDashboard  → Template.adminDashboard
 ```
 
 ### Co-locate Files
+
 Keep template, helpers, events, and styles together:
+
 ```
 components/
   TodoItem/

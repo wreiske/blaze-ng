@@ -33,8 +33,8 @@ A complete todo list application with add, complete, delete, filter, and sort fu
     </header>
 
     <form class="add-form">
-      <input type="text" class="new-todo" 
-             placeholder="What needs to be done?" 
+      <input type="text" class="new-todo"
+             placeholder="What needs to be done?"
              value="{{newTodoText}}"
              autofocus>
       <button type="submit" {{#unless newTodoText}}disabled{{/unless}}>Add</button>
@@ -132,19 +132,22 @@ Template.todoApp.helpers({
   filteredTodos() {
     const filter = Template.instance().filter.get();
     switch (filter) {
-      case 'active': return todos.filter(t => !t.completed);
-      case 'completed': return todos.filter(t => t.completed);
-      default: return todos;
+      case 'active':
+        return todos.filter((t) => !t.completed);
+      case 'completed':
+        return todos.filter((t) => t.completed);
+      default:
+        return todos;
     }
   },
   todoCount() {
     return todos.length;
   },
   activeCount() {
-    return todos.filter(t => !t.completed).length;
+    return todos.filter((t) => !t.completed).length;
   },
   completedCount() {
-    return todos.filter(t => t.completed).length;
+    return todos.filter((t) => t.completed).length;
   },
 });
 
@@ -153,7 +156,7 @@ Template.todoApp.events({
     event.preventDefault();
     const text = instance.newText.get().trim();
     if (!text) return;
-    
+
     todos.push({
       _id: String(nextId++),
       text,
@@ -169,7 +172,7 @@ Template.todoApp.events({
     instance.filter.set(event.currentTarget.dataset.filter);
   },
   'click .clear-completed'() {
-    todos = todos.filter(t => !t.completed);
+    todos = todos.filter((t) => !t.completed);
   },
 });
 
@@ -187,11 +190,11 @@ Template.todoItem.helpers({
 
 Template.todoItem.events({
   'click .toggle'(event) {
-    const todo = todos.find(t => t._id === this.todo._id);
+    const todo = todos.find((t) => t._id === this.todo._id);
     if (todo) todo.completed = !todo.completed;
   },
   'click .destroy'() {
-    todos = todos.filter(t => t._id !== this.todo._id);
+    todos = todos.filter((t) => t._id !== this.todo._id);
   },
   'dblclick .todo-text'(event, instance) {
     instance.isEditing.set(true);
@@ -204,7 +207,7 @@ Template.todoItem.events({
     event.preventDefault();
     const newText = instance.find('.edit-input').value.trim();
     if (newText) {
-      const todo = todos.find(t => t._id === this.todo._id);
+      const todo = todos.find((t) => t._id === this.todo._id);
       if (todo) todo.text = newText;
     }
     instance.isEditing.set(false);
@@ -377,8 +380,14 @@ Template.todoApp.helpers({
     if (filter === 'completed') query.completed = true;
     return Todos.find(query, { sort: { createdAt: -1 } });
   },
-  todoCount() { return Todos.find().count(); },
-  activeCount() { return Todos.find({ completed: false }).count(); },
-  completedCount() { return Todos.find({ completed: true }).count(); },
+  todoCount() {
+    return Todos.find().count();
+  },
+  activeCount() {
+    return Todos.find({ completed: false }).count();
+  },
+  completedCount() {
+    return Todos.find({ completed: true }).count();
+  },
 });
 ```

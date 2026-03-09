@@ -19,13 +19,13 @@ Every reactive system must implement this interface:
 interface ReactiveSystem {
   /** Run a function reactively — re-run when dependencies change */
   autorun(fn: () => void): { stop: () => void };
-  
+
   /** Create a reactive variable */
   createVar<T>(initialValue: T): { get: () => T; set: (v: T) => void };
-  
+
   /** Run a function without tracking dependencies */
   nonReactive<T>(fn: () => T): T;
-  
+
   /** Batch multiple updates into one flush */
   batch?(fn: () => void): void;
 }
@@ -52,6 +52,7 @@ Blaze.setReactiveSystem(new SimpleReactiveSystem());
 ```
 
 Features:
+
 - Automatic dependency tracking
 - Synchronous re-runs
 - `ReactiveVar` with `get()`/`set()`
@@ -89,7 +90,7 @@ const trackerSystem = {
     const computation = Tracker.autorun(fn);
     return { stop: () => computation.stop() };
   },
-  
+
   createVar(initialValue) {
     const rv = new ReactiveVar(initialValue);
     return {
@@ -97,11 +98,11 @@ const trackerSystem = {
       set: (v) => rv.set(v),
     };
   },
-  
+
   nonReactive(fn) {
     return Tracker.nonreactive(fn);
   },
-  
+
   batch(fn) {
     // Tracker uses afterFlush for batching
     Tracker.flush();
@@ -135,16 +136,16 @@ const solidSystem = {
       },
     };
   },
-  
+
   createVar(initialValue) {
     const [get, set] = createSignal(initialValue);
     return { get, set };
   },
-  
+
   nonReactive(fn) {
     return untrack(fn);
   },
-  
+
   batch(fn) {
     batch(fn);
   },
@@ -166,19 +167,21 @@ const preactSystem = {
     const dispose = effect(fn);
     return { stop: dispose };
   },
-  
+
   createVar(initialValue) {
     const s = signal(initialValue);
     return {
       get: () => s.value,
-      set: (v) => { s.value = v; },
+      set: (v) => {
+        s.value = v;
+      },
     };
   },
-  
+
   nonReactive(fn) {
     return untracked(fn);
   },
-  
+
   batch(fn) {
     batch(fn);
   },
@@ -201,18 +204,18 @@ const rxjsSystem = {
     // Track subscriptions created during fn
     const subscriptions = new Subscription();
     let isTracking = true;
-    
+
     // Initial run
     fn();
     isTracking = false;
-    
+
     return {
       stop() {
         subscriptions.unsubscribe();
       },
     };
   },
-  
+
   createVar(initialValue) {
     const subject = new BehaviorSubject(initialValue);
     return {
@@ -222,7 +225,7 @@ const rxjsSystem = {
       observable: subject.pipe(distinctUntilChanged()),
     };
   },
-  
+
   nonReactive(fn) {
     return fn();
   },
@@ -263,24 +266,28 @@ const customSystem = {
         computation.deps.clear();
       },
     };
-    
+
     // Run and track dependencies
     const run = () => {
       computation.stop(); // Clear old deps
       activeComputation = computation;
-      try { fn(); } finally { activeComputation = null; }
+      try {
+        fn();
+      } finally {
+        activeComputation = null;
+      }
     };
-    
+
     computation.fn = run;
     run(); // Initial run
-    
+
     return { stop: () => computation.stop() };
   },
-  
+
   createVar(initialValue) {
     let value = initialValue;
     const dep: Dependency = { computations: new Set() };
-    
+
     return {
       get() {
         // Track dependency
@@ -293,7 +300,7 @@ const customSystem = {
       set(newValue) {
         if (Object.is(value, newValue)) return;
         value = newValue;
-        
+
         if (isBatching) {
           for (const comp of dep.computations) {
             pendingFlush.add(comp);
@@ -307,13 +314,17 @@ const customSystem = {
       },
     };
   },
-  
+
   nonReactive(fn) {
     const prev = activeComputation;
     activeComputation = null;
-    try { return fn(); } finally { activeComputation = prev; }
+    try {
+      return fn();
+    } finally {
+      activeComputation = prev;
+    }
   },
-  
+
   batch(fn) {
     isBatching = true;
     try {
@@ -347,29 +358,29 @@ function testReactiveSystem(createSystem) {
       system.autorun(spy);
       expect(spy).toHaveBeenCalledOnce();
     });
-    
+
     it('autorun re-runs when dependency changes', () => {
       const system = createSystem();
       const v = system.createVar(1);
       const spy = vi.fn(() => v.get());
       system.autorun(spy);
       expect(spy).toHaveBeenCalledTimes(1);
-      
+
       v.set(2);
       expect(spy).toHaveBeenCalledTimes(2);
     });
-    
+
     it('stop prevents re-runs', () => {
       const system = createSystem();
       const v = system.createVar(1);
       const spy = vi.fn(() => v.get());
       const { stop } = system.autorun(spy);
-      
+
       stop();
       v.set(2);
       expect(spy).toHaveBeenCalledTimes(1);
     });
-    
+
     it('nonReactive does not track', () => {
       const system = createSystem();
       const v = system.createVar(1);
@@ -377,20 +388,23 @@ function testReactiveSystem(createSystem) {
         system.nonReactive(() => v.get());
       });
       system.autorun(spy);
-      
+
       v.set(2);
       expect(spy).toHaveBeenCalledTimes(1);
     });
-    
+
     it('batch defers updates', () => {
       const system = createSystem();
       if (!system.batch) return;
-      
+
       const v1 = system.createVar(1);
       const v2 = system.createVar(1);
-      const spy = vi.fn(() => { v1.get(); v2.get(); });
+      const spy = vi.fn(() => {
+        v1.get();
+        v2.get();
+      });
       system.autorun(spy);
-      
+
       system.batch(() => {
         v1.set(2);
         v2.set(2);
@@ -404,11 +418,11 @@ function testReactiveSystem(createSystem) {
 
 ## Choosing a Reactive System
 
-| System | Bundle Size | Best For |
-|--------|-----------|----------|
-| SimpleReactiveSystem | 0 KB (built-in) | Prototyping, small apps |
-| Meteor Tracker | ~5 KB | Existing Meteor apps |
-| @preact/signals-core | ~2 KB | Minimal, fast signals |
-| SolidJS | ~7 KB | Fine-grained, complex reactivity |
-| RxJS | ~30 KB | Angular apps, stream processing |
-| Custom | Varies | Special requirements |
+| System               | Bundle Size     | Best For                         |
+| -------------------- | --------------- | -------------------------------- |
+| SimpleReactiveSystem | 0 KB (built-in) | Prototyping, small apps          |
+| Meteor Tracker       | ~5 KB           | Existing Meteor apps             |
+| @preact/signals-core | ~2 KB           | Minimal, fast signals            |
+| SolidJS              | ~7 KB           | Fine-grained, complex reactivity |
+| RxJS                 | ~30 KB          | Angular apps, stream processing  |
+| Custom               | Varies          | Special requirements             |

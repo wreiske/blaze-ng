@@ -10,7 +10,7 @@ A comprehensive form system with real-time validation, dynamic fields, and multi
 <template name="signupForm">
   <form class="form" novalidate>
     <h2>Create Account</h2>
-    
+
     {{> formField
         name="username"
         label="Username"
@@ -18,7 +18,7 @@ A comprehensive form system with real-time validation, dynamic fields, and multi
         value=fields.username.value
         error=fields.username.error
         placeholder="Choose a username"}}
-    
+
     {{> formField
         name="email"
         label="Email"
@@ -26,7 +26,7 @@ A comprehensive form system with real-time validation, dynamic fields, and multi
         value=fields.email.value
         error=fields.email.error
         placeholder="you@example.com"}}
-    
+
     {{> formField
         name="password"
         label="Password"
@@ -34,7 +34,7 @@ A comprehensive form system with real-time validation, dynamic fields, and multi
         value=fields.password.value
         error=fields.password.error
         placeholder="Min. 8 characters"}}
-    
+
     {{> formField
         name="confirmPassword"
         label="Confirm Password"
@@ -81,27 +81,21 @@ Blaze.setReactiveSystem(new SimpleReactiveSystem());
 // ── Validation Rules ────────────────────────────────────
 
 const validators = {
-  required: (value, label) =>
-    value.trim() ? null : `${label} is required`,
-  
+  required: (value, label) => (value.trim() ? null : `${label} is required`),
+
   minLength: (min) => (value, label) =>
     value.length >= min ? null : `${label} must be at least ${min} characters`,
-  
+
   maxLength: (max) => (value, label) =>
     value.length <= max ? null : `${label} must be at most ${max} characters`,
-  
-  pattern: (regex, message) => (value) =>
-    regex.test(value) ? null : message,
-  
+
+  pattern: (regex, message) => (value) => (regex.test(value) ? null : message),
+
   email: (value) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-      ? null
-      : 'Please enter a valid email address',
-  
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? null : 'Please enter a valid email address',
+
   match: (fieldName, label) => (value, _, fields) =>
-    value === fields[fieldName]?.value
-      ? null
-      : `Must match ${label}`,
+    value === fields[fieldName]?.value ? null : `Must match ${label}`,
 };
 
 // ── Field Configuration ─────────────────────────────────
@@ -131,10 +125,7 @@ const fieldConfig = {
   },
   confirmPassword: {
     label: 'Confirm Password',
-    rules: [
-      validators.required,
-      validators.match('password', 'Password'),
-    ],
+    rules: [validators.required, validators.match('password', 'Password')],
   },
 };
 
@@ -153,7 +144,7 @@ Template.signupForm.onCreated(function () {
 function validateField(name, fields) {
   const config = fieldConfig[name];
   const value = fields[name].value;
-  
+
   for (const rule of config.rules) {
     const error = rule(value, config.label, fields);
     if (error) return error;
@@ -173,9 +164,15 @@ function validateAll(fields) {
 }
 
 Template.signupForm.helpers({
-  fields() { return Template.instance().fields.get(); },
-  formError() { return Template.instance().formError.get(); },
-  isSubmitting() { return Template.instance().isSubmitting.get(); },
+  fields() {
+    return Template.instance().fields.get();
+  },
+  formError() {
+    return Template.instance().formError.get();
+  },
+  isSubmitting() {
+    return Template.instance().isSubmitting.get();
+  },
 });
 
 Template.signupForm.events({
@@ -183,16 +180,16 @@ Template.signupForm.events({
     const { name, value } = event.target;
     const fields = { ...instance.fields.get() };
     fields[name] = { ...fields[name], value };
-    
+
     // Validate on input if field was already touched
     if (fields[name].touched) {
       fields[name].error = validateField(name, fields);
     }
-    
+
     instance.fields.set(fields);
     instance.formError.set(null);
   },
-  
+
   'blur .input'(event, instance) {
     const { name } = event.target;
     const fields = { ...instance.fields.get() };
@@ -203,18 +200,18 @@ Template.signupForm.events({
     };
     instance.fields.set(fields);
   },
-  
+
   'submit form'(event, instance) {
     event.preventDefault();
     const fields = { ...instance.fields.get() };
-    
+
     if (!validateAll(fields)) {
       instance.fields.set(fields);
       return;
     }
-    
+
     instance.isSubmitting.set(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       instance.isSubmitting.set(false);
@@ -331,8 +328,18 @@ const steps = [
 
 const plans = [
   { id: 'free', name: 'Free', price: '$0/mo', features: ['5 projects', '1GB storage'] },
-  { id: 'pro', name: 'Pro', price: '$12/mo', features: ['Unlimited projects', '100GB storage', 'Priority support'] },
-  { id: 'team', name: 'Team', price: '$29/mo', features: ['Everything in Pro', 'Team management', 'SSO', 'Audit logs'] },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: '$12/mo',
+    features: ['Unlimited projects', '100GB storage', 'Priority support'],
+  },
+  {
+    id: 'team',
+    name: 'Team',
+    price: '$29/mo',
+    features: ['Everything in Pro', 'Team management', 'SSO', 'Audit logs'],
+  },
 ];
 
 Template.wizard.onCreated(function () {
@@ -347,7 +354,9 @@ Template.wizard.onCreated(function () {
 });
 
 Template.wizard.helpers({
-  steps() { return steps; },
+  steps() {
+    return steps;
+  },
   currentStepTemplate() {
     return steps[Template.instance().currentStep.get()].template;
   },
@@ -363,10 +372,18 @@ Template.wizard.helpers({
     if (index === current) return 'active';
     return '';
   },
-  isFirstStep() { return Template.instance().currentStep.get() === 0; },
-  isLastStep() { return Template.instance().currentStep.get() === steps.length - 1; },
-  isSubmitting() { return Template.instance().isSubmitting.get(); },
-  isCompleted(index) { return index < Template.instance().currentStep.get(); },
+  isFirstStep() {
+    return Template.instance().currentStep.get() === 0;
+  },
+  isLastStep() {
+    return Template.instance().currentStep.get() === steps.length - 1;
+  },
+  isSubmitting() {
+    return Template.instance().isSubmitting.get();
+  },
+  isCompleted(index) {
+    return index < Template.instance().currentStep.get();
+  },
 });
 
 Template.wizard.events({
@@ -409,7 +426,7 @@ Template.wizardStepPlan.events({
 
 Template.wizardStepReview.helpers({
   selectedPlanName() {
-    const plan = plans.find(p => p.id === this.data.selectedPlan);
+    const plan = plans.find((p) => p.id === this.data.selectedPlan);
     return plan ? plan.name : 'None';
   },
 });
@@ -462,7 +479,9 @@ Template.registerHelper('eq', (a, b) => a === b);
   outline: none;
 }
 
-.has-error .input { border-color: #ef4444; }
+.has-error .input {
+  border-color: #ef4444;
+}
 
 .error-message {
   display: block;
@@ -492,7 +511,10 @@ Template.registerHelper('eq', (a, b) => a === b);
   cursor: pointer;
 }
 
-.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 /* Wizard */
 .wizard {
@@ -519,8 +541,12 @@ Template.registerHelper('eq', (a, b) => a === b);
   gap: 0.5rem;
   opacity: 0.4;
 }
-.step-indicator.active { opacity: 1; }
-.step-indicator.completed { opacity: 0.7; }
+.step-indicator.active {
+  opacity: 1;
+}
+.step-indicator.completed {
+  opacity: 0.7;
+}
 
 .step-number {
   width: 28px;
@@ -534,21 +560,39 @@ Template.registerHelper('eq', (a, b) => a === b);
   font-weight: 600;
 }
 
-.active .step-number { background: #4f46e5; color: white; }
-.completed .step-number { background: #22c55e; color: white; }
+.active .step-number {
+  background: #4f46e5;
+  color: white;
+}
+.completed .step-number {
+  background: #22c55e;
+  color: white;
+}
 
-.wizard-body { padding: 2rem; }
+.wizard-body {
+  padding: 2rem;
+}
 
 .wizard-footer {
   display: flex;
   padding: 1.5rem 2rem;
   border-top: 1px solid #e2e8f0;
 }
-.spacer { flex: 1; }
+.spacer {
+  flex: 1;
+}
 
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
 
-.plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
 
 .plan-card {
   padding: 1.5rem;
@@ -557,11 +601,24 @@ Template.registerHelper('eq', (a, b) => a === b);
   cursor: pointer;
   text-align: center;
 }
-.plan-card.selected { border-color: #4f46e5; background: #eef2ff; }
-.plan-card .price { font-size: 1.5rem; font-weight: 700; margin: 0.5rem 0; }
+.plan-card.selected {
+  border-color: #4f46e5;
+  background: #eef2ff;
+}
+.plan-card .price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
 
-.review-list dt { font-weight: 600; margin-top: 0.75rem; }
-.review-list dd { margin-left: 0; color: #475569; }
+.review-list dt {
+  font-weight: 600;
+  margin-top: 0.75rem;
+}
+.review-list dd {
+  margin-left: 0;
+  color: #475569;
+}
 ```
 
 ## What This Demonstrates

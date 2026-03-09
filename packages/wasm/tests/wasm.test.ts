@@ -26,7 +26,10 @@ describe('wasm - JS diff fallback', () => {
   test('detects insertions', () => {
     const ops = diff(
       [{ id: 1, name: 'a' }],
-      [{ id: 1, name: 'a' }, { id: 2, name: 'b' }],
+      [
+        { id: 1, name: 'a' },
+        { id: 2, name: 'b' },
+      ],
       { getId: (item) => String(item.id) },
     );
     expect(ops).toHaveLength(1);
@@ -37,7 +40,10 @@ describe('wasm - JS diff fallback', () => {
 
   test('detects removals', () => {
     const ops = diff(
-      [{ id: 1, name: 'a' }, { id: 2, name: 'b' }],
+      [
+        { id: 1, name: 'a' },
+        { id: 2, name: 'b' },
+      ],
       [{ id: 1, name: 'a' }],
       { getId: (item) => String(item.id) },
     );
@@ -48,22 +54,18 @@ describe('wasm - JS diff fallback', () => {
   });
 
   test('detects changes', () => {
-    const ops = diff(
-      [{ id: 1, name: 'a' }],
-      [{ id: 1, name: 'b' }],
-      { getId: (item) => String(item.id) },
-    );
+    const ops = diff([{ id: 1, name: 'a' }], [{ id: 1, name: 'b' }], {
+      getId: (item) => String(item.id),
+    });
     expect(ops).toHaveLength(1);
     expect(ops[0]!.type).toBe('change');
     expect(ops[0]!.item).toEqual({ id: 1, name: 'b' });
   });
 
   test('detects moves', () => {
-    const ops = diff(
-      [{ id: 1 }, { id: 2 }, { id: 3 }],
-      [{ id: 3 }, { id: 1 }, { id: 2 }],
-      { getId: (item) => String(item.id) },
-    );
+    const ops = diff([{ id: 1 }, { id: 2 }, { id: 3 }], [{ id: 3 }, { id: 1 }, { id: 2 }], {
+      getId: (item) => String(item.id),
+    });
     // All items move
     const moves = ops.filter((op) => op.type === 'move');
     expect(moves.length).toBeGreaterThan(0);
@@ -105,14 +107,10 @@ describe('wasm - JS diff fallback', () => {
   });
 
   test('diff with custom getFields', () => {
-    const ops = diff(
-      [{ id: 1, name: 'a', extra: 'x' }],
-      [{ id: 1, name: 'a', extra: 'y' }],
-      {
-        getId: (item) => String(item.id),
-        getFields: (item) => item.name, // only compare name
-      },
-    );
+    const ops = diff([{ id: 1, name: 'a', extra: 'x' }], [{ id: 1, name: 'a', extra: 'y' }], {
+      getId: (item) => String(item.id),
+      getFields: (item) => item.name, // only compare name
+    });
     // name didn't change, so no change op (even though extra changed)
     expect(ops).toHaveLength(0);
   });

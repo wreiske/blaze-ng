@@ -16,6 +16,7 @@ This package provides performance-critical operations with optional WASM acceler
 - **`tokenize()`** — Tokenize HTML strings
 
 Both functions use JavaScript implementations by default and automatically switch to WASM when:
+
 1. WASM has been loaded via `loadWasm()`
 2. The input size exceeds the acceleration threshold
 
@@ -52,14 +53,11 @@ function isWasmAvailable(): boolean;
 Compute the minimal diff between two sequences.
 
 ```ts
-function diff<T>(
-  oldArray: T[],
-  newArray: T[],
-  options?: DiffOptions<T>
-): DiffOp<T>[];
+function diff<T>(oldArray: T[], newArray: T[], options?: DiffOptions<T>): DiffOp<T>[];
 ```
 
 **Parameters:**
+
 - `oldArray` — Original sequence
 - `newArray` — Updated sequence
 - `options.identity` — Function to extract identity key (default: item itself)
@@ -70,10 +68,7 @@ function diff<T>(
 ```ts
 import { diff } from '@blaze-ng/wasm';
 
-const ops = diff(
-  ['a', 'b', 'c'],
-  ['a', 'c', 'd']
-);
+const ops = diff(['a', 'b', 'c'], ['a', 'c', 'd']);
 // [
 //   { type: 'remove', index: 1, item: 'b' },
 //   { type: 'insert', index: 2, item: 'd' },
@@ -84,9 +79,15 @@ const ops = diff(
 
 ```ts
 const ops = diff(
-  [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }],
-  [{ id: 2, name: 'Robert' }, { id: 1, name: 'Alice' }],
-  { identity: (item) => item.id }
+  [
+    { id: 1, name: 'Alice' },
+    { id: 2, name: 'Bob' },
+  ],
+  [
+    { id: 2, name: 'Robert' },
+    { id: 1, name: 'Alice' },
+  ],
+  { identity: (item) => item.id },
 );
 // [
 //   { type: 'move', from: 1, to: 0, item: { id: 2, name: 'Robert' } },
@@ -118,7 +119,7 @@ const tokens = tokenize('<div class="hello">World</div>');
 ### `DiffOp<T>`
 
 ```ts
-type DiffOp<T> = 
+type DiffOp<T> =
   | { type: 'insert'; index: number; item: T }
   | { type: 'remove'; index: number; item: T }
   | { type: 'move'; from: number; to: number; item: T }
@@ -151,10 +152,10 @@ type Token =
 
 WASM acceleration kicks in automatically when:
 
-| Operation | Threshold |
-|-----------|-----------|
-| `diff()` | Arrays with >500 items |
-| `tokenize()` | Strings >10 KB |
+| Operation    | Threshold              |
+| ------------ | ---------------------- |
+| `diff()`     | Arrays with >500 items |
+| `tokenize()` | Strings >10 KB         |
 
 Below these thresholds, the JavaScript implementations are fast enough and avoid WASM call overhead.
 

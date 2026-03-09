@@ -25,7 +25,7 @@ Template.myForm.events({
   'submit form'(event: Event, instance: TemplateInstance) {
     // event   — the native DOM event
     // instance — the TemplateInstance
-    
+
     event.preventDefault();
     const formData = new FormData(event.target as HTMLFormElement);
     // ...
@@ -40,35 +40,35 @@ All native DOM events are supported:
 ```ts
 Template.myComponent.events({
   // Mouse events
-  'click .button'(event) { },
-  'dblclick .item'(event) { },
-  'mouseenter .card'(event) { },
-  'mouseleave .card'(event) { },
-  
+  'click .button'(event) {},
+  'dblclick .item'(event) {},
+  'mouseenter .card'(event) {},
+  'mouseleave .card'(event) {},
+
   // Keyboard events
-  'keydown input'(event) { },
-  'keyup input'(event) { },
-  'keypress input'(event) { },
-  
+  'keydown input'(event) {},
+  'keyup input'(event) {},
+  'keypress input'(event) {},
+
   // Form events
-  'submit form'(event) { },
-  'change select'(event) { },
-  'input .search'(event) { },
-  'focus input'(event) { },
-  'blur input'(event) { },
-  
+  'submit form'(event) {},
+  'change select'(event) {},
+  'input .search'(event) {},
+  'focus input'(event) {},
+  'blur input'(event) {},
+
   // Touch events
-  'touchstart .slider'(event) { },
-  'touchmove .slider'(event) { },
-  'touchend .slider'(event) { },
-  
+  'touchstart .slider'(event) {},
+  'touchmove .slider'(event) {},
+  'touchend .slider'(event) {},
+
   // Drag events
-  'dragstart .draggable'(event) { },
-  'dragover .dropzone'(event) { },
-  'drop .dropzone'(event) { },
-  
+  'dragstart .draggable'(event) {},
+  'dragover .dropzone'(event) {},
+  'drop .dropzone'(event) {},
+
   // Scroll
-  'scroll .container'(event) { },
+  'scroll .container'(event) {},
 });
 ```
 
@@ -79,22 +79,22 @@ Use any valid CSS selector:
 ```ts
 Template.myComponent.events({
   // Class selector
-  'click .delete-btn'(event) { },
-  
+  'click .delete-btn'(event) {},
+
   // ID selector
-  'click #submit'(event) { },
-  
+  'click #submit'(event) {},
+
   // Element selector
-  'click button'(event) { },
-  
+  'click button'(event) {},
+
   // Attribute selector
-  'click [data-action="delete"]'(event) { },
-  
+  'click [data-action="delete"]'(event) {},
+
   // Descendant selector
-  'click .list .item'(event) { },
-  
+  'click .list .item'(event) {},
+
   // Multiple classes
-  'click .btn.primary'(event) { },
+  'click .btn.primary'(event) {},
 });
 ```
 
@@ -103,11 +103,11 @@ Template.myComponent.events({
 Get the data context of the element that triggered the event:
 
 ```handlebars
-<template name="todoList">
+<template name='todoList'>
   {{#each todos}}
-    <div class="todo-item" data-id="{{_id}}">
+    <div class='todo-item' data-id='{{_id}}'>
       <span>{{text}}</span>
-      <button class="delete">Delete</button>
+      <button class='delete'>Delete</button>
     </div>
   {{/each}}
 </template>
@@ -137,17 +137,17 @@ Template.searchBox.events({
   'input .search-input'(event, instance) {
     instance.searchQuery.set(event.target.value);
   },
-  
+
   'submit .search-form'(event, instance) {
     event.preventDefault();
     instance.isSearching.set(true);
-    
+
     // Perform search...
     performSearch(instance.searchQuery.get()).then(() => {
       instance.isSearching.set(false);
     });
   },
-  
+
   'click .clear'(event, instance) {
     instance.searchQuery.set('');
     instance.find('.search-input').focus();
@@ -164,11 +164,11 @@ Blaze-NG uses **event delegation** — events are attached to the template's roo
 - Efficient memory usage
 
 ```handlebars
-<template name="dynamicList">
-  <div class="list">
-    {{!-- Items added later still trigger events --}}
+<template name='dynamicList'>
+  <div class='list'>
+    {{! Items added later still trigger events }}
     {{#each items}}
-      <button class="item">{{name}}</button>
+      <button class='item'>{{name}}</button>
     {{/each}}
   </div>
 </template>
@@ -190,7 +190,7 @@ Template.input.events({
   'focus input, focus textarea'(event) {
     event.target.parentElement.classList.add('focused');
   },
-  
+
   'blur input, blur textarea'(event) {
     event.target.parentElement.classList.remove('focused');
   },
@@ -237,13 +237,13 @@ Template.toggleButton.events({
       <input type="email" name="email" value="{{email}}">
       {{#if errors.email}}<span class="error">{{errors.email}}</span>{{/if}}
     </div>
-    
+
     <div class="field {{#if errors.password}}has-error{{/if}}">
       <label>Password</label>
       <input type="password" name="password">
       {{#if errors.password}}<span class="error">{{errors.password}}</span>{{/if}}
     </div>
-    
+
     <button type="submit" disabled={{isSubmitting}}>
       {{#if isSubmitting}}Signing up...{{else}}Sign Up{{/if}}
     </button>
@@ -260,23 +260,23 @@ Template.signupForm.onCreated(function () {
 Template.signupForm.events({
   'submit .signup'(event, instance) {
     event.preventDefault();
-    
+
     const email = instance.find('[name="email"]').value;
     const password = instance.find('[name="password"]').value;
-    
+
     // Validate
     const errors = {};
     if (!email.includes('@')) errors.email = 'Invalid email';
     if (password.length < 8) errors.password = 'Must be 8+ characters';
-    
+
     if (Object.keys(errors).length > 0) {
       instance.errors.set(errors);
       return;
     }
-    
+
     instance.errors.set({});
     instance.isSubmitting.set(true);
-    
+
     Accounts.createUser({ email, password }, (err) => {
       instance.isSubmitting.set(false);
       if (err) instance.errors.set({ email: err.reason });
@@ -295,13 +295,13 @@ Template.editor.events({
       event.preventDefault();
       instance.save();
     }
-    
+
     // Ctrl/Cmd + Z to undo
     if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
       event.preventDefault();
       instance.undo();
     }
-    
+
     // Escape to close
     if (event.key === 'Escape') {
       instance.close();

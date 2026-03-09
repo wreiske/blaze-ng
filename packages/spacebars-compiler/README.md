@@ -23,18 +23,18 @@ const code = codeGen(ast);
 
 ## Exports
 
-| Export | Description |
-|--------|-------------|
-| `compile` | Compile a Spacebars template to JavaScript source |
-| `parse` | Parse template to an AST |
-| `codeGen` | Generate JavaScript from a parsed AST |
-| `optimize` | Optimize an AST before code generation |
-| `removeWhitespace` | Strip insignificant whitespace from AST |
-| `_beautify` | Format generated code for readability |
-| `TemplateTag` | AST node for template tags (`{{...}}`) |
-| `CodeGen` | Code generation visitor class |
-| `TreeTransformer` | AST transformation utility |
-| `SpacebarsCompiler` | Namespace re-export of all compiler functions |
+| Export              | Description                                       |
+| ------------------- | ------------------------------------------------- |
+| `compile`           | Compile a Spacebars template to JavaScript source |
+| `parse`             | Parse template to an AST                          |
+| `codeGen`           | Generate JavaScript from a parsed AST             |
+| `optimize`          | Optimize an AST before code generation            |
+| `removeWhitespace`  | Strip insignificant whitespace from AST           |
+| `_beautify`         | Format generated code for readability             |
+| `TemplateTag`       | AST node for template tags (`{{...}}`)            |
+| `CodeGen`           | Code generation visitor class                     |
+| `TreeTransformer`   | AST transformation utility                        |
+| `SpacebarsCompiler` | Namespace re-export of all compiler functions     |
 
 ## License
 

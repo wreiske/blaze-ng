@@ -11,7 +11,7 @@ Template.myComponent.helpers({
   greeting() {
     return 'Hello, World!';
   },
-  
+
   formattedDate() {
     return new Date().toLocaleDateString();
   },
@@ -21,7 +21,7 @@ Template.myComponent.helpers({
 Use them in your template:
 
 ```handlebars
-<template name="myComponent">
+<template name='myComponent'>
   <p>{{greeting}}</p>
   <p>Today is {{formattedDate}}</p>
 </template>
@@ -36,14 +36,14 @@ Template.myComponent.helpers({
   add(a, b) {
     return a + b;
   },
-  
+
   formatCurrency(amount, currency = 'USD') {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency,
     }).format(amount);
   },
-  
+
   truncate(text, maxLength) {
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength) + '...';
@@ -53,7 +53,7 @@ Template.myComponent.helpers({
 
 ```handlebars
 <p>Total: {{add 5 3}}</p>
-<p>Price: {{formatCurrency price "EUR"}}</p>
+<p>Price: {{formatCurrency price 'EUR'}}</p>
 <p>{{truncate description 100}}</p>
 ```
 
@@ -62,7 +62,7 @@ Template.myComponent.helpers({
 Pass named arguments using `key=value` syntax:
 
 ```handlebars
-{{formatDate date format="YYYY-MM-DD" timezone="UTC"}}
+{{formatDate date format='YYYY-MM-DD' timezone='UTC'}}
 ```
 
 ```ts
@@ -79,7 +79,7 @@ Template.myComponent.helpers({
 Inside a helper, `this` refers to the current **data context**:
 
 ```handlebars
-<template name="userCard">
+<template name='userCard'>
   {{fullName}}
 </template>
 ```
@@ -95,10 +95,14 @@ Template.userCard.helpers({
 
 ```ts
 // Render with data
-Blaze.renderWithData(Template.userCard, {
-  firstName: 'Jane',
-  lastName: 'Doe',
-}, container);
+Blaze.renderWithData(
+  Template.userCard,
+  {
+    firstName: 'Jane',
+    lastName: 'Doe',
+  },
+  container,
+);
 ```
 
 ## Accessing the Template Instance
@@ -131,12 +135,12 @@ Template.dashboard.helpers({
   todoCount() {
     return Todos.find({ completed: false }).count();
   },
-  
+
   // Re-runs whenever Session.get('theme') changes
   themeClass() {
     return Session.get('theme') === 'dark' ? 'dark-mode' : 'light-mode';
   },
-  
+
   // Re-runs when the ReactiveVar changes
   searchResults() {
     const query = Template.instance().searchQuery.get();
@@ -191,8 +195,8 @@ Blaze.registerHelper('timeAgo', (date) => {
 Use global helpers anywhere:
 
 ```handlebars
-{{#if (eq status "active")}}
-  <span class="badge">Active</span>
+{{#if (eq status 'active')}}
+  <span class='badge'>Active</span>
 {{/if}}
 
 {{#if (and isLoggedIn hasPermission)}}
@@ -210,14 +214,14 @@ Use parentheses for **sub-expressions**:
 
 ```handlebars
 {{#if (gt items.length 0)}}
-  <p>You have {{items.length}} {{pluralize items.length "item"}}.</p>
+  <p>You have {{items.length}} {{pluralize items.length 'item'}}.</p>
 {{/if}}
 
-{{#if (and (gt score 90) (eq grade "A"))}}
-  <span class="excellent">Excellent!</span>
+{{#if (and (gt score 90) (eq grade 'A'))}}
+  <span class='excellent'>Excellent!</span>
 {{/if}}
 
-{{formatCurrency (multiply price quantity) "USD"}}
+{{formatCurrency (multiply price quantity) 'USD'}}
 ```
 
 ## Helper vs. Data Context
@@ -230,10 +234,15 @@ When Blaze encounters `{{foo}}`, it checks in this order:
 4. **Global helpers** — registered via `Blaze.registerHelper()`
 
 ```handlebars
-{{#let greeting="Hello"}}       {{!-- 1. Lexical scope --}}
-  {{#with user}}                 {{!-- sets data context --}}
-    {{greeting}}, {{name}}!      {{!-- greeting=lexical, name=data context --}}
-    {{formatDate joinedAt}}      {{!-- formatDate=global helper, joinedAt=data --}}
+{{#let greeting='Hello'}}
+  {{! 1. Lexical scope }}
+  {{#with user}}
+    {{! sets data context }}
+    {{greeting}},
+    {{name}}!
+    {{! greeting=lexical, name=data context }}
+    {{formatDate joinedAt}}
+    {{! formatDate=global helper, joinedAt=data }}
   {{/with}}
 {{/let}}
 ```

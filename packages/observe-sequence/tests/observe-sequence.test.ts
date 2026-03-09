@@ -297,7 +297,10 @@ describe('observe-sequence - array transitions', () => {
   });
 
   it('array to other array (replace item)', () => {
-    const rv = new SimpleReactiveVar([{ _id: '13', foo: 1 }, { _id: '37', bar: 2 }]);
+    const rv = new SimpleReactiveVar([
+      { _id: '13', foo: 1 },
+      { _id: '37', bar: 2 },
+    ]);
     const { log, callbacks } = createLogger();
 
     const handle = ObserveSequence.observe(() => rv.get(), callbacks);
@@ -306,7 +309,10 @@ describe('observe-sequence - array transitions', () => {
     expect(log.filter((e) => e.type === 'addedAt')).toHaveLength(2);
     log.length = 0;
 
-    rv.set([{ _id: '13', foo: 1 }, { _id: '38', bar: 2 }]);
+    rv.set([
+      { _id: '13', foo: 1 },
+      { _id: '38', bar: 2 },
+    ]);
 
     const removals = log.filter((e) => e.type === 'removedAt');
     const additions = log.filter((e) => e.type === 'addedAt');
@@ -424,23 +430,13 @@ describe('observe-sequence - array transitions', () => {
   });
 
   it('array to other array, movedTo the end', () => {
-    const rv = new SimpleReactiveVar([
-      { _id: '0' },
-      { _id: '1' },
-      { _id: '2' },
-      { _id: '3' },
-    ]);
+    const rv = new SimpleReactiveVar([{ _id: '0' }, { _id: '1' }, { _id: '2' }, { _id: '3' }]);
     const { log, callbacks } = createLogger();
 
     const handle = ObserveSequence.observe(() => rv.get(), callbacks);
     log.length = 0;
 
-    rv.set([
-      { _id: '0' },
-      { _id: '2' },
-      { _id: '3' },
-      { _id: '1' },
-    ]);
+    rv.set([{ _id: '0' }, { _id: '2' }, { _id: '3' }, { _id: '1' }]);
 
     const moves = log.filter((e) => e.type === 'movedTo');
     expect(moves).toHaveLength(1);
@@ -450,23 +446,13 @@ describe('observe-sequence - array transitions', () => {
   });
 
   it('array to other array, movedTo later position #2845', () => {
-    const rv = new SimpleReactiveVar([
-      { _id: '0' },
-      { _id: '1' },
-      { _id: '2' },
-      { _id: '3' },
-    ]);
+    const rv = new SimpleReactiveVar([{ _id: '0' }, { _id: '1' }, { _id: '2' }, { _id: '3' }]);
     const { log, callbacks } = createLogger();
 
     const handle = ObserveSequence.observe(() => rv.get(), callbacks);
     log.length = 0;
 
-    rv.set([
-      { _id: '1' },
-      { _id: '2' },
-      { _id: '0' },
-      { _id: '3' },
-    ]);
+    rv.set([{ _id: '1' }, { _id: '2' }, { _id: '0' }, { _id: '3' }]);
 
     const moves = log.filter((e) => e.type === 'movedTo');
     expect(moves).toHaveLength(1);
@@ -488,13 +474,7 @@ describe('observe-sequence - array transitions', () => {
     const handle = ObserveSequence.observe(() => rv.get(), callbacks);
     log.length = 0;
 
-    rv.set([
-      { _id: '0' },
-      { _id: '4' },
-      { _id: '1' },
-      { _id: '2' },
-      { _id: '3' },
-    ]);
+    rv.set([{ _id: '0' }, { _id: '4' }, { _id: '1' }, { _id: '2' }, { _id: '3' }]);
 
     const moves = log.filter((e) => e.type === 'movedTo');
     expect(moves).toHaveLength(1);
@@ -565,9 +545,15 @@ describe('observe-sequence - array transitions', () => {
   });
 
   it('cursor-like to array transition', () => {
-    let useCursor = true;
-    const arrayData = [{ _id: '13', foo: 1 }, { _id: '38', bar: 2 }];
-    const cursorData = [{ _id: '13', foo: 1 }, { _id: '37', bar: 2 }];
+    const useCursor = true;
+    const arrayData = [
+      { _id: '13', foo: 1 },
+      { _id: '38', bar: 2 },
+    ];
+    const cursorData = [
+      { _id: '13', foo: 1 },
+      { _id: '37', bar: 2 },
+    ];
 
     const cursor = {
       observe(cbs: Record<string, (...args: unknown[]) => void>) {
@@ -612,10 +598,7 @@ describe('observe-sequence - array transitions', () => {
 
   it('Set iterable with items', () => {
     const { log, callbacks } = createLogger();
-    const handle = ObserveSequence.observe(
-      () => new Set([{ foo: 1 }, { bar: 2 }]),
-      callbacks,
-    );
+    const handle = ObserveSequence.observe(() => new Set([{ foo: 1 }, { bar: 2 }]), callbacks);
 
     const adds = log.filter((e) => e.type === 'addedAt');
     expect(adds).toHaveLength(2);

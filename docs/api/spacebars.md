@@ -28,10 +28,10 @@ Used internally by compiled templates:
 
 ```ts
 // {{name}} compiles to:
-Spacebars.mustache(view.lookup('name'))
+Spacebars.mustache(view.lookup('name'));
 
 // {{formatDate createdAt "short"}} compiles to:
-Spacebars.mustache(view.lookup('formatDate'), view.lookup('createdAt'), 'short')
+Spacebars.mustache(view.lookup('formatDate'), view.lookup('createdAt'), 'short');
 ```
 
 ### `attrMustache()`
@@ -44,7 +44,7 @@ function attrMustache(...args: unknown[]): Record<string, unknown> | null;
 
 ```ts
 // <div {{attrs}}> compiles to:
-Spacebars.attrMustache(view.lookup('attrs'))
+Spacebars.attrMustache(view.lookup('attrs'));
 ```
 
 ### `dataMustache()`
@@ -63,16 +63,16 @@ Include a template or content function.
 function include(
   templateOrFunction: Template | (() => unknown),
   contentFunc?: () => unknown,
-  elseFunc?: () => unknown
+  elseFunc?: () => unknown,
 ): View | unknown;
 ```
 
 ```ts
 // {{> myTemplate}} compiles to:
-Spacebars.include(view.lookupTemplate('myTemplate'))
+Spacebars.include(view.lookupTemplate('myTemplate'));
 
 // {{#myBlock}}...{{else}}...{{/myBlock}} compiles to:
-Spacebars.include(view.lookupTemplate('myBlock'), contentFunc, elseFunc)
+Spacebars.include(view.lookupTemplate('myBlock'), contentFunc, elseFunc);
 ```
 
 ### `makeRaw()`
@@ -85,7 +85,7 @@ function makeRaw(value: unknown): Raw | null;
 
 ```ts
 // {{{htmlContent}}} compiles to:
-Spacebars.makeRaw(view.lookup('htmlContent'))
+Spacebars.makeRaw(view.lookup('htmlContent'));
 ```
 
 ### `call()`
@@ -106,7 +106,7 @@ function dot(value: unknown, ...keys: string[]): unknown;
 
 ```ts
 // {{user.address.city}} compiles to:
-Spacebars.dot(view.lookup('user'), 'address', 'city')
+Spacebars.dot(view.lookup('user'), 'address', 'city');
 ```
 
 ### `With()`
@@ -114,11 +114,7 @@ Spacebars.dot(view.lookup('user'), 'address', 'city')
 Create a `{{#with}}` block view.
 
 ```ts
-function With(
-  argFunc: () => unknown,
-  contentFunc: () => unknown,
-  elseFunc?: () => unknown
-): View;
+function With(argFunc: () => unknown, contentFunc: () => unknown, elseFunc?: () => unknown): View;
 ```
 
 ## Classes
@@ -177,14 +173,12 @@ function render() {
   return [
     HTML.H1(
       'Hello, ',
-      Blaze.View('lookup:name', () => 
-        Spacebars.mustache(view.lookup('name'))
-      ),
-      '!'
+      Blaze.View('lookup:name', () => Spacebars.mustache(view.lookup('name'))),
+      '!',
     ),
     Blaze.If(
       () => Spacebars.call(view.lookup('isLoggedIn')),
-      () => HTML.P('Welcome back')
+      () => HTML.P('Welcome back'),
     ),
   ];
 }

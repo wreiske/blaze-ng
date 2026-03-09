@@ -24,13 +24,13 @@ setTemplateModule('myTemplate', module);
 
 ## Exports
 
-| Export | Description |
-|--------|-------------|
-| `getTemplateModule` | Get the module for a registered template |
-| `setTemplateModule` | Register a template's module for HMR tracking |
-| `trackRenderedView` | Track a rendered view for live updates |
-| `untrackRenderedView` | Stop tracking a rendered view |
-| `_markHMRActive` | Enable HMR mode |
+| Export                | Description                                   |
+| --------------------- | --------------------------------------------- |
+| `getTemplateModule`   | Get the module for a registered template      |
+| `setTemplateModule`   | Register a template's module for HMR tracking |
+| `trackRenderedView`   | Track a rendered view for live updates        |
+| `untrackRenderedView` | Stop tracking a rendered view                 |
+| `_markHMRActive`      | Enable HMR mode                               |
 
 ## License
 

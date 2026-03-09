@@ -21,10 +21,7 @@ import { HTML } from '@blaze-ng/htmljs';
 Every HTML element has a corresponding function:
 
 ```ts
-HTML.DIV({ class: 'card' }, 
-  HTML.H2('Title'),
-  HTML.P('Content')
-);
+HTML.DIV({ class: 'card' }, HTML.H2('Title'), HTML.P('Content'));
 // Renders: <div class="card"><h2>Title</h2><p>Content</p></div>
 ```
 
@@ -70,40 +67,28 @@ HTML.SVG()  HTML.CIRCLE()  HTML.RECT()  HTML.PATH()  HTML.G()
 
 ```ts
 // Simple paragraph
-HTML.P('Hello, world!')
+HTML.P('Hello, world!');
 
 // Link with attributes
-HTML.A({ href: '/about', class: 'nav-link' }, 'About')
+HTML.A({ href: '/about', class: 'nav-link' }, 'About');
 
 // Nested structure
-HTML.UL(
-  HTML.LI('First'),
-  HTML.LI('Second'),
-  HTML.LI('Third')
-)
+HTML.UL(HTML.LI('First'), HTML.LI('Second'), HTML.LI('Third'));
 
 // Form
-HTML.FORM({ action: '/login', method: 'post' },
+HTML.FORM(
+  { action: '/login', method: 'post' },
   HTML.LABEL({ for: 'email' }, 'Email'),
   HTML.INPUT({ type: 'email', id: 'email', name: 'email', required: '' }),
-  HTML.BUTTON({ type: 'submit' }, 'Log In')
-)
+  HTML.BUTTON({ type: 'submit' }, 'Log In'),
+);
 
 // Table
-HTML.TABLE({ class: 'data-table' },
-  HTML.THEAD(
-    HTML.TR(
-      HTML.TH('Name'),
-      HTML.TH('Email')
-    )
-  ),
-  HTML.TBODY(
-    HTML.TR(
-      HTML.TD('Alice'),
-      HTML.TD('alice@example.com')
-    )
-  )
-)
+HTML.TABLE(
+  { class: 'data-table' },
+  HTML.THEAD(HTML.TR(HTML.TH('Name'), HTML.TH('Email'))),
+  HTML.TBODY(HTML.TR(HTML.TD('Alice'), HTML.TD('alice@example.com'))),
+);
 ```
 
 ## Special Nodes
@@ -265,9 +250,9 @@ Built-in visitor for text extraction (used by `toText()`).
 ## Utility Functions
 
 ```ts
-import { 
-  isArray, 
-  isNully, 
+import {
+  isArray,
+  isNully,
   isValidAttributeName,
   isKnownElement,
   isKnownSVGElement,
@@ -276,23 +261,33 @@ import {
   ensureTag,
 } from '@blaze-ng/htmljs';
 
-isArray([1, 2, 3]);           // true
-isNully(null);                 // true
-isNully(undefined);            // true
-isNully('');                   // false
+isArray([1, 2, 3]); // true
+isNully(null); // true
+isNully(undefined); // true
+isNully(''); // false
 isValidAttributeName('class'); // true
-isValidAttributeName('on"x');  // false
-isKnownElement('div');         // true
-isKnownSVGElement('circle');   // true
-isVoidElement('br');           // true
-isVoidElement('div');          // false
+isValidAttributeName('on"x'); // false
+isKnownElement('div'); // true
+isKnownSVGElement('circle'); // true
+isVoidElement('br'); // true
+isVoidElement('div'); // false
 ```
 
 ## Types
 
 ```ts
 // Any valid HTMLJS node
-type HTMLNode = string | number | boolean | null | undefined | Tag | Raw | CharRef | Comment | HTMLNode[];
+type HTMLNode =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Tag
+  | Raw
+  | CharRef
+  | Comment
+  | HTMLNode[];
 
 // Tag attributes
 type Attrs = Record<string, string | number | boolean | null | undefined> | Attrs[];
@@ -308,10 +303,10 @@ enum TEXTMODE {
 ## Constants
 
 ```ts
-import { 
-  knownHTMLElementNames,   // string[] — all standard HTML element names
-  knownSVGElementNames,    // string[] — all standard SVG element names
-  knownElementNames,       // string[] — combined HTML + SVG
-  voidElementNames,        // string[] — self-closing elements (br, hr, img, etc.)
+import {
+  knownHTMLElementNames, // string[] — all standard HTML element names
+  knownSVGElementNames, // string[] — all standard SVG element names
+  knownElementNames, // string[] — combined HTML + SVG
+  voidElementNames, // string[] — self-closing elements (br, hr, img, etc.)
 } from '@blaze-ng/htmljs';
 ```

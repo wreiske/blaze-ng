@@ -15,11 +15,8 @@
  * ```
  */
 
-import {
-  render,
-  remove,
-  View,
-} from '@blaze-ng/core';
+import type { View } from '@blaze-ng/core';
+import { render, remove } from '@blaze-ng/core';
 import {
   _migrateTemplate,
   _applyHmrChanges,
@@ -114,13 +111,8 @@ export const UPDATE_ALL = Symbol('blaze-ng:updateAll');
  *
  * @param templateNames - Names of templates to re-render, or UPDATE_ALL for all.
  */
-export function applyHmrUpdate(
-  templateNames: string[] | typeof UPDATE_ALL,
-): void {
-  const names =
-    templateNames === UPDATE_ALL
-      ? [..._renderedViews.keys()]
-      : templateNames;
+export function applyHmrUpdate(templateNames: string[] | typeof UPDATE_ALL): void {
+  const names = templateNames === UPDATE_ALL ? [..._renderedViews.keys()] : templateNames;
 
   for (const name of names) {
     const views = _renderedViews.get(name);
