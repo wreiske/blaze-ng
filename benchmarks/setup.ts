@@ -132,7 +132,6 @@ export function compileToRenderFunc(source: string): (this: View) => unknown {
   const htmlProxy = createHtmlProxy();
   const spacebarsProxy = createSpacebarsProxy();
 
-   
   const fn = new Function('HTML', 'Spacebars', 'Blaze', 'Template', `return ${code}`)(
     htmlProxy,
     spacebarsProxy,

@@ -151,8 +151,9 @@ export function _beautify(code: string): string {
   // UglifyJS normalizes "function ()" to "function()"
   result = result.replace(/function \(/g, 'function(');
 
-  // Now do a simple brace-aware indentation pass
-  let output = '';
+  // Now do a simple brace-aware indentation pass (array-based to avoid O(n²) concat)
+  const outParts: string[] = [];
+  let lastChar = '';
   let indent = 0;
   const tokens = tokenizeForBeautify(result);
 
@@ -161,31 +162,33 @@ export function _beautify(code: string): string {
 
     if (token === '{') {
       // Ensure space before opening brace (e.g. "function() {")
-      if (output.length > 0 && !output.endsWith(' ') && !output.endsWith('\n')) {
-        output += ' ';
+      if (lastChar && lastChar !== ' ' && lastChar !== '\n') {
+        outParts.push(' ');
       }
-      output += '{\n';
+      outParts.push('{\n');
+      lastChar = '\n';
       indent++;
     } else if (token === '}') {
       indent--;
-      output += indentStr(indent) + '}';
+      outParts.push(indentStr(indent), '}');
+      lastChar = '}';
       // Check if next token exists and is not a special char
       if (i + 1 < tokens.length && tokens[i + 1] !== ')' && tokens[i + 1] !== ';') {
-        output += '\n';
+        outParts.push('\n');
+        lastChar = '\n';
       }
     } else if (token === ';') {
-      output += ';\n';
+      outParts.push(';\n');
+      lastChar = '\n';
     } else {
       // Regular text or string token
       const trimmed = token.trim();
       if (trimmed) {
-        if (output.length === 0 || output.endsWith('\n')) {
+        if (!lastChar || lastChar === '\n') {
           // Start of line — add indentation
-          output += indentStr(indent) + trimmed;
+          outParts.push(indentStr(indent), trimmed);
         } else {
           // Continuation on same line — ensure space separation
-          // between text/string tokens if needed
-          const lastChar = output[output.length - 1];
           const firstChar = trimmed[0];
           const needsSpace =
             lastChar !== ' ' &&
@@ -194,13 +197,16 @@ export function _beautify(code: string): string {
             firstChar !== ',' &&
             firstChar !== '.';
           if (needsSpace) {
-            output += ' ';
+            outParts.push(' ');
           }
-          output += trimmed;
+          outParts.push(trimmed);
         }
+        lastChar = trimmed[trimmed.length - 1]!;
       }
     }
   }
+
+  const output = outParts.join('');
 
   // Clean up: remove trailing whitespace on lines, collapse blank lines
   result = output
@@ -219,58 +225,61 @@ export function _beautify(code: string): string {
   return result;
 }
 
+/** Pre-computed indentation strings for common nesting levels. */
+const INDENT_CACHE: string[] = [];
+for (let i = 0; i < 16; i++) INDENT_CACHE.push('  '.repeat(i));
+
 /** Produce 2-space indentation string. */
 function indentStr(level: number): string {
-  return '  '.repeat(level);
+  return INDENT_CACHE[level] ?? '  '.repeat(level);
 }
 
 /**
  * Split code into tokens for the beautifier: strings, braces, semicolons,
  * and text chunks. Strings are kept intact to avoid breaking them.
+ * Uses substring slicing instead of char-by-char concatenation.
  */
 function tokenizeForBeautify(code: string): string[] {
   const tokens: string[] = [];
   let i = 0;
-  let buf = '';
+  let bufStart = 0;
 
   const flush = () => {
-    if (buf) {
-      tokens.push(buf);
-      buf = '';
+    if (i > bufStart) {
+      tokens.push(code.substring(bufStart, i));
     }
   };
 
   while (i < code.length) {
-    const ch = code[i];
+    const ch = code.charCodeAt(i);
 
     // Handle string literals (preserve them intact)
-    if (ch === '"' || ch === "'") {
+    if (ch === 0x22 /* " */ || ch === 0x27 /* ' */) {
       flush();
-      let str = ch;
+      const strStart = i;
       i++;
       while (i < code.length) {
-        const c = code[i];
-        str += c;
+        const c = code.charCodeAt(i);
         i++;
-        if (c === '\\' && i < code.length) {
-          str += code[i];
+        if (c === 0x5c /* \\ */ && i < code.length) {
           i++;
         } else if (c === ch) {
           break;
         }
       }
-      tokens.push(str);
+      tokens.push(code.substring(strStart, i));
+      bufStart = i;
       continue;
     }
 
-    if (ch === '{' || ch === '}' || ch === ';') {
+    if (ch === 0x7b /* { */ || ch === 0x7d /* } */ || ch === 0x3b /* ; */) {
       flush();
-      tokens.push(ch);
+      tokens.push(code.charAt(i));
       i++;
+      bufStart = i;
       continue;
     }
 
-    buf += ch;
     i++;
   }
 

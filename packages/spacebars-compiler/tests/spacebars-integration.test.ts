@@ -10,8 +10,7 @@ import { HTML, Raw, CharRef, Comment as HtmlComment } from '@blaze-ng/htmljs';
 import { Spacebars } from '@blaze-ng/spacebars';
 import { ObserveSequence } from '@blaze-ng/observe-sequence';
 import { compile } from '../src/compiler';
-import type {
-  TemplateInstance} from '@blaze-ng/core';
+import type { TemplateInstance } from '@blaze-ng/core';
 import {
   View,
   SimpleReactiveSystem,
@@ -127,7 +126,6 @@ function compileToRenderFunc(source: string): (this: View) => unknown {
   const htmlProxy = createHtmlProxy();
   const spacebarsProxy = createSpacebarsProxy();
 
-   
   const fn = new Function('HTML', 'Spacebars', 'Blaze', 'Template', `return ${code}`)(
     htmlProxy,
     spacebarsProxy,

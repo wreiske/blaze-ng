@@ -9,8 +9,7 @@
  * - Dynamic template inclusion (`__dynamic`, `__dynamicWithDataContext`)
  */
 
-import type {
-  View} from '@blaze-ng/core';
+import type { View } from '@blaze-ng/core';
 import {
   Template,
   isTemplate,
@@ -211,7 +210,6 @@ export function _applyHmrChanges(_templateName?: string): void {
           parentEl.removeChild(comment);
         }
       } catch (e) {
-         
         console.error('[Blaze HMR] Error re-rendering template:', e);
 
         const newestRoot = __rootViews[__rootViews.length - 1];

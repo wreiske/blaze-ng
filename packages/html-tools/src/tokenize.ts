@@ -12,8 +12,13 @@ import type {
   AttrsDict,
 } from './types';
 
-// Whitespace per HTML spec
-const HTML_SPACE = /^[\f\n\r\t ]/;
+// Whitespace per HTML spec — inline charCode check avoids regex overhead
+const isHTMLSpace = (ch: string): boolean => {
+  if (!ch) return false;
+  const c = ch.charCodeAt(0);
+  return c === 0x09 || c === 0x0a || c === 0x0c || c === 0x0d || c === 0x20;
+};
+// Keep regex for isLookingAtEndTag where it's used on substrings (non-hot path)
 
 const convertCRLF = (str: string) => str.replace(/\r\n?/g, '\n');
 
@@ -24,32 +29,34 @@ const convertCRLF = (str: string) => str.replace(/\r\n?/g, '\n');
  * @throws {Error} On malformed comments.
  */
 export function getComment(scanner: Scanner): CommentToken | null {
-  if (scanner.rest().slice(0, 4) !== '<!--') return null;
+  if (!scanner.input.startsWith('<!--', scanner.pos)) return null;
   scanner.pos += 4;
 
-  const rest = scanner.rest();
-  if (rest.charAt(0) === '>' || rest.slice(0, 2) === '->')
-    scanner.fatal("HTML comment can't start with > or ->");
-
-  const closePos = rest.indexOf('-->');
+  const closePos = scanner.input.indexOf('-->', scanner.pos);
   if (closePos < 0) scanner.fatal('Unclosed HTML comment');
 
-  const commentContents = rest.slice(0, closePos);
-  if (commentContents.slice(-1) === '-') scanner.fatal('HTML comment must end at first `--`');
+  const commentStart = scanner.pos;
+  const firstChar = scanner.input.charAt(commentStart);
+  if (firstChar === '>' || scanner.input.startsWith('->', commentStart))
+    scanner.fatal("HTML comment can't start with > or ->");
+
+  const commentContents = scanner.input.substring(commentStart, closePos);
+  if (commentContents.charAt(commentContents.length - 1) === '-')
+    scanner.fatal('HTML comment must end at first `--`');
   if (commentContents.indexOf('--') >= 0)
     scanner.fatal('HTML comment cannot contain `--` anywhere');
   if (commentContents.indexOf('\u0000') >= 0) scanner.fatal('HTML comment cannot contain NULL');
 
-  scanner.pos += closePos + 3;
+  scanner.pos = closePos + 3;
   return { t: 'Comment', v: convertCRLF(commentContents) };
 }
 
 const skipSpaces = (scanner: Scanner) => {
-  while (HTML_SPACE.test(scanner.peek())) scanner.pos++;
+  while (isHTMLSpace(scanner.peek())) scanner.pos++;
 };
 
 const requireSpaces = (scanner: Scanner) => {
-  if (!HTML_SPACE.test(scanner.peek())) scanner.fatal('Expected space');
+  if (!isHTMLSpace(scanner.peek())) scanner.fatal('Expected space');
   skipSpaces(scanner);
 };
 
@@ -80,7 +87,8 @@ const getDoctypeQuotedString = (scanner: Scanner): string => {
  * @throws {Error} On malformed DOCTYPE.
  */
 export function getDoctype(scanner: Scanner): DoctypeToken | null {
-  if (asciiLowerCase(scanner.rest().slice(0, 9)) !== '<!doctype') return null;
+  if (asciiLowerCase(scanner.input.substring(scanner.pos, scanner.pos + 9)) !== '<!doctype')
+    return null;
   const start = scanner.pos;
   scanner.pos += 9;
 
@@ -91,7 +99,7 @@ export function getDoctype(scanner: Scanner): DoctypeToken | null {
   let name = ch;
   scanner.pos++;
 
-  while (((ch = scanner.peek()), !(HTML_SPACE.test(ch) || ch === '>'))) {
+  while (((ch = scanner.peek()), !(isHTMLSpace(ch) || ch === '>'))) {
     if (!ch || ch === '\u0000') scanner.fatal('Malformed DOCTYPE');
     name += ch;
     scanner.pos++;
@@ -104,7 +112,7 @@ export function getDoctype(scanner: Scanner): DoctypeToken | null {
   let publicId: string | null = null;
 
   if (scanner.peek() !== '>') {
-    const publicOrSystem = asciiLowerCase(scanner.rest().slice(0, 6));
+    const publicOrSystem = asciiLowerCase(scanner.input.substring(scanner.pos, scanner.pos + 6));
 
     if (publicOrSystem === 'system') {
       scanner.pos += 6;
@@ -249,7 +257,7 @@ const getAttributeValue = (scanner: Scanner, quote?: string): AttrValueToken[] =
     if (quote && ch === quote) {
       scanner.pos++;
       return tokens;
-    } else if (!quote && (HTML_SPACE.test(ch) || ch === '>')) {
+    } else if (!quote && (isHTMLSpace(ch) || ch === '>')) {
       return tokens;
     } else if (!ch) {
       scanner.fatal('Unclosed attribute in tag');
@@ -300,7 +308,7 @@ const hasOwnProperty = Object.prototype.hasOwnProperty;
  * @throws {Error} On malformed tags.
  */
 export function getTagToken(scanner: Scanner): TagToken | null {
-  if (!(scanner.peek() === '<' && scanner.rest().charAt(1) !== '!')) return null;
+  if (!(scanner.peek() === '<' && scanner.input.charAt(scanner.pos + 1) !== '!')) return null;
   scanner.pos++;
 
   const tag: TagToken = { t: 'Tag', n: '' };
@@ -319,7 +327,7 @@ export function getTagToken(scanner: Scanner): TagToken | null {
 
   if (scanner.isEOF()) scanner.fatal('Unclosed `<`');
 
-  if (!HTML_SPACE.test(scanner.peek())) scanner.fatal('Expected space after tag name');
+  if (!isHTMLSpace(scanner.peek())) scanner.fatal('Expected space after tag name');
 
   skipSpaces(scanner);
 
@@ -399,14 +407,15 @@ export function getTagToken(scanner: Scanner): TagToken | null {
  * @param tagName - Expected tag name (proper case).
  * @returns True if the scanner is positioned at `</tagName>`.
  */
+const END_TAG_RE = /<\/([a-zA-Z]+)/y;
+
 export function isLookingAtEndTag(scanner: Scanner, tagName: string): boolean {
-  const rest = scanner.rest();
-  let pos = 0;
-  const firstPart = /^<\/([a-zA-Z]+)/.exec(rest);
+  END_TAG_RE.lastIndex = scanner.pos;
+  const firstPart = END_TAG_RE.exec(scanner.input);
   if (firstPart && properCaseTagName(firstPart[1]!) === tagName) {
-    pos += firstPart[0].length;
-    while (pos < rest.length && HTML_SPACE.test(rest.charAt(pos))) pos++;
-    if (pos < rest.length && rest.charAt(pos) === '>') return true;
+    let pos = scanner.pos + firstPart[0].length;
+    while (pos < scanner.input.length && isHTMLSpace(scanner.input.charAt(pos))) pos++;
+    if (pos < scanner.input.length && scanner.input.charAt(pos) === '>') return true;
   }
   return false;
 }

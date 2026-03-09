@@ -385,9 +385,19 @@ export class ToHTMLVisitor extends Visitor {
  * @param content - The HTMLjs node(s) to convert.
  * @returns The HTML string.
  */
+// Reuse a singleton since ToHTMLVisitor is stateless
+const _toHTMLVisitor = new ToHTMLVisitor();
+
 export function toHTML(content: unknown): string {
-  return new ToHTMLVisitor().visit(content) as string;
+  return _toHTMLVisitor.visit(content) as string;
 }
+
+// Pre-built ToTextVisitors for common text modes (avoid per-call allocation)
+const _toTextVisitors: Record<number, ToTextVisitor> = {
+  [TEXTMODE.STRING]: new ToTextVisitor({ textMode: TEXTMODE.STRING }),
+  [TEXTMODE.RCDATA]: new ToTextVisitor({ textMode: TEXTMODE.RCDATA }),
+  [TEXTMODE.ATTRIBUTE]: new ToTextVisitor({ textMode: TEXTMODE.ATTRIBUTE }),
+};
 
 /**
  * Convert HTMLjs content to plain text with the given escaping mode.
@@ -409,6 +419,6 @@ export function toText(content: unknown, textMode: TextMode): string {
     throw new Error('Unknown textMode: ' + textMode);
   }
 
-  const visitor = new ToTextVisitor({ textMode });
+  const visitor = _toTextVisitors[textMode] ?? new ToTextVisitor({ textMode });
   return visitor.visit(content) as string;
 }

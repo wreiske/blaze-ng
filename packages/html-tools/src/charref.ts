@@ -37,13 +37,14 @@ function peekMatcher(scanner: Scanner, matcher: (s: Scanner) => string | null): 
 function getNamedCharRef(scanner: Scanner, inAttribute?: boolean): string | null {
   if (!peekMatcher(scanner, getPossibleNamedEntityStart)) return null;
 
-  const matcher = getNamedEntityByFirstChar[scanner.rest().charAt(1)];
+  const matcher = getNamedEntityByFirstChar[scanner.input.charAt(scanner.pos + 1)];
   let entity: string | null = null;
   if (matcher) entity = peekMatcher(scanner, matcher);
 
   if (entity) {
     if (entity.slice(-1) !== ';') {
-      if (inAttribute && ALPHANUMERIC.test(scanner.rest().charAt(entity.length))) return null;
+      if (inAttribute && ALPHANUMERIC.test(scanner.input.charAt(scanner.pos + entity.length)))
+        return null;
       scanner.fatal('Character reference requires semicolon: ' + entity);
     } else {
       scanner.pos += entity.length;
@@ -114,7 +115,7 @@ export function getCharacterReference(
 ): CharRefToken | null {
   if (scanner.peek() !== '&') return null;
 
-  const afterAmp = scanner.rest().charAt(1);
+  const afterAmp = scanner.input.charAt(scanner.pos + 1);
 
   if (afterAmp === '#') {
     scanner.pos += 2;

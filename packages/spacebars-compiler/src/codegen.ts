@@ -48,6 +48,15 @@ const additionalReservedNames = [
   '__pendingReplacement',
 ];
 
+// Pre-built Sets for O(1) lookup in hot paths
+const BLOCK_HELPERS_SET = new Set(Object.keys(builtInBlockHelpers));
+const TEMPLATE_MACROS_SET = new Set(Object.keys(builtInTemplateMacros));
+const RESERVED_NAMES_SET = new Set([
+  ...BLOCK_HELPERS_SET,
+  ...TEMPLATE_MACROS_SET,
+  ...additionalReservedNames,
+]);
+
 /**
  * Check whether a name is reserved and can't be used as a template name.
  *
@@ -55,11 +64,7 @@ const additionalReservedNames = [
  * @returns True if the name is reserved.
  */
 export function isReservedName(name: string): boolean {
-  return (
-    Object.prototype.hasOwnProperty.call(builtInBlockHelpers, name) ||
-    Object.prototype.hasOwnProperty.call(builtInTemplateMacros, name) ||
-    additionalReservedNames.includes(name)
-  );
+  return RESERVED_NAMES_SET.has(name);
 }
 
 /**
@@ -117,10 +122,7 @@ export class CodeGen {
         const path = tag.path!;
         const args = tag.args!;
 
-        if (
-          tag.type === 'BLOCKOPEN' &&
-          Object.prototype.hasOwnProperty.call(builtInBlockHelpers, path[0])
-        ) {
+        if (tag.type === 'BLOCKOPEN' && BLOCK_HELPERS_SET.has(path[0])) {
           if (path.length > 1) throw new Error('Unexpected dotted path beginning with ' + path[0]);
           if (!args.length) throw new Error('#' + path[0] + ' requires an argument');
 
@@ -233,14 +235,14 @@ export class CodeGen {
    * @throws {Error} If the path uses a built-in block helper name.
    */
   codeGenPath(path: string[], opts?: { lookupTemplate?: boolean }): string {
-    if (Object.prototype.hasOwnProperty.call(builtInBlockHelpers, path[0]))
+    if (BLOCK_HELPERS_SET.has(path[0]))
       throw new Error("Can't use the built-in '" + path[0] + "' here");
 
     // XXX BACK COMPAT - UI is the old name, Template is the new
     if (
       path.length >= 2 &&
       (path[0] === 'UI' || path[0] === 'Template') &&
-      Object.prototype.hasOwnProperty.call(builtInTemplateMacros, path[1])
+      TEMPLATE_MACROS_SET.has(path[1])
     ) {
       if (path.length > 2)
         throw new Error('Unexpected dotted path beginning with ' + path[0] + '.' + path[1]);

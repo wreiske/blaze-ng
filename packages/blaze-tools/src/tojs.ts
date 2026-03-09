@@ -65,6 +65,8 @@ const jsReservedWordSet: Record<string, 1> = {};
     jsReservedWordSet[w] = 1;
   });
 
+const VALID_IDENT_RE = /^[a-zA-Z$_][a-zA-Z$0-9_]*$/;
+
 /**
  * Format a string as a JavaScript object literal key.
  *
@@ -75,7 +77,7 @@ const jsReservedWordSet: Record<string, 1> = {};
  * @returns The formatted key string.
  */
 export function toObjectLiteralKey(k: string): string {
-  if (/^[a-zA-Z$_][a-zA-Z$0-9_]*$/.test(k) && jsReservedWordSet[k] !== 1) return k;
+  if (VALID_IDENT_RE.test(k) && jsReservedWordSet[k] !== 1) return k;
   return toJSLiteral(k);
 }
 
@@ -213,6 +215,9 @@ export class ToJSVisitor extends Visitor {
   }
 }
 
+// Reuse a singleton since ToJSVisitor is stateless
+const _toJSVisitor = new ToJSVisitor();
+
 /**
  * Convert HTMLjs content to executable JavaScript code.
  *
@@ -220,5 +225,5 @@ export class ToJSVisitor extends Visitor {
  * @returns JavaScript code string that reconstructs the content.
  */
 export function toJS(content: unknown): string {
-  return new ToJSVisitor().visit(content) as string;
+  return _toJSVisitor.visit(content) as string;
 }

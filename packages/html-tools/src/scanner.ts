@@ -84,10 +84,28 @@ export type GetTemplateTagFn = (scanner: Scanner, position: number) => unknown |
  * and returns match group 1 (if non-empty) or the full match. On failure
  * it returns null without advancing.
  *
+ * Uses the sticky (`y`) flag internally to match directly against the
+ * input string at the current position, avoiding a `rest()` substring
+ * allocation on every call.
+ *
  * @param regex - A RegExp starting with `^`.
  * @returns A function `(scanner) => string | null`.
  */
 export function makeRegexMatcher(regex: RegExp): (scanner: Scanner) => string | null {
+  const source = regex.source;
+  // Convert ^-anchored regex to sticky (y flag) for zero-allocation matching
+  if (source.startsWith('^')) {
+    const flags = regex.flags.replace(/[gy]/g, '') + 'y';
+    const stickyRegex = new RegExp(source.slice(1), flags);
+    return (scanner: Scanner) => {
+      stickyRegex.lastIndex = scanner.pos;
+      const match = stickyRegex.exec(scanner.input);
+      if (!match) return null;
+      scanner.pos += match[0].length;
+      return match[1] || match[0];
+    };
+  }
+
   return (scanner: Scanner) => {
     const match = regex.exec(scanner.rest());
     if (!match) return null;
