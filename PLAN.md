@@ -200,8 +200,9 @@
 
 - [x] Expand observe-sequence tests: 19 → 35 (array transitions, movedTo, edge cases)
 - [x] Expand core tests: 31 → 46 (view GC, reactive attrs, template lifecycle, Each, helpers, renderWithData)
-- **331 tests passing across 12 test files**
-- [ ] Port remaining spacebars-tests integration suite (~197 DOM tests requiring compiled templates)
+- [x] Create spacebars integration test suite: 49 tests (compile-and-render via SpacebarsCompiler)
+- **380 tests passing across 13 test files**
+- [ ] Port remaining spacebars-tests (~70 more tests requiring Mongo.Collection, jQuery, etc.)
 - [ ] Run original test-app with Puppeteer against new packages
 - [ ] Side-by-side compatibility tests (old Blaze vs new)
 - [ ] Fix any behavioral differences
