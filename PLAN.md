@@ -116,75 +116,75 @@
 
 ### 3a. Reactivity Interface (in `@blaze-ng/core`)
 
-- [ ] Define `ReactiveSystem` interface
-- [ ] Define `Computation`, `ReactiveVar<T>` interfaces
-- [ ] Global reactive system registration: `Blaze.setReactiveSystem()`
-- [ ] Simple in-memory reactive system for testing (no Tracker dep)
+- [x] Define `ReactiveSystem` interface
+- [x] Define `Computation`, `ReactiveVar<T>` interfaces
+- [x] Global reactive system registration: `Blaze.setReactiveSystem()`
+- [x] Simple in-memory reactive system for testing (no Tracker dep)
 
 ### 3b. View System (depends on 3a)
 
-- [ ] Port `Blaze.View` class (~1,100 lines → fully typed)
-- [ ] Port lifecycle: created → rendered → ready → destroyed
-- [ ] Port scope bindings and view hierarchy
-- [ ] Port autorun via ReactiveSystem interface
-- [ ] Port 3 view tests → Vitest
+- [x] Port `Blaze.View` class (~1,100 lines → fully typed)
+- [x] Port lifecycle: created → rendered → ready → destroyed
+- [x] Port scope bindings and view hierarchy
+- [x] Port autorun via ReactiveSystem interface
+- [x] Port 3 view tests → Vitest
 
 ### 3c. DOM Backend (parallel with 3b)
 
-- [ ] Native `parseHTML(html)` → DocumentFragment
-- [ ] Native event delegation via `addEventListener`
-- [ ] Element teardown via `WeakMap`
-- [ ] Drop jQuery entirely
+- [x] Native `parseHTML(html)` → DocumentFragment
+- [x] Native event delegation via `addEventListener`
+- [x] Element teardown via `WeakMap`
+- [x] Drop jQuery entirely
 
 ### 3d. DOMRange (depends on 3c)
 
-- [ ] Port DOMRange class with typed members
-- [ ] Port attach/detach/move operations
-- [ ] Use modern `Element.after()`, `Element.before()`, `Element.replaceWith()`
-- [ ] Drop IE8 comment fallback
+- [x] Port DOMRange class with typed members
+- [x] Port attach/detach/move operations
+- [x] Use modern `Element.after()`, `Element.before()`, `Element.replaceWith()`
+- [x] Drop IE8 comment fallback
 
 ### 3e. Materializer (depends on 3b, 3d)
 
-- [ ] Port work-stack based HTMLjs→DOM materialization
-- [ ] Port content equality checking
-- [ ] Port Promise attribute handling
+- [x] Port work-stack based HTMLjs→DOM materialization
+- [x] Port content equality checking
+- [x] Port Promise attribute handling
 
 ### 3f. Attribute Handlers (depends on 3c)
 
-- [ ] Port `AttributeHandler` base class
-- [ ] Port `ClassHandler` using `classList` API (perf win)
-- [ ] Port `StyleHandler` using `style.setProperty()` (perf win)
-- [ ] Port `BooleanHandler`, `URLHandler`, `XlinkHandler`
+- [x] Port `AttributeHandler` base class
+- [x] Port `ClassHandler` using `classList` API (perf win)
+- [x] Port `StyleHandler` using `style.setProperty()` (perf win)
+- [x] Port `BooleanHandler`, `URLHandler`, `XlinkHandler`
 
 ### 3g. Events (depends on 3c, 3d)
 
-- [ ] Port event delegation with capture/bubble detection
-- [ ] Port `HandlerRec` tracking
-- [ ] Native addEventListener/removeEventListener
+- [x] Port event delegation with capture/bubble detection
+- [x] Port `HandlerRec` tracking
+- [x] Native addEventListener/removeEventListener
 
 ### 3h. Template & Lookup (depends on 3b, 3g)
 
-- [ ] Port Template class (helpers, events, lifecycle callbacks)
-- [ ] Port HelperMap with typed entries
-- [ ] Port lookup chain (template → lexical → data → global)
-- [ ] Port built-in helpers: `@pending`, `@resolved`, `@rejected`
-- [ ] Port 13 render tests → Vitest
+- [x] Port Template class (helpers, events, lifecycle callbacks)
+- [x] Port HelperMap with typed entries
+- [x] Port lookup chain (template → lexical → data → global)
+- [x] Port built-in helpers: `@pending`, `@resolved`, `@rejected`
+- [x] Port 13 render tests → Vitest
 
 ### 3i. Builtins (depends on 3h)
 
-- [ ] Port `Blaze.With`, `Blaze.If`, `Blaze.Unless`, `Blaze.Each`, `Blaze.Let`
-- [ ] Port promise/async binding support
-- [ ] Port `InOuterTemplateScope`
+- [x] Port `Blaze.With`, `Blaze.If`, `Blaze.Unless`, `Blaze.Each`, `Blaze.Let`
+- [x] Port promise/async binding support
+- [x] Port `InOuterTemplateScope`
 
 ---
 
 ## Phase 4: Spacebars Runtime & Templating
 
-- [ ] **4a. `@blaze-ng/spacebars`** — Port include/mustache/attrMustache/makeRaw/call/dot. Port 3 tests.
-- [ ] **4b. `@blaze-ng/templating-runtime`** — Port Template.body, \_\_checkName, renderToDocument, dynamic templates, HMR. Port 9 tests.
-- [ ] **4c. `@blaze-ng/templating-compiler`** — Port .html build plugin.
-- [ ] **4d. `@blaze-ng/templating`** — Meta-package (runtime + compiler).
-- [ ] **4e. `@blaze-ng/html-templates`** — Meta-package (core + templating).
+- [x] **4a. `@blaze-ng/spacebars`** — Port include/mustache/attrMustache/makeRaw/call/dot. Port 32 tests.
+- [x] **4b. `@blaze-ng/templating-runtime`** — Port Template.body, \_\_checkName, renderToDocument, dynamic templates, HMR. Port 16 tests.
+- [x] **4c. `@blaze-ng/templating-compiler`** — Port .html build plugin.
+- [x] **4d. `@blaze-ng/templating`** — Meta-package (runtime + compiler).
+- [x] **4e. `@blaze-ng/html-templates`** — Meta-package (core + templating).
 
 ---
 

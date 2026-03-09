@@ -101,7 +101,7 @@ class HtmlScan {
       }
 
       // otherwise, a <tag>
-      const tagName = matchTokenTagName.toLowerCase();
+      const tagName = matchTokenTagName!.toLowerCase();
       const tagAttribs: Record<string, string> = {};
       const tagPartRegex = /^\s*((([a-zA-Z0-9:_-]+)\s*=\s*(["'])(.*?)\4)|(>))/;
 
@@ -118,8 +118,8 @@ class HtmlScan {
         }
 
         // trim attribute value
-        attrValue = attrValue.match(/^\s*([\s\S]*?)\s*$/)![1];
-        tagAttribs[attrKey] = attrValue;
+        attrValue = attrValue!.match(/^\s*([\s\S]*?)\s*$/)![1];
+        tagAttribs[attrKey!] = attrValue!;
       }
 
       if (!attr) {
@@ -133,13 +133,13 @@ class HtmlScan {
         this.throwCompileError('unclosed <' + tagName + '>');
       }
 
-      const tagContents = this.rest.slice(0, end.index);
+      const tagContents = this.rest.slice(0, end!.index);
       const contentsStartIndex = this.index;
 
       // trim the tag contents (courtesy, also relied on by some tests)
       const m = tagContents.match(/^([ \t\r\n]*)([\s\S]*?)[ \t\r\n]*$/)!;
-      const trimmedContentsStartIndex = contentsStartIndex + m[1].length;
-      const trimmedTagContents = m[2];
+      const trimmedContentsStartIndex = contentsStartIndex + m[1]!.length;
+      const trimmedTagContents = m[2]!;
 
       const tag: ScannedTag = {
         tagName,

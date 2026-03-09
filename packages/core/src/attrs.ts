@@ -275,11 +275,11 @@ function isUrlAttribute(tagName: string, attrName: string): boolean {
 
 // URL protocol detection via an anchor element
 let anchorForNormalization: HTMLAnchorElement | undefined;
-if (typeof document !== 'undefined') {
-  anchorForNormalization = document.createElement('A') as HTMLAnchorElement;
-}
 
 function getUrlProtocol(url: string): string {
+  if (!anchorForNormalization && typeof document !== 'undefined') {
+    anchorForNormalization = document.createElement('A') as HTMLAnchorElement;
+  }
   if (anchorForNormalization) {
     anchorForNormalization.href = url;
     return (anchorForNormalization.protocol || '').toLowerCase();
