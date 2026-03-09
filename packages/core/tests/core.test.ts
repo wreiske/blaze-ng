@@ -33,7 +33,9 @@ import {
   currentView,
   DOMBackend,
   _expand,
+  renderWithData,
 } from '../src/index';
+import { ObserveSequence } from '@blaze-ng/observe-sequence';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -72,6 +74,7 @@ beforeEach(() => {
 
   reactive = new SimpleReactiveSystem();
   setReactiveSystem(reactive);
+  ObserveSequence.setReactiveSystem(reactive);
 });
 
 // ─── View Tests ──────────────────────────────────────────────────────────────
@@ -639,5 +642,324 @@ describe('toHTML', () => {
   test('null and undefined throw', () => {
     expect(() => toHTML(null)).toThrow("Can't render null");
     expect(() => toHTML(undefined)).toThrow("Can't render undefined");
+  });
+});
+
+// ─── View GC / cleanup tests ────────────────────────────────────────────────
+
+describe('view garbage collection', () => {
+  test('destroying a view stops its autorun', () => {
+    const R = reactive.ReactiveVar('Hello');
+    let runCount = 0;
+
+    const v = new View('gc-test', () => {
+      runCount++;
+      return HTML.P(R.get());
+    });
+
+    const div = document.createElement('div');
+    render(v, div);
+    expect(runCount).toBe(1);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<p>Hello</p>');
+
+    R.set('World');
+    reactive.flush();
+    expect(runCount).toBe(2);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<p>World</p>');
+
+    // Remove the view — autoruns should stop
+    remove(v);
+
+    const prevCount = runCount;
+    R.set('After');
+    reactive.flush();
+    // Should not re-run after removal
+    expect(runCount).toBe(prevCount);
+  });
+
+  test('nested views are cleaned up on parent removal', () => {
+    const R = reactive.ReactiveVar('inner');
+    let innerRuns = 0;
+
+    const outerView = new View('outer', () => {
+      return HTML.DIV(new View('inner', () => {
+        innerRuns++;
+        return R.get();
+      }));
+    });
+
+    const div = document.createElement('div');
+    render(outerView, div);
+    expect(innerRuns).toBe(1);
+
+    R.set('updated');
+    reactive.flush();
+    expect(innerRuns).toBe(2);
+
+    remove(outerView);
+
+    const prevRuns = innerRuns;
+    R.set('after-remove');
+    reactive.flush();
+    expect(innerRuns).toBe(prevRuns);
+  });
+});
+
+// ─── Reactive Attribute Tests ────────────────────────────────────────────────
+
+describe('reactive attributes', () => {
+  test('dynamic class attribute updates', () => {
+    const R = reactive.ReactiveVar('foo');
+
+    const spanFunc = () =>
+      HTML.SPAN(
+        { class: () => new View('attr', () => R.get()) },
+        'text',
+      );
+
+    const div = document.createElement('div');
+    render(spanFunc, div);
+    const span = div.querySelector('span');
+    expect(span).toBeTruthy();
+    expect(span!.getAttribute('class')).toBe('foo');
+
+    R.set('bar');
+    reactive.flush();
+    expect(span!.getAttribute('class')).toBe('bar');
+  });
+
+  test('nully attributes are removed', () => {
+    const R = reactive.ReactiveVar<string | null>('value');
+
+    const spanFunc = () =>
+      HTML.SPAN(
+        { id: () => new View('attr', () => R.get()) },
+        'text',
+      );
+
+    const div = document.createElement('div');
+    render(spanFunc, div);
+    const span = div.querySelector('span');
+    expect(span!.getAttribute('id')).toBe('value');
+
+    R.set(null);
+    reactive.flush();
+    // null attribute should be removed
+    expect(span!.hasAttribute('id')).toBe(false);
+  });
+
+  test('dynamic data- attribute', () => {
+    const R = reactive.ReactiveVar('initial');
+
+    const spanFunc = () =>
+      HTML.SPAN(
+        { 'data-info': () => new View('attr', () => R.get()) },
+        'text',
+      );
+
+    const div = document.createElement('div');
+    render(spanFunc, div);
+    const span = div.querySelector('span');
+    expect(span).toBeTruthy();
+    expect(span!.getAttribute('data-info')).toBe('initial');
+
+    R.set('updated');
+    reactive.flush();
+    expect(span!.getAttribute('data-info')).toBe('updated');
+  });
+});
+
+// ─── Template Lifecycle Tests ────────────────────────────────────────────────
+
+describe('template lifecycle', () => {
+  test('created/rendered/destroyed callbacks fire in order', () => {
+    const buf: string[] = [];
+
+    const tmpl = new Template('lifecycle-test', () => HTML.DIV('hello'));
+    tmpl.onCreated(function (this: TemplateInstance) {
+      buf.push('created');
+    });
+    tmpl.onRendered(function (this: TemplateInstance) {
+      buf.push('rendered');
+    });
+    tmpl.onDestroyed(function (this: TemplateInstance) {
+      buf.push('destroyed');
+    });
+
+    const div = document.createElement('div');
+    const view = render(tmpl, div);
+    reactive.flush();
+
+    expect(buf).toContain('created');
+    // rendered fires after flush
+    expect(buf).toContain('rendered');
+
+    remove(view);
+    expect(buf).toContain('destroyed');
+  });
+
+  test('Template.instance() available in lifecycle callbacks', () => {
+    let captured: TemplateInstance | null = null;
+
+    const tmpl = new Template('instance-test', () => HTML.SPAN('test'));
+    tmpl.onCreated(function (this: TemplateInstance) {
+      captured = Template.instance();
+    });
+
+    const div = document.createElement('div');
+    const view = render(tmpl, div);
+    reactive.flush();
+
+    expect(captured).toBeInstanceOf(TemplateInstance);
+    remove(view);
+  });
+
+  test('template helpers are accessible', () => {
+    const tmpl = new Template('helper-test', function (this: View) {
+      const helper = this.lookup('greeting');
+      const val = typeof helper === 'function' ? helper() : helper;
+      return HTML.SPAN(val as string);
+    });
+
+    tmpl.helpers({
+      greeting: () => 'Hello World',
+    });
+
+    const div = document.createElement('div');
+    const view = render(tmpl, div);
+    expect(canonicalizeHtml(div.innerHTML)).toContain('Hello World');
+    remove(view);
+  });
+
+  test('template events fire', () => {
+    let clicked = false;
+
+    const tmpl = new Template('event-test', () =>
+      HTML.BUTTON({ class: 'btn' }, 'Click me'),
+    );
+
+    tmpl.events({
+      'click .btn': () => {
+        clicked = true;
+      },
+    });
+
+    const div = document.createElement('div');
+    document.body.appendChild(div);
+    const view = render(tmpl, div);
+    reactive.flush();
+
+    const btn = div.querySelector('.btn');
+    expect(btn).toBeTruthy();
+
+    const clickEvent = new dom.window.Event('click', { bubbles: true });
+    btn!.dispatchEvent(clickEvent);
+
+    expect(clicked).toBe(true);
+
+    remove(view);
+    div.remove();
+  });
+});
+
+// ─── Each Builtin Tests ─────────────────────────────────────────────────────
+
+describe('Each builtin', () => {
+  test('renders array items', () => {
+    const items = reactive.ReactiveVar([1, 2, 3]);
+
+    const view = Each(
+      () => items.get(),
+      () => HTML.LI(String(getData())),
+    );
+
+    const div = document.createElement('div');
+    render(view, div);
+    expect(div.querySelectorAll('li')).toHaveLength(3);
+  });
+
+  test('updates when array changes', () => {
+    const items = reactive.ReactiveVar(['a', 'b']);
+
+    const view = Each(
+      () => items.get(),
+      () => HTML.LI(String(getData())),
+    );
+
+    const div = document.createElement('div');
+    render(view, div);
+    expect(div.querySelectorAll('li')).toHaveLength(2);
+
+    items.set(['a', 'b', 'c']);
+    reactive.flush();
+    expect(div.querySelectorAll('li')).toHaveLength(3);
+  });
+
+  test('renders else block when empty', () => {
+    const items = reactive.ReactiveVar<string[]>([]);
+
+    const view = Each(
+      () => items.get(),
+      () => HTML.LI(String(getData())),
+      () => HTML.P('empty'),
+    );
+
+    const div = document.createElement('div');
+    render(view, div);
+    expect(div.querySelector('p')?.textContent).toBe('empty');
+
+    items.set(['x']);
+    reactive.flush();
+    expect(div.querySelector('li')).toBeTruthy();
+    expect(div.querySelector('p')).toBeFalsy();
+  });
+});
+
+// ─── Global Helper Tests ────────────────────────────────────────────────────
+
+describe('global helpers', () => {
+  test('registerHelper and deregisterHelper', () => {
+    registerHelper('testGlobal', () => 'globalValue');
+    expect('testGlobal' in (_globalHelpers as Record<string, unknown>)).toBe(true);
+
+    deregisterHelper('testGlobal');
+    expect('testGlobal' in (_globalHelpers as Record<string, unknown>)).toBe(false);
+  });
+
+  test('registered helper is accessible in template', () => {
+    registerHelper('myGlobal', () => 'global-result');
+
+    const tmpl = new Template('global-test', function (this: View) {
+      const helper = this.lookup('myGlobal');
+      const val = typeof helper === 'function' ? helper() : helper;
+      return HTML.SPAN(val as string);
+    });
+
+    const div = document.createElement('div');
+    const view = render(tmpl, div);
+    expect(canonicalizeHtml(div.innerHTML)).toContain('global-result');
+
+    remove(view);
+    deregisterHelper('myGlobal');
+  });
+});
+
+// ─── renderWithData Tests ────────────────────────────────────────────────────
+
+describe('renderWithData', () => {
+  test('provides data context to template', () => {
+    let capturedData: unknown = null;
+
+    const tmpl = new Template('data-test', function () {
+      capturedData = getData();
+      return HTML.SPAN('test');
+    });
+
+    const div = document.createElement('div');
+    const view = renderWithData(tmpl, { name: 'Alice', age: 30 }, div);
+    reactive.flush();
+
+    expect(capturedData).toEqual({ name: 'Alice', age: 30 });
+    remove(view);
   });
 });
