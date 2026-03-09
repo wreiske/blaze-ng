@@ -24,6 +24,7 @@ export class TemplateTag {
   toJS(visitor: {
     generateCall: (name: string, props: Record<string, unknown>) => string;
   }): string {
-    return visitor.generateCall(this.constructorName, { ...this });
+    const { constructorName: _, ...props } = this as Record<string, unknown>;
+    return visitor.generateCall(this.constructorName, props);
   }
 }

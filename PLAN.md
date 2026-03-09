@@ -94,13 +94,13 @@
 
 ### 2b. `@blaze-ng/spacebars-compiler` (depends on 2a, 1b)
 
-- [ ] Port TemplateTag model (stache tags, block tags)
-- [ ] Port Spacebars parser
-- [ ] Port code generator (codeGen → JS string)
-- [ ] Port optimizer (tree compaction)
-- [ ] Drop uglify-js dependency
-- [ ] Port 4 original tests → Vitest
-- [ ] Verify: can compile template strings to JS
+- [x] Port TemplateTag model (stache tags, block tags)
+- [x] Port Spacebars parser
+- [x] Port code generator (codeGen → JS string)
+- [x] Port optimizer (tree compaction)
+- [x] Drop uglify-js dependency
+- [x] Port 4 original tests → Vitest (83 tests)
+- [x] Verify: can compile template strings to JS
 
 ### 2c. `@blaze-ng/templating-tools` (depends on 2b)
 
