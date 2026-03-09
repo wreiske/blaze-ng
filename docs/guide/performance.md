@@ -241,6 +241,52 @@ For the end-to-end path users actually experience — constructing an HTML tree 
 | **Reactive Updates** (runtime) | **Blaze-NG** — zero-dependency reactive system with no jQuery overhead |
 | **Bundle Size**                | **Blaze-NG 29 KB** gzip vs Original's jQuery + Tracker + lodash deps   |
 
+## Internal Engine Optimizations
+
+Under the hood, Blaze-NG's parser, compiler, and rendering pipeline apply several low-level optimizations that reduce memory allocations and CPU overhead on every operation.
+
+### Zero-Allocation Regex Matching
+
+The HTML scanner's `makeRegexMatcher` converts `^`-anchored regexes to the **sticky (`y`) flag**, matching directly against the input string at the current position. This eliminates a `rest()` substring allocation on every token match — a significant win since the parser calls regex matchers thousands of times per template.
+
+### Direct Input Access
+
+Hot-path functions in the tokenizer (`getComment`, `getDoctype`, `getTagToken`, `isLookingAtEndTag`) and character reference resolver access `scanner.input` with `charAt`/`startsWith`/`indexOf` at `scanner.pos` instead of calling `scanner.rest()`. This avoids creating intermediate substrings that would immediately become garbage.
+
+### Inline Character Code Checks
+
+HTML whitespace detection uses an inline `charCodeAt` comparison instead of a regex test:
+
+```ts
+const isHTMLSpace = (ch: string): boolean => {
+  if (!ch) return false;
+  const c = ch.charCodeAt(0);
+  return c === 0x09 || c === 0x0a || c === 0x0c || c === 0x0d || c === 0x20;
+};
+```
+
+This is called in tight loops (attribute parsing, tag scanning, doctype parsing) where regex overhead adds up.
+
+### Singleton Visitors
+
+The `toHTML()`, `toJS()`, and common `toText()` functions reuse pre-built singleton visitor instances instead of allocating a new one per call. Since `ToHTMLVisitor`, `ToJSVisitor`, and `ToTextVisitor` are stateless, a single instance is safe to share across all invocations.
+
+### Array-Based String Building
+
+The `_beautify` code formatter builds its output using an array of string parts joined at the end, avoiding O(n²) string concatenation. It tracks `lastChar` as a scalar rather than indexing into a growing string.
+
+### Cached Indentation Strings
+
+The beautifier pre-computes indentation strings (`'  '.repeat(level)`) for nesting levels 0–15, covering virtually all real-world templates without any runtime `repeat()` calls.
+
+### Module-Level Regex Constants
+
+Frequently used regex patterns (identifier validation in `tojs`, end-tag detection in `tokenize`) are compiled once at module load and reused across calls, avoiding repeated regex construction inside hot functions.
+
+### Substring Slicing in Tokenizer
+
+The beautifier's `tokenizeForBeautify` uses index tracking (`bufStart`) and `substring` slicing to extract text chunks, replacing character-by-character string concatenation with a single allocation per token.
+
 ## Optimization Tips
 
 ### 1. Use Fine-Grained Templates
