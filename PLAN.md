@@ -198,7 +198,10 @@
 
 ## Phase 6: Integration Tests & Full Compatibility
 
-- [ ] Port ALL 370+ original Tinytest cases
+- [x] Expand observe-sequence tests: 19 → 35 (array transitions, movedTo, edge cases)
+- [x] Expand core tests: 31 → 46 (view GC, reactive attrs, template lifecycle, Each, helpers, renderWithData)
+- **331 tests passing across 12 test files**
+- [ ] Port remaining spacebars-tests integration suite (~197 DOM tests requiring compiled templates)
 - [ ] Run original test-app with Puppeteer against new packages
 - [ ] Side-by-side compatibility tests (old Blaze vs new)
 - [ ] Fix any behavioral differences
