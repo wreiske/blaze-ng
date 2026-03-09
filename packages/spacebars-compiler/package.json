@@ -26,5 +26,10 @@
     "@blaze-ng/htmljs": "workspace:*",
     "@blaze-ng/html-tools": "workspace:*",
     "@blaze-ng/blaze-tools": "workspace:*"
+  },
+  "devDependencies": {
+    "@blaze-ng/core": "workspace:*",
+    "@blaze-ng/spacebars": "workspace:*",
+    "@blaze-ng/observe-sequence": "workspace:*"
   }
 }

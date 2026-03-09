@@ -121,6 +121,16 @@ importers:
       '@blaze-ng/htmljs':
         specifier: workspace:*
         version: link:../htmljs
+    devDependencies:
+      '@blaze-ng/core':
+        specifier: workspace:*
+        version: link:../core
+      '@blaze-ng/observe-sequence':
+        specifier: workspace:*
+        version: link:../observe-sequence
+      '@blaze-ng/spacebars':
+        specifier: workspace:*
+        version: link:../spacebars
 
   packages/templating:
     dependencies:
