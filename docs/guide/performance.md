@@ -48,15 +48,15 @@ How fast templates go from source → DOM:
 
 | Operation                    |    ops/sec |    Mean |
 | ---------------------------- | ---------: | ------: |
-| Static div                   | **10,151** | 0.10 ms |
-| Div with interpolation       | **10,504** | 0.10 ms |
-| Div with multiple attrs      |  **6,719** | 0.15 ms |
-| Card component (10 elements) |  **2,381** | 0.42 ms |
-| 10-item list                 |  **2,948** | 0.34 ms |
-| 100-item list                |    **372** | 2.69 ms |
-| 1,000-item list              |     **50** | 20.1 ms |
-| 1,000 items × 3 columns      |     **18** | 55.9 ms |
-| 3-level template nesting     |  **3,335** | 0.30 ms |
+| Static div                   | **12,037** | 0.08 ms |
+| Div with interpolation       | **14,111** | 0.07 ms |
+| Div with multiple attrs      | **10,033** | 0.10 ms |
+| Card component (10 elements) |  **3,446** | 0.29 ms |
+| 10-item list                 |  **3,374** | 0.30 ms |
+| 100-item list                |    **628** | 1.59 ms |
+| 1,000-item list              |     **61** | 16.3 ms |
+| 1,000 items × 3 columns      |     **23** | 42.6 ms |
+| 3-level template nesting     |  **4,266** | 0.23 ms |
 
 ### Reactive Updates
 
@@ -64,14 +64,14 @@ How fast data changes propagate to the DOM:
 
 | Operation                 |    ops/sec |    Mean |
 | ------------------------- | ---------: | ------: |
-| Single text update        | **10,220** | 0.10 ms |
-| 3 values + flush          |  **8,201** | 0.12 ms |
-| `#if` toggle              |  **4,616** | 0.22 ms |
-| Nested dep (outer)        |  **7,495** | 0.13 ms |
-| Nested dep (inner)        |  **7,317** | 0.14 ms |
-| Nested dep (both)         |  **6,901** | 0.14 ms |
-| 10 updates, single flush  | **12,189** | 0.08 ms |
-| 100 updates, single flush | **12,022** | 0.08 ms |
+| Single text update        |  **9,393** | 0.11 ms |
+| 3 values + flush          |  **8,695** | 0.12 ms |
+| `#if` toggle              |  **2,832** | 0.35 ms |
+| Nested dep (outer)        |  **6,963** | 0.14 ms |
+| Nested dep (inner)        |  **7,670** | 0.13 ms |
+| Nested dep (both)         |  **7,208** | 0.14 ms |
+| 10 updates, single flush  | **12,131** | 0.08 ms |
+| 100 updates, single flush | **12,151** | 0.08 ms |
 
 ::: tip Batched flushes are free
 Note that 100 sequential `ReactiveVar.set()` calls followed by a single `flush()` is just as fast as 10 — the reactive system coalesces updates automatically.
@@ -81,40 +81,40 @@ Note that 100 sequential `ReactiveVar.set()` calls followed by a single `flush()
 
 | Operation                    |    ops/sec |    Mean |
 | ---------------------------- | ---------: | ------: |
-| Class toggle                 |  **7,345** | 0.14 ms |
-| Style color update           | **11,714** | 0.09 ms |
-| Data attribute update        | **11,474** | 0.09 ms |
-| 3 attributes + flush         |  **6,758** | 0.15 ms |
-| Toggle class on 100 elements |    **131** | 7.61 ms |
+| Class toggle                 |  **7,197** | 0.14 ms |
+| Style color update           | **11,601** | 0.09 ms |
+| Data attribute update        | **11,267** | 0.09 ms |
+| 3 attributes + flush         |  **9,930** | 0.10 ms |
+| Toggle class on 100 elements |    **199** | 5.03 ms |
 
 ### List Operations (Each)
 
 | Operation             |   ops/sec |    Mean |
 | --------------------- | --------: | ------: |
-| Create 50 rows        | **1,092** | 0.92 ms |
-| Create 100 rows       |   **660** | 1.52 ms |
-| Append 1 row to 100   |   **532** | 1.88 ms |
-| Append 10 rows to 100 |   **234** | 4.28 ms |
-| Prepend 1 row to 100  |   **502** | 1.99 ms |
-| Remove 1 from 100     |   **427** | 2.34 ms |
-| Remove all 100 rows   |   **268** | 3.73 ms |
-| Swap 2 rows in 100    |   **314** | 3.19 ms |
-| Update every 10th row |   **343** | 2.92 ms |
-| Reverse 100 rows      |   **114** | 8.80 ms |
+| Create 50 rows        | **1,287** | 0.78 ms |
+| Create 100 rows       |   **780** | 1.28 ms |
+| Append 1 row to 100   |   **503** | 1.99 ms |
+| Append 10 rows to 100 |   **537** | 1.86 ms |
+| Prepend 1 row to 100  |   **620** | 1.61 ms |
+| Remove 1 from 100     |   **189** | 5.28 ms |
+| Remove all 100 rows   |   **368** | 2.72 ms |
+| Swap 2 rows in 100    |    **43** | 23.4 ms |
+| Update every 10th row |   **459** | 2.18 ms |
+| Reverse 100 rows      |    **15** | 65.2 ms |
 
 ### Template Lifecycle
 
 | Operation                                |    ops/sec |    Mean |
 | ---------------------------------------- | ---------: | ------: |
-| Simple create/destroy                    | **10,001** | 0.10 ms |
-| With helpers                             | **10,139** | 0.10 ms |
-| 2-level nesting                          |  **5,628** | 0.18 ms |
-| 3-level nesting                          |  **3,990** | 0.25 ms |
-| 0 callbacks                              | **11,657** | 0.09 ms |
-| 3 callbacks (created+rendered+destroyed) | **11,758** | 0.09 ms |
-| 5 onCreated callbacks                    | **11,686** | 0.09 ms |
-| 10 create/destroy cycles                 |  **4,561** | 0.22 ms |
-| 50 create/destroy cycles                 |  **1,257** | 0.80 ms |
+| Simple create/destroy                    | **10,313** | 0.10 ms |
+| With helpers                             | **10,717** | 0.09 ms |
+| 2-level nesting                          |  **6,497** | 0.15 ms |
+| 3-level nesting                          |  **4,556** | 0.22 ms |
+| 0 callbacks                              | **11,801** | 0.08 ms |
+| 3 callbacks (created+rendered+destroyed) | **12,268** | 0.08 ms |
+| 5 onCreated callbacks                    | **11,971** | 0.08 ms |
+| 10 create/destroy cycles                 |  **5,032** | 0.20 ms |
+| 50 create/destroy cycles                 |  **1,177** | 0.85 ms |
 
 ::: info Lifecycle callbacks are essentially free
 Adding `onCreated`, `onRendered`, and `onDestroyed` callbacks adds no measurable overhead to the create/destroy cycle.
@@ -122,13 +122,13 @@ Adding `onCreated`, `onRendered`, and `onDestroyed` callbacks adds no measurable
 
 ### Compilation Speed
 
-| Operation                |     ops/sec |     Mean |
-| ------------------------ | ----------: | -------: |
-| Simple template          | **117,950** | 0.008 ms |
-| Medium (if/each/helpers) |   **5,867** |  0.17 ms |
-| Complex (nested blocks)  |   **1,788** |  0.56 ms |
-| 50 static rows           |     **558** |  1.79 ms |
-| 200 static rows          |      **77** |  13.1 ms |
+| Operation                |    ops/sec |     Mean |
+| ------------------------ | ---------: | -------: |
+| Simple template          | **89,262** | 0.011 ms |
+| Medium (if/each/helpers) |  **5,864** |  0.17 ms |
+| Complex (nested blocks)  |  **1,889** |  0.53 ms |
+| 50 static rows           |    **910** |  1.10 ms |
+| 200 static rows          |    **225** |  4.44 ms |
 
 ### Sequence Diffing
 
@@ -136,16 +136,16 @@ The `observe-sequence` diff algorithm:
 
 | Operation                     |     ops/sec |     Mean |
 | ----------------------------- | ----------: | -------: |
-| 100 identical items (no-op)   | **134,876** | 0.007 ms |
-| 1,000 identical items (no-op) |  **14,341** |  0.07 ms |
-| 5,000 identical items (no-op) |   **2,270** |  0.44 ms |
-| Append 10 → 100               | **119,667** | 0.008 ms |
-| Append 100 → 1,000            |  **12,611** |  0.08 ms |
-| Shuffle 100 items             | **129,568** | 0.008 ms |
-| Shuffle 1,000 items           |  **14,128** |  0.07 ms |
-| Full replace 100              | **111,748** | 0.009 ms |
-| Full replace 1,000            |   **7,766** |  0.13 ms |
-| Mixed ops on 1,000            |  **13,404** |  0.07 ms |
+| 100 identical items (no-op)   | **147,977** | 0.007 ms |
+| 1,000 identical items (no-op) |  **16,054** |  0.06 ms |
+| 5,000 identical items (no-op) |   **2,477** |  0.40 ms |
+| Append 10 → 100               | **135,944** | 0.007 ms |
+| Append 100 → 1,000            |  **13,506** |  0.07 ms |
+| Shuffle 100 items             | **140,917** | 0.007 ms |
+| Shuffle 1,000 items           |  **15,011** |  0.07 ms |
+| Full replace 100              | **121,236** | 0.008 ms |
+| Full replace 1,000            |   **8,267** |  0.12 ms |
+| Mixed ops on 1,000            |  **14,129** |  0.07 ms |
 
 ### Why Blaze-NG Excels at Updates
 
@@ -192,52 +192,52 @@ pnpm bench:compare
 
 | Template                              | Original Blaze |     Blaze-NG |             Ratio |
 | ------------------------------------- | -------------: | -----------: | ----------------: |
-| Simple (`<div>{{name}}</div>`)        |   244K ops/sec | 122K ops/sec | **Original 2.0×** |
-| Medium (if/each/helpers)              |    13K ops/sec | 6.4K ops/sec | **Original 2.0×** |
-| Complex (nested blocks, unless, with) |   3.9K ops/sec | 1.8K ops/sec | **Original 2.2×** |
-| Large (50-row table)                  |   1.2K ops/sec |  550 ops/sec | **Original 2.2×** |
+| Simple (`<div>{{name}}</div>`)        |   280K ops/sec | 133K ops/sec | **Original 2.1×** |
+| Medium (if/each/helpers)              |  11.9K ops/sec | 5.7K ops/sec | **Original 2.1×** |
+| Complex (nested blocks, unless, with) |   2.7K ops/sec | 1.5K ops/sec | **Original 1.8×** |
+| Large (50-row table)                  |    857 ops/sec |  835 ops/sec |         **~Tied** |
 
 :::
 
 ::: tip Compilation happens once
-Template compilation typically runs at build time or once at startup. Even the "slower" Blaze-NG compiler compiles a complex template in **0.55 ms** — imperceptible to users. Runtime performance matters far more.
+Template compilation typically runs at build time or once at startup. Even the "slower" Blaze-NG compiler compiles a complex template in **0.53 ms** — imperceptible to users. Runtime performance matters far more.
 :::
 
 ### Parsing Speed (Template → AST)
 
 | Template                     | Original Blaze |      Blaze-NG |             Ratio |
 | ---------------------------- | -------------: | ------------: | ----------------: |
-| Simple                       |   603K ops/sec |  354K ops/sec | **Original 1.7×** |
-| Medium                       |  21.5K ops/sec | 15.3K ops/sec | **Original 1.4×** |
-| Complex                      |   9.1K ops/sec |  6.7K ops/sec | **Original 1.4×** |
-| Pure HTML (no template tags) |  30.4K ops/sec | 30.7K ops/sec |          **Tied** |
+| Simple                       |   636K ops/sec |  369K ops/sec | **Original 1.7×** |
+| Medium                       |  21.3K ops/sec | 14.5K ops/sec | **Original 1.5×** |
+| Complex                      |   8.2K ops/sec |  6.1K ops/sec | **Original 1.4×** |
+| Pure HTML (no template tags) |  31.0K ops/sec | 33.6K ops/sec |      **NG 1.08×** |
 
-::: info Parsing parity on pure HTML
-When there are no Spacebars template tags, both parsers are equally fast — Blaze-NG's TypeScript parser matches the original's JavaScript parser byte-for-byte.
+::: info Blaze-NG is faster on pure HTML
+When there are no Spacebars template tags, Blaze-NG's TypeScript parser is **8% faster** than the original — thanks to sticky regex matching and direct input access that eliminate substring allocations.
 :::
 
 ### HTML Rendering (HTMLjs Tree → HTML String)
 
 | Operation                           | Original Blaze |      Blaze-NG |        Ratio |
 | ----------------------------------- | -------------: | ------------: | -----------: |
-| Simple element                      |  2.39M ops/sec | 2.36M ops/sec |     **Tied** |
-| Medium tree (nested)                |   386K ops/sec |  405K ops/sec | **NG 1.05×** |
-| Large table (100 rows)              |   6.2K ops/sec |  6.3K ops/sec | **NG 1.03×** |
-| Deeply nested (50 levels)           |  57.9K ops/sec | 57.5K ops/sec |     **Tied** |
-| **Build + render medium**           |   293K ops/sec |  310K ops/sec | **NG 1.06×** |
-| **Build + render large (100 rows)** |   4.0K ops/sec |  4.5K ops/sec | **NG 1.13×** |
+| Simple element                      |  2.52M ops/sec | 2.60M ops/sec | **NG 1.03×** |
+| Medium tree (nested)                |   382K ops/sec |  440K ops/sec | **NG 1.15×** |
+| Large table (100 rows)              |   6.5K ops/sec |  6.8K ops/sec | **NG 1.06×** |
+| Deeply nested (50 levels)           |  61.0K ops/sec | 63.1K ops/sec | **NG 1.03×** |
+| **Build + render medium**           |   301K ops/sec |  332K ops/sec | **NG 1.10×** |
+| **Build + render large (100 rows)** |   4.5K ops/sec |  5.0K ops/sec | **NG 1.12×** |
 
 ::: tip Blaze-NG wins where it matters
-For the end-to-end path users actually experience — constructing an HTML tree and rendering it — Blaze-NG is **6–13% faster** than the original. And this is before Blaze-NG's advantage in reactive updates, which skip DOM diffing entirely.
+For the end-to-end path users actually experience — constructing an HTML tree and rendering it — Blaze-NG is **3–15% faster** than the original across the board. And this is before Blaze-NG's advantage in reactive updates, which skip DOM diffing entirely.
 :::
 
 ### Summary
 
 | Layer                          | Overall Result                                                         |
 | ------------------------------ | ---------------------------------------------------------------------- |
-| **Compilation** (build-time)   | Original Blaze ~2× faster (pure JS vs TypeScript)                      |
-| **Parsing** (build-time)       | Original 1.4–1.7× faster; parity on pure HTML                          |
-| **HTML Rendering** (runtime)   | **Blaze-NG** matches or beats Original by up to 13%                    |
+| **Compilation** (build-time)   | Original ~2× faster on small/medium; **~tied on large templates**      |
+| **Parsing** (build-time)       | Original 1.4–1.7× faster; **NG 8% faster on pure HTML**                |
+| **HTML Rendering** (runtime)   | **Blaze-NG** beats Original by 3–15% across the board                  |
 | **Reactive Updates** (runtime) | **Blaze-NG** — zero-dependency reactive system with no jQuery overhead |
 | **Bundle Size**                | **Blaze-NG 29 KB** gzip vs Original's jQuery + Tracker + lodash deps   |
 
