@@ -1,0 +1,6 @@
+node_modules
+dist
+_build
+*.tsbuildinfo
+.turbo
+coverage
