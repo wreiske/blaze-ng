@@ -1,0 +1,15 @@
+# Meteor packages used by this project, one per line.
+# 'meteor add' and 'meteor remove' will edit this file for you,
+# but you can also edit it by hand.
+
+meteor-base@1.5.2             # Packages every Meteor app needs to have
+tracker@1.3.4                 # Meteor's client-side reactive programming library
+reactive-var@1.0.13           # Reactive variable for use with Tracker
+es5-shim@4.8.1                # ECMAScript 5 compatibility for older browsers
+ecmascript@0.16.10            # Enable ECMAScript2015+ syntax
+typescript@5.4.3              # Enable TypeScript syntax
+shell-server@0.6.0            # Server-side component of `meteor shell`
+hot-module-replacement@0.5.4  # HMR support
+
+# Blaze-NG packages (replace standard blaze/templating)
+blaze-html-templates

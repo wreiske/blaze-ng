@@ -1,0 +1,61 @@
+<head>
+  <title>Blaze-NG Todos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+</head>
+
+<body>
+  {{> todoApp}}
+</body>
+
+<template name="todoApp">
+  <div class="app">
+    <header>
+      <h1>📋 Todos</h1>
+      {{#if completedCount}}
+      <button class="clear-completed">Clear done ({{completedCount}})</button>
+      {{/if}}
+    </header>
+
+    <form class="add-form">
+      <input type="text" class="new-todo" placeholder="What needs to be done?" autofocus />
+      <button type="submit">Add</button>
+    </form>
+
+    <div class="filters">
+      <button class="filter-btn {{#if (isFilter 'all')}}active{{/if}}" data-filter="all">
+        All ({{totalCount}})
+      </button>
+      <button class="filter-btn {{#if (isFilter 'active')}}active{{/if}}" data-filter="active">
+        Active ({{activeCount}})
+      </button>
+      <button
+        class="filter-btn {{#if (isFilter 'completed')}}active{{/if}}"
+        data-filter="completed"
+      >
+        Done ({{completedCount}})
+      </button>
+    </div>
+
+    <ul class="todo-list">
+      {{#each todo in filteredTodos}} {{> todoItem todo}} {{else}}
+      <li class="empty">
+        {{#if (isFilter 'all')}} No todos yet — add one above! {{else if (isFilter 'active')}} All
+        done! 🎉 {{else}} Nothing completed yet. {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+
+    {{#if totalCount}}
+    <footer class="status">{{activeCount}} {{pluralize activeCount "item" "items"}} left</footer>
+    {{/if}}
+  </div>
+</template>
+
+<template name="todoItem">
+  <li class="{{todoItemClass}}">
+    <input type="checkbox" class="toggle" checked="{{completed}}" />
+    <span class="text">{{text}}</span>
+    <button class="destroy" title="Delete">&times;</button>
+  </li>
+</template>

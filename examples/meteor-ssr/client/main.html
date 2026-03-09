@@ -1,0 +1,60 @@
+<head>
+  <title>Blaze-NG Meteor SSR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+</head>
+
+<body>
+  <nav class="nav">
+    <a href="/" class="logo">Blaze-NG SSR</a>
+    <span class="nav-note"
+      >Client-side interactive demo below — SSR routes at <code>/ssr/*</code></span
+    >
+  </nav>
+  <div id="app">{{> interactiveDemo}}</div>
+</body>
+
+<template name="interactiveDemo">
+  <div class="demo">
+    <div class="hero">
+      <h1>Meteor SSR Example</h1>
+      <p>
+        This page is client-rendered with full reactivity. The <code>/ssr/*</code> routes serve
+        server-rendered HTML.
+      </p>
+    </div>
+
+    <div class="panels">
+      <div class="panel">
+        <h2>Interactive Counter</h2>
+        <div class="counter-display">{{count}}</div>
+        <div class="counter-buttons">
+          <button class="btn decrement" disabled="{{isZero}}">&minus;</button>
+          <button class="btn reset">Reset</button>
+          <button class="btn increment">+</button>
+        </div>
+        <p class="counter-label">
+          {{#if isZero}} Click + to start counting {{else}} Clicked {{count}} {{pluralize count
+          "time" "times"}} {{/if}}
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2>SSR Routes</h2>
+        <p class="ssr-info">
+          These routes return fully server-rendered HTML (no client JS needed):
+        </p>
+        <ul class="ssr-routes">
+          <li><a href="/ssr">/ssr</a> — Home page with feature cards</li>
+          <li><a href="/ssr/todos">/ssr/todos</a> — Server-rendered todo list</li>
+          <li><a href="/ssr/profile/alice">/ssr/profile/alice</a> — User profile</li>
+          <li><a href="/ssr/profile/bob">/ssr/profile/bob</a> — Another profile</li>
+          <li><a href="/ssr/email/welcome">/ssr/email/welcome</a> — Welcome email preview</li>
+          <li>
+            <a href="/ssr/email/notification">/ssr/email/notification</a> — Notification email
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>

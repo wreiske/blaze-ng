@@ -1,0 +1,21 @@
+{
+  "name": "blaze-ng-standalone-todos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@blaze-ng/core": "workspace:*",
+    "@blaze-ng/htmljs": "workspace:*",
+    "@blaze-ng/observe-sequence": "workspace:*",
+    "@blaze-ng/spacebars": "workspace:*",
+    "@blaze-ng/spacebars-compiler": "workspace:*",
+    "@blaze-ng/templating-runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^6.3.0"
+  }
+}

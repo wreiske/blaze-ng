@@ -1,0 +1,176 @@
+<template name="ssrPage">
+  <div class="ssr-page">
+    <h2>{{title}}</h2>
+    <p class="subtitle">{{subtitle}}</p>
+    {{#each item in items}} {{> ssrCard item}} {{/each}}
+  </div>
+</template>
+
+<template name="ssrCard">
+  <div class="ssr-card">
+    <div class="ssr-card-icon">{{icon}}</div>
+    <h3>{{title}}</h3>
+    <p>{{description}}</p>
+  </div>
+</template>
+
+<template name="userProfile">
+  <div class="profile-card">
+    <div class="profile-avatar">{{initials}}</div>
+    <h2>{{name}}</h2>
+    <p class="profile-email">{{email}}</p>
+    <p class="profile-bio">{{bio}}</p>
+    <div class="profile-stats">
+      {{#each stat in stats}}
+      <div class="stat">
+        <div class="stat-value">{{stat.value}}</div>
+        <div class="stat-label">{{stat.label}}</div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+</template>
+
+<template name="todoList">
+  <div class="todo-page">
+    <h2>Server-Rendered Todos</h2>
+    <p class="todo-summary">{{activeCount}} {{pluralize activeCount "item" "items"}} remaining</p>
+    <ul class="todo-items">
+      {{#each todo in todos}} {{> todoItemSSR todo}} {{/each}}
+    </ul>
+  </div>
+</template>
+
+<template name="todoItemSSR">
+  <li class="{{todoItemClass}}">
+    <span class="todo-check"> {{#if completed}}✓{{else}}○{{/if}} </span>
+    <span class="todo-text">{{text}}</span>
+  </li>
+</template>
+
+<template name="emailWelcome">
+  <table
+    width="600"
+    cellpadding="0"
+    cellspacing="0"
+    style="
+      margin: 0 auto;
+      font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+      background: #ffffff;
+    "
+  >
+    <tr>
+      <td style="background: #3b82f6; padding: 2rem; text-align: center">
+        <h1 style="color: #ffffff; margin: 0; font-size: 1.5rem">Welcome to Blaze-NG!</h1>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 2rem">
+        <p style="font-size: 1rem; line-height: 1.6; color: #1e293b">Hi {{name}},</p>
+        <p style="font-size: 1rem; line-height: 1.6; color: #475569; margin-top: 1rem">
+          Thanks for signing up! Your account has been created successfully. Here's a summary of
+          your account:
+        </p>
+        <table
+          width="100%"
+          cellpadding="12"
+          cellspacing="0"
+          style="margin-top: 1.5rem; border: 1px solid #e2e8f0; border-radius: 0.5rem"
+        >
+          <tr style="background: #f8fafc">
+            <td style="font-weight: 600; color: #64748b; font-size: 0.875rem">Username</td>
+            <td style="color: #1e293b">{{username}}</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600; color: #64748b; font-size: 0.875rem">Email</td>
+            <td style="color: #1e293b">{{email}}</td>
+          </tr>
+          <tr style="background: #f8fafc">
+            <td style="font-weight: 600; color: #64748b; font-size: 0.875rem">Plan</td>
+            <td style="color: #1e293b">{{plan}}</td>
+          </tr>
+        </table>
+        {{#if features.length}}
+        <p style="font-size: 0.875rem; color: #475569; margin-top: 1.5rem; font-weight: 600">
+          Your plan includes:
+        </p>
+        <ul style="margin-top: 0.5rem; padding-left: 1.5rem; color: #475569">
+          {{#each feature in features}}
+          <li style="margin-bottom: 0.25rem">{{feature}}</li>
+          {{/each}}
+        </ul>
+        {{/if}}
+      </td>
+    </tr>
+    <tr>
+      <td
+        style="
+          padding: 1.5rem 2rem;
+          background: #f8fafc;
+          text-align: center;
+          font-size: 0.75rem;
+          color: #94a3b8;
+        "
+      >
+        &copy; {{year}} Blaze-NG &middot; This email was server-rendered with Blaze templates
+      </td>
+    </tr>
+  </table>
+</template>
+
+<template name="emailNotification">
+  <table
+    width="600"
+    cellpadding="0"
+    cellspacing="0"
+    style="
+      margin: 0 auto;
+      font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+      background: #ffffff;
+    "
+  >
+    <tr>
+      <td style="background: #0f172a; padding: 1.5rem 2rem">
+        <span style="color: #ffffff; font-weight: 700; font-size: 1rem">Blaze-NG</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 2rem">
+        <p style="font-size: 1rem; line-height: 1.6; color: #1e293b">Hi {{name}},</p>
+        <p style="font-size: 1rem; line-height: 1.6; color: #475569; margin-top: 1rem">
+          {{message}}
+        </p>
+        {{#if actionUrl}}
+        <p style="margin-top: 1.5rem; text-align: center">
+          <a
+            href="{{actionUrl}}"
+            style="
+              display: inline-block;
+              padding: 0.75rem 2rem;
+              background: #3b82f6;
+              color: #ffffff;
+              text-decoration: none;
+              border-radius: 0.375rem;
+              font-weight: 600;
+              font-size: 0.9rem;
+            "
+          >
+            {{actionLabel}}
+          </a>
+        </p>
+        {{/if}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 1rem 2rem; text-align: center; font-size: 0.75rem; color: #94a3b8">
+        &copy; {{year}} Blaze-NG
+      </td>
+    </tr>
+  </table>
+</template>
