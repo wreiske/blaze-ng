@@ -57,6 +57,18 @@ function makeTemplate(name: string, source: string): Template {
  * Create a proxy for HTML namespace that allows class constructors
  * (Raw, CharRef, Comment) to be called without `new`.
  */
+/**
+ * Create a proxy for Spacebars that allows `kw` to be called without `new`.
+ */
+function createSpacebarsProxy() {
+  const proxy = { ...Spacebars };
+  const OrigKw = (Spacebars as Record<string, unknown>).kw as new (hash?: Record<string, unknown>) => unknown;
+  (proxy as Record<string, unknown>).kw = function (...args: unknown[]) {
+    return new OrigKw(...args as [Record<string, unknown>?]);
+  };
+  return proxy;
+}
+
 function createHtmlProxy() {
   const proxy = { ...HTML };
 
@@ -110,11 +122,12 @@ function compileToRenderFunc(source: string): (this: View) => unknown {
   };
 
   const htmlProxy = createHtmlProxy();
+  const spacebarsProxy = createSpacebarsProxy();
 
   // eslint-disable-next-line @typescript-eslint/no-implied-eval
   const fn = new Function('HTML', 'Spacebars', 'Blaze', 'Template', `return ${code}`)(
     htmlProxy,
-    Spacebars,
+    spacebarsProxy,
     BlazeNS,
     Template,
   );
@@ -1451,5 +1464,1094 @@ describe('spacebars integration - edge cases', () => {
     show.set(false);
     reactive.flush();
     expect(div.querySelector('p')).toBeNull();
+  });
+});
+
+// ─── Ported Tests (Phase 6 continuation) ─────────────────────────────────────
+
+describe('spacebars integration - with someData efficiency', () => {
+  test('#with runs helper only once even when nested helpers re-run', () => {
+    // In {{#with someData}}{{foo}} {{bar}}{{/with}}, someData runs once
+    const tmpl = makeTemplate('test_with_someData',
+      '{{#with someData}}{{foo}} {{bar}}{{/with}}');
+    const foo = reactive.ReactiveVar('AAA');
+    let someDataRuns = 0;
+
+    tmpl.helpers({
+      someData: function () { someDataRuns++; return {}; },
+      foo: function () { return foo.get(); },
+      bar: function () { return 'YO'; },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(someDataRuns).toBe(1);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('AAA YO');
+
+    foo.set('BBB');
+    reactive.flush();
+    expect(someDataRuns).toBe(1);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('BBB YO');
+
+    foo.set('CCC');
+    reactive.flush();
+    expect(someDataRuns).toBe(1);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('CCC YO');
+  });
+});
+
+describe('spacebars integration - block helpers in attribute', () => {
+  test('block helper in attribute with reactive switching', () => {
+    // {{#if foo}}checked{{/if}} in an attribute
+    const tmpl = makeTemplate('test_block_attr2',
+      '<input value="{{#if foo}}&quot;{{else}}&amp;<>&lt;/x&gt;{{/if}}">');
+    const R = reactive.ReactiveVar(true);
+    tmpl.helpers({ foo: function () { return R.get(); } });
+
+    const div = renderToDiv(tmpl);
+    const input = div.querySelector('input')!;
+    expect(input.value).toBe('"');
+
+    R.set(false);
+    reactive.flush();
+    expect(input.value).toBe('&<></x>');
+  });
+});
+
+describe('spacebars integration - constant #each argument', () => {
+  test('#each with constant array does not depend on data context', () => {
+    const tmpl = makeTemplate('test_const_each',
+      '{{#with someData}}{{#each anArray}}{{justReturn this}}{{/each}} {{this}}{{/with}}');
+    let justReturnRuns = 0;
+    const R = reactive.ReactiveVar(1);
+
+    tmpl.helpers({
+      someData: function () { return R.get(); },
+      anArray: ['foo', 'bar'],
+      justReturn: function (x: unknown) { justReturnRuns++; return String(x); },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(justReturnRuns).toBe(2);
+    const text = canonicalizeHtml(div.innerHTML).replace(/\s+/g, ' ');
+    expect(text).toContain('foo');
+    expect(text).toContain('bar');
+    expect(text).toContain('1');
+
+    R.set(2);
+    reactive.flush();
+    const text2 = canonicalizeHtml(div.innerHTML).replace(/\s+/g, ' ');
+    expect(text2).toContain('foo');
+    expect(text2).toContain('bar');
+    expect(text2).toContain('2');
+  });
+});
+
+describe('spacebars integration - content context', () => {
+  test('data context switches between inner and outer', () => {
+    const inner = makeTemplate('test_content_ctx_inner',
+      '{{#if bar.cond}}{{bar.firstLetter}}{{bar.secondLetter}}{{else}}{{firstLetter}}{{secondLetter}}{{/if}}');
+
+    const tmpl = makeTemplate('test_content_ctx_outer',
+      '{{#with foo}}{{> inner}}{{/with}}');
+    tmpl.helpers({ inner });
+
+    const R = reactive.ReactiveVar(true);
+    tmpl.helpers({
+      foo: {
+        firstLetter: 'F',
+        secondLetter: 'O',
+        bar: {
+          cond: function () { return R.get(); },
+          firstLetter: 'B',
+          secondLetter: 'A',
+        },
+      },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('BA');
+
+    R.set(false);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('FO');
+  });
+});
+
+describe('spacebars integration - helper called exactly once on invalidation', () => {
+  test('helper passed to #if runs exactly once per invalidation', () => {
+    const tmpl = makeTemplate('test_if_exact',
+      '{{#if foo}}true{{else}}false{{/if}}');
+    let count = 0;
+    const dep = reactive.Dependency();
+    let foo = false;
+
+    tmpl.helpers({
+      foo: function () { dep.depend(); count++; return foo; },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('false');
+    expect(count).toBe(1);
+
+    foo = true;
+    dep.changed();
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('true');
+    expect(count).toBe(2);
+  });
+
+  test('custom block helper function called exactly once per invalidation', () => {
+    const subTmpl = makeTemplate('test_block_fn_sub', 'aaa');
+    const tmpl = makeTemplate('test_block_fn',
+      '{{#if true}}{{> dynamicTemplate}}{{/if}}');
+    let count = 0;
+    const dep = reactive.Dependency();
+
+    tmpl.helpers({
+      dynamicTemplate: function () { dep.depend(); count++; return subTmpl; },
+    });
+
+    renderToDiv(tmpl);
+    expect(count).toBe(1);
+
+    dep.changed();
+    reactive.flush();
+    expect(count).toBe(2);
+  });
+});
+
+describe('spacebars integration - falsy with', () => {
+  test('#with falsy value shows nothing, truthy shows content', () => {
+    const tmpl = makeTemplate('test_falsy_with',
+      '{{#with obj}}{{greekLetter}}{{/with}}');
+    const R = reactive.ReactiveVar<Record<string, string> | null>(null);
+    tmpl.helpers({ obj: function () { return R.get(); } });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('');
+
+    R.set({ greekLetter: 'alpha' });
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('alpha');
+
+    R.set(null);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('');
+
+    R.set({ greekLetter: 'beta' });
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('beta');
+  });
+});
+
+describe('spacebars integration - helpers do not leak', () => {
+  test('template helpers do not leak to sub-templates', () => {
+    const sub = makeTemplate('test_no_leak_sub', '{{bonus}}');
+    sub.helpers({ bonus: function () { return 'BONUS'; } });
+
+    const tmpl = makeTemplate('test_no_leak',
+      'correct {{> sub}}');
+    tmpl.helpers({ sub });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('correct BONUS');
+  });
+});
+
+describe('spacebars integration - event cleanup', () => {
+  test('event handlers removed when view is destroyed', () => {
+    const inner = makeTemplate('test_evt_cleanup_inner', '<span>click me</span>');
+    let clickCount = 0;
+    inner.events({ 'click span': function () { clickCount++; } });
+
+    const tmpl = makeTemplate('test_evt_cleanup_outer',
+      '{{#if show}}{{> inner}}{{/if}}');
+    const show = reactive.ReactiveVar(true);
+    tmpl.helpers({ show: function () { return show.get(); }, inner });
+
+    const div = renderToDiv(tmpl);
+    const span = div.querySelector('span')!;
+
+    // Simulate click
+    const evt = new dom.window.MouseEvent('click', { bubbles: true });
+    span.dispatchEvent(evt);
+    expect(clickCount).toBe(1);
+
+    // Destroy the inner template
+    show.set(false);
+    reactive.flush();
+    expect(div.querySelector('span')).toBeNull();
+  });
+});
+
+describe('spacebars integration - data context in event handlers', () => {
+  test('data context available in event handler inside #if', () => {
+    const tmpl = makeTemplate('test_data_ctx_evt',
+      '{{#with foo}}<button>click</button>{{/with}}');
+    let dataInEvent: unknown = null;
+
+    tmpl.helpers({ foo: { bar: 'baz' } });
+    tmpl.events({
+      'click button': function (this: unknown) {
+        dataInEvent = this;
+      },
+    });
+
+    const div = renderToDiv(tmpl);
+    const button = div.querySelector('button')!;
+    const evt = new dom.window.MouseEvent('click', { bubbles: true });
+    button.dispatchEvent(evt);
+    expect(dataInEvent).toEqual({ bar: 'baz' });
+  });
+});
+
+describe('spacebars integration - Blaze.renderWithData', () => {
+  test('renderWithData and remove', () => {
+    const tmpl = makeTemplate('test_render_data',
+      '<b>some data - {{foo}}</b>');
+
+    const div = document.createElement('div');
+    const view = renderWithData(tmpl, { foo: 3130 }, div);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<b>some data - 3130</b>');
+
+    expect(view.isDestroyed).toBe(false);
+    remove(view);
+    expect(view.isDestroyed).toBe(true);
+    expect(div.innerHTML).toBe('');
+  });
+});
+
+describe('spacebars integration - old #each data context', () => {
+  test('old each with array of objects sets data context', () => {
+    const tmpl = makeTemplate('test_old_each_ctx',
+      '{{#each items}}<div>{{text}}</div>{{/each}}');
+    tmpl.helpers({ items: [{ text: 'a' }, { text: 'b' }] });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<div>a</div><div>b</div>');
+  });
+});
+
+describe('spacebars integration - new each-in extends context', () => {
+  test('each-in preserves parent context', () => {
+    const tmpl = makeTemplate('test_each_in_ctx',
+      '{{#with dataContext}}{{#each item in items}}<div>{{item.text}} -- {{toplevel}}</div>{{/each}}{{/with}}');
+    tmpl.helpers({
+      dataContext: function () {
+        return { items: [{ text: 'a' }, { text: 'b' }], toplevel: 'XYZ' };
+      },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<div>a -- XYZ</div><div>b -- XYZ</div>');
+  });
+});
+
+describe('spacebars integration - nested sub-expressions', () => {
+  test('capitalize(firstWord(sentence))', () => {
+    const tmpl = makeTemplate('test_nested_subexpr',
+      '{{capitalize (firstWord (generateSentence))}}');
+    const sentence = reactive.ReactiveVar("can't even imagine");
+    tmpl.helpers({
+      capitalize: function (str: string) {
+        return str.charAt(0).toUpperCase() + str.substring(1);
+      },
+      firstWord: function (s: string) { return s.split(' ')[0]; },
+      generateSentence: function () { return sentence.get(); },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe("Can't");
+
+    sentence.set('that would be quite dark');
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('That');
+  });
+});
+
+describe('spacebars integration - expressions as keyword args', () => {
+  test('sub-expressions as keyword arguments', () => {
+    const tmpl = makeTemplate('test_expr_kw',
+      '{{capitalize (name)}} {{capitalize "mello"}}');
+    const name = reactive.ReactiveVar('light');
+    tmpl.helpers({
+      capitalize: function (str: string) {
+        return str.charAt(0).toUpperCase() + str.substring(1);
+      },
+      name: function () { return name.get(); },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('Light Mello');
+
+    name.set('misa');
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('Misa Mello');
+  });
+});
+
+describe('spacebars integration - #with does not re-render template', () => {
+  test('with reactive value preserves DOM nodes', () => {
+    const tmpl = makeTemplate('test_with_rerender',
+      '{{#with x}}<input class="foo"><span class="bar">{{this}}</span>{{/with}}');
+    const x = reactive.ReactiveVar('aaa');
+    tmpl.helpers({ x: function () { return x.get(); } });
+
+    const div = renderToDiv(tmpl);
+    const input = div.querySelector('input.foo');
+    const span = div.querySelector('span.bar');
+    expect(input).toBeTruthy();
+    expect(span).toBeTruthy();
+    expect(canonicalizeHtml(span!.innerHTML)).toBe('aaa');
+
+    x.set('bbb');
+    reactive.flush();
+    // DOM elements should be the same instances
+    expect(div.querySelector('input.foo')).toBe(input);
+    expect(div.querySelector('span.bar')).toBe(span);
+    expect(canonicalizeHtml(span!.innerHTML)).toBe('bbb');
+  });
+});
+
+describe('spacebars integration - #let does not re-render template', () => {
+  test('let reactive value preserves DOM nodes', () => {
+    const tmpl = makeTemplate('test_let_rerender',
+      '{{#let y=x}}<input class="foo"><span class="bar">{{y}}</span>{{/let}}');
+    const x = reactive.ReactiveVar('aaa');
+    tmpl.helpers({ x: function () { return x.get(); } });
+
+    const div = renderToDiv(tmpl);
+    const input = div.querySelector('input.foo');
+    const span = div.querySelector('span.bar');
+    expect(input).toBeTruthy();
+    expect(span).toBeTruthy();
+    expect(canonicalizeHtml(span!.innerHTML)).toBe('aaa');
+
+    x.set('bbb');
+    reactive.flush();
+    expect(div.querySelector('input.foo')).toBe(input);
+    expect(div.querySelector('span.bar')).toBe(span);
+    expect(canonicalizeHtml(span!.innerHTML)).toBe('bbb');
+  });
+});
+
+describe('spacebars integration - #each takes multiple arguments', () => {
+  test('each with helper wrapping array', () => {
+    const tmpl = makeTemplate('test_each_multiarg',
+      '{{#each helper arg}}<div>{{this}}</div>{{/each}}');
+    tmpl.helpers({
+      arg: ['a', 'b', 'c'],
+      helper: function (x: string[]) { return x; },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<div>a</div><div>b</div><div>c</div>');
+  });
+});
+
+describe('spacebars integration - multiple arguments in each-in', () => {
+  test('each-in with helper call on list', () => {
+    const tmpl = makeTemplate('test_each_in_multi',
+      '{{#each item in (helper list)}}<div>{{item}}</div>{{/each}}');
+    tmpl.helpers({
+      list: ['a', 'b', 'c'],
+      helper: function (list: string[]) { return [...list].reverse(); },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<div>c</div><div>b</div><div>a</div>');
+  });
+});
+
+describe('spacebars integration - inclusion lookup order', () => {
+  test('helper overrides template name for inclusion', () => {
+    const sub1 = makeTemplate('test_incl_lookup_sub1', 'from template');
+    const sub2 = makeTemplate('test_incl_lookup_sub2', 'from helper');
+    const sub3 = makeTemplate('test_incl_lookup_sub3', 'from data');
+
+    // Register sub1 as a global template
+    (Template as Record<string, unknown>)['test_incl_lookup_sub1'] = sub1;
+
+    const tmpl = makeTemplate('test_incl_lookup',
+      '{{> test_incl_lookup_sub1}} {{> dataSubTmpl}}');
+    // Helper overrides the template registered by name
+    tmpl.helpers({
+      test_incl_lookup_sub1: sub2,
+      dataSubTmpl: sub3,
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('from helper from data');
+
+    delete (Template as Record<string, unknown>)['test_incl_lookup_sub1'];
+  });
+});
+
+describe('spacebars integration - attribute object helpers', () => {
+  test('disabled/undefined attribute object does not affect element', () => {
+    const tmpl = makeTemplate('test_attr_disabled',
+      '<button {{disabled}}>test</button>');
+    tmpl.helpers({ disabled: function () { return undefined; } });
+
+    const div = renderToDiv(tmpl);
+    const button = div.querySelector('button')!;
+    expect(button.getAttribute('title')).toBeNull();
+    expect(button.textContent).toBe('test');
+  });
+
+  test('attribute object with reactive updates', () => {
+    const tmpl = makeTemplate('test_attr_obj_reactive',
+      '<p {{attrs}}>text</p>');
+    const attrs = reactive.ReactiveVar({ class: 'foo', id: 'bar' });
+    tmpl.helpers({ attrs: function () { return attrs.get(); } });
+
+    const div = renderToDiv(tmpl);
+    const p = div.querySelector('p')!;
+    expect(p.getAttribute('class')).toBe('foo');
+    expect(p.getAttribute('id')).toBe('bar');
+
+    attrs.set({ class: 'baz' });
+    reactive.flush();
+    expect(p.getAttribute('class')).toBe('baz');
+    // id should be removed since it's no longer in the attrs
+    expect(p.getAttribute('id')).toBeNull();
+  });
+});
+
+describe('spacebars integration - nully attributes detailed', () => {
+  test('null/undefined/false attributes are removed', () => {
+    const tmpl = makeTemplate('test_nully_attrs',
+      '<input checked="{{checked}}" stuff="{{stuff}}">');
+    const checked = reactive.ReactiveVar<unknown>(true);
+    const stuff = reactive.ReactiveVar<unknown>('yes');
+    tmpl.helpers({
+      checked: function () { return checked.get(); },
+      stuff: function () { return stuff.get(); },
+    });
+
+    const div = renderToDiv(tmpl);
+    const input = div.querySelector('input')!;
+    expect(input.checked).toBe(true);
+    expect(input.getAttribute('stuff')).toBe('yes');
+
+    checked.set(false);
+    stuff.set(null);
+    reactive.flush();
+    expect(input.checked).toBe(false);
+    expect(input.getAttribute('stuff')).toBeNull();
+
+    checked.set(undefined);
+    stuff.set(undefined);
+    reactive.flush();
+    expect(input.checked).toBe(false);
+    expect(input.getAttribute('stuff')).toBeNull();
+  });
+
+  test('empty string is truthy for attributes', () => {
+    const tmpl = makeTemplate('test_empty_str_attr',
+      '<input checked="{{val}}">');
+    tmpl.helpers({ val: '' });
+    const div = renderToDiv(tmpl);
+    const input = div.querySelector('input')!;
+    expect(input.checked).toBe(true);
+  });
+});
+
+describe('spacebars integration - double escaping detailed', () => {
+  test('various types in double stache', () => {
+    const tmpl = makeTemplate('test_double_vals', '{{foo}}');
+    const testCases: [unknown, string][] = [
+      ['asdf', 'asdf'],
+      [1.23, '1.23'],
+      [0, '0'],
+      [true, 'true'],
+      [false, ''],
+      [null, ''],
+      [undefined, ''],
+    ];
+
+    for (const [val, expected] of testCases) {
+      tmpl.helpers({ foo: val });
+      const div = renderToDiv(tmpl);
+      expect(canonicalizeHtml(div.innerHTML)).toBe(expected);
+    }
+  });
+});
+
+describe('spacebars integration - template instance from helper', () => {
+  test('Template.instance() returns correct instance in helper', () => {
+    const tmpl = makeTemplate('test_tmpl_instance', '{{foo}}');
+    let instanceFromHelper: TemplateInstance | null = null;
+
+    tmpl.onCreated(function (this: TemplateInstance) {
+      (this as Record<string, unknown>).testValue = 'hello';
+    });
+    tmpl.helpers({
+      foo: function () {
+        instanceFromHelper = Template.instance();
+        return '';
+      },
+    });
+
+    renderToDiv(tmpl);
+    expect(instanceFromHelper).toBeTruthy();
+    expect((instanceFromHelper as unknown as Record<string, unknown>).testValue).toBe('hello');
+  });
+});
+
+describe('spacebars integration - autorun on template instance', () => {
+  test('this.autorun stops when template is destroyed', () => {
+    const inner = makeTemplate('test_autorun_inner', '<span>inner</span>');
+    let autorunCount = 0;
+    const rv = reactive.ReactiveVar('foo');
+
+    inner.onCreated(function (this: TemplateInstance) {
+      this.autorun(function () {
+        rv.get();
+        autorunCount++;
+      });
+    });
+
+    const tmpl = makeTemplate('test_autorun_outer',
+      '{{#if show}}{{> inner}}{{/if}}');
+    const show = reactive.ReactiveVar(true);
+    tmpl.helpers({
+      show: function () { return show.get(); },
+      inner,
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(autorunCount).toBe(1);
+
+    rv.set('bar');
+    reactive.flush();
+    expect(autorunCount).toBe(2);
+
+    // Destroy the inner template
+    show.set(false);
+    reactive.flush();
+
+    // Autorun should be stopped
+    rv.set('baz');
+    reactive.flush();
+    expect(autorunCount).toBe(2);
+  });
+});
+
+describe('spacebars integration - created/rendered/destroyed by each', () => {
+  test('lifecycle callbacks fire for each item', () => {
+    const inner = makeTemplate('test_lifecycle_each_inner', '<div>{{this}}</div>');
+    const buf: string[] = [];
+
+    inner.onCreated(function (this: TemplateInstance) {
+      buf.push('C' + String(getData(this.view)).toLowerCase());
+    });
+    inner.onRendered(function (this: TemplateInstance) {
+      buf.push('R' + String(getData(this.view)).toLowerCase());
+    });
+    inner.onDestroyed(function (this: TemplateInstance) {
+      buf.push('D' + String(getData(this.view)).toLowerCase());
+    });
+
+    const tmpl = makeTemplate('test_lifecycle_each_outer',
+      '{{#each items}}{{> inner}}{{/each}}');
+    const R = reactive.ReactiveVar([{ _id: 'A' }]);
+    tmpl.helpers({
+      items: function () { return R.get(); },
+      inner,
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<div>[object Object]</div>');
+    // Created + Rendered for first item
+    expect(buf.filter(s => s.startsWith('C')).length).toBe(1);
+    expect(buf.filter(s => s.startsWith('R')).length).toBe(1);
+
+    R.set([{ _id: 'B' }]);
+    reactive.flush();
+    // First item destroyed, second created + rendered
+    expect(buf.filter(s => s.startsWith('D')).length).toBe(1);
+  });
+});
+
+describe('spacebars integration - view removal stops reactivity', () => {
+  test('removing a view stops its autoruns', () => {
+    const tmpl = makeTemplate('test_view_removal', '<span>{{foo}}</span>');
+    const rv = reactive.ReactiveVar('one');
+    let runCount = 0;
+    tmpl.helpers({ foo: function () { runCount++; return rv.get(); } });
+
+    const div = document.createElement('div');
+    const view = render(tmpl, div);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<span>one</span>');
+    const initialCount = runCount;
+
+    remove(view);
+    rv.set('two');
+    reactive.flush();
+    // After remove, the helper should not re-run
+    expect(runCount).toBe(initialCount);
+  });
+});
+
+describe('spacebars integration - Blaze.render fails on non-DOM', () => {
+  test('render throws if parentElement is not DOM', () => {
+    const tmpl = makeTemplate('test_render_nope', '<div>hi</div>');
+    expect(() => render(tmpl, {} as unknown as Element)).toThrow();
+  });
+});
+
+describe('spacebars integration - toHTML variations', () => {
+  test('toHTML with #if stops autoruns', () => {
+    const tmpl = makeTemplate('test_tohtml_if', '{{#if foo}}bar{{/if}}');
+    let count = 0;
+    const R = reactive.ReactiveVar<unknown>(null);
+    tmpl.helpers({
+      foo: function () { count++; return R.get(); },
+    });
+
+    R.set('bar');
+    expect(canonicalizeHtml(toHTML(tmpl))).toBe('bar');
+    expect(count).toBe(1);
+
+    R.set('');
+    reactive.flush();
+    // toHTML should have stopped all autoruns, count should still be 1
+    expect(count).toBe(1);
+  });
+
+  test('toHTML with #each stops autoruns', () => {
+    const tmpl = makeTemplate('test_tohtml_each', '{{#each foos}}{{this}}{{/each}}');
+    let count = 0;
+    const R = reactive.ReactiveVar<unknown>(null);
+    tmpl.helpers({
+      foos: function () { count++; return R.get(); },
+    });
+
+    R.set(['bar']);
+    expect(canonicalizeHtml(toHTML(tmpl))).toBe('bar');
+    expect(count).toBe(1);
+
+    R.set([]);
+    reactive.flush();
+    expect(count).toBe(1);
+  });
+});
+
+describe('spacebars integration - javascript scheme URLs', () => {
+  test('javascript: URLs are blocked by default', () => {
+    // Test that _allowJavascriptUrls and _javascriptUrlsAllowed work
+    const { _allowJavascriptUrls, _javascriptUrlsAllowed } = require('@blaze-ng/core');
+    expect(_javascriptUrlsAllowed()).toBe(false);
+  });
+});
+
+describe('spacebars integration - SVG elements', () => {
+  test('SVG circle renders with correct namespace', () => {
+    const tmpl = makeTemplate('test_svg_circle',
+      '<svg><circle cx="10" cy="10" r="5"></circle></svg>');
+
+    const div = renderToDiv(tmpl);
+    const svg = div.querySelector('svg')!;
+    const circle = svg.querySelector('circle')!;
+    expect(svg.namespaceURI).toBe('http://www.w3.org/2000/svg');
+    expect(circle.namespaceURI).toBe('http://www.w3.org/2000/svg');
+  });
+
+  test('SVG path with reactive d attribute', () => {
+    const tmpl = makeTemplate('test_svg_path',
+      '<svg><path d="{{pathData}}"></path></svg>');
+    const pathData = reactive.ReactiveVar('M0 0 L10 10');
+    tmpl.helpers({ pathData: function () { return pathData.get(); } });
+
+    const div = renderToDiv(tmpl);
+    const path = div.querySelector('path')!;
+    expect(path.getAttribute('d')).toBe('M0 0 L10 10');
+
+    pathData.set('M5 5 L20 20');
+    reactive.flush();
+    expect(path.getAttribute('d')).toBe('M5 5 L20 20');
+  });
+});
+
+describe('spacebars integration - textarea advanced', () => {
+  test('textarea each with reactive array', () => {
+    const tmpl = makeTemplate('test_textarea_each',
+      '<textarea>{{#each foo}}<not a tag {{this}} {{/each}}</textarea>');
+    const R = reactive.ReactiveVar(['APPLE', 'BANANA']);
+    tmpl.helpers({ foo: function () { return R.get(); } });
+
+    const div = renderToDiv(tmpl);
+    const textarea = div.querySelector('textarea')!;
+    expect(textarea.value).toContain('APPLE');
+    expect(textarea.value).toContain('BANANA');
+
+    R.set([]);
+    reactive.flush();
+    // With empty array, the textarea should have minimal content
+    expect(textarea.value).not.toContain('APPLE');
+
+    R.set(['CUCUMBER']);
+    reactive.flush();
+    expect(textarea.value).toContain('CUCUMBER');
+  });
+});
+
+describe('spacebars integration - parentData', () => {
+  test('Template.parentData accesses ancestor data contexts', () => {
+    const child = makeTemplate('test_parent_data_child',
+      '{{foo}}');
+
+    const tmpl = makeTemplate('test_parent_data_outer',
+      '{{#with outer}}{{#with inner}}{{> child}}{{/with}}{{/with}}');
+    tmpl.helpers({
+      child,
+      outer: { inner: { val: 'deepest' }, outerVal: 'mid' },
+    });
+
+    child.helpers({
+      foo: function () {
+        // parentData(0) = current context
+        // parentData(1) = parent
+        const parent = Template.parentData(1);
+        return parent ? (parent as Record<string, string>).outerVal : 'none';
+      },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('mid');
+  });
+});
+
+describe('spacebars integration - Blaze.getView and getData', () => {
+  test('getView returns the view for a DOM element', () => {
+    const tmpl = makeTemplate('test_getview', '<span>hello</span>');
+    const div = renderToDiv(tmpl, { greeting: 'test' });
+
+    const span = div.querySelector('span')!;
+    const view = getView(span);
+    expect(view).toBeTruthy();
+    expect(getData(span)).toEqual({ greeting: 'test' });
+  });
+});
+
+describe('spacebars integration - contentBlock argument', () => {
+  test('arguments passed to contentBlock are evaluated', () => {
+    const wrapper = makeTemplate('test_cb_wrapper',
+      '{{#if true}}<div>{{> Template.contentBlock}}</div>{{/if}}');
+    const tmpl = makeTemplate('test_cb_outer',
+      '{{#wrapper}}AAA{{/wrapper}} BBB');
+    tmpl.helpers({ wrapper });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toContain('AAA');
+    expect(canonicalizeHtml(div.innerHTML)).toContain('BBB');
+  });
+});
+
+describe('spacebars integration - contentBlock via inclusion', () => {
+  test('block content passed via inclusion', () => {
+    const wrapper = makeTemplate('test_content_pass_wrapper',
+      '<div>{{> Template.contentBlock}}</div>');
+    const tmpl = makeTemplate('test_content_pass_outer',
+      '{{#wrapper}}hello world{{/wrapper}}');
+    tmpl.helpers({ wrapper });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toContain('hello world');
+  });
+});
+
+describe('spacebars integration - #unless', () => {
+  test('unless with reactive condition', () => {
+    const tmpl = makeTemplate('test_unless',
+      '{{#unless hidden}}visible{{else}}hidden{{/unless}}');
+    const R = reactive.ReactiveVar(false);
+    tmpl.helpers({ hidden: function () { return R.get(); } });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('visible');
+
+    R.set(true);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('hidden');
+
+    R.set(false);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('visible');
+  });
+});
+
+describe('spacebars integration - #each with else', () => {
+  test('each shows else block when empty', () => {
+    const tmpl = makeTemplate('test_each_else',
+      '{{#each items}}<li>{{this}}</li>{{else}}<li>none</li>{{/each}}');
+    const R = reactive.ReactiveVar<string[]>([]);
+    tmpl.helpers({ items: function () { return R.get(); } });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<li>none</li>');
+
+    R.set(['a', 'b']);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<li>a</li><li>b</li>');
+
+    R.set([]);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('<li>none</li>');
+  });
+});
+
+describe('spacebars integration - SafeString in helper', () => {
+  test('SafeString is not escaped', () => {
+    const tmpl = makeTemplate('test_safestring', '{{foo}}');
+    tmpl.helpers({
+      foo: function () { return new Spacebars.SafeString('<b>bold</b>'); },
+    });
+    const div = renderToDiv(tmpl);
+    expect(div.querySelector('b')).toBeTruthy();
+    expect(div.querySelector('b')!.textContent).toBe('bold');
+  });
+
+  test('regular string is escaped', () => {
+    const tmpl = makeTemplate('test_escaped_str', '{{foo}}');
+    tmpl.helpers({ foo: function () { return '<b>not bold</b>'; } });
+    const div = renderToDiv(tmpl);
+    expect(div.querySelector('b')).toBeNull();
+    expect(div.textContent).toBe('<b>not bold</b>');
+  });
+});
+
+describe('spacebars integration - deeply nested #with and #each', () => {
+  test('deeply nested template structures', () => {
+    const tmpl = makeTemplate('test_deep_nesting',
+      '{{#with a}}{{#with b}}{{#each items}}<span>{{name}}-{{../../title}}</span>{{/each}}{{/with}}{{/with}}');
+    tmpl.helpers({
+      a: {
+        title: 'TOP',
+        b: {
+          items: [{ name: 'x' }, { name: 'y' }],
+        },
+      },
+    });
+
+    const div = renderToDiv(tmpl);
+    const spans = div.querySelectorAll('span');
+    expect(spans.length).toBe(2);
+    expect(spans[0].textContent).toBe('x-TOP');
+    expect(spans[1].textContent).toBe('y-TOP');
+  });
+});
+
+describe('spacebars integration - reactive template switching via helper', () => {
+  test('dynamically switch included template', () => {
+    const tmplA = makeTemplate('test_switch_a', '<span>A</span>');
+    const tmplB = makeTemplate('test_switch_b', '<span>B</span>');
+    const tmpl = makeTemplate('test_switch', '{{> whichOne}}');
+
+    const R = reactive.ReactiveVar<Template>(tmplA);
+    tmpl.helpers({ whichOne: function () { return R.get(); } });
+
+    const div = renderToDiv(tmpl);
+    expect(div.querySelector('span')!.textContent).toBe('A');
+
+    R.set(tmplB);
+    reactive.flush();
+    expect(div.querySelector('span')!.textContent).toBe('B');
+
+    R.set(tmplA);
+    reactive.flush();
+    expect(div.querySelector('span')!.textContent).toBe('A');
+  });
+});
+
+describe('spacebars integration - reactive #if with nested each', () => {
+  test('if toggling with nested each', () => {
+    const tmpl = makeTemplate('test_if_each',
+      '{{#if show}}{{#each items}}<span>{{this}}</span>{{/each}}{{/if}}');
+    const show = reactive.ReactiveVar(true);
+    const items = reactive.ReactiveVar(['a', 'b']);
+    tmpl.helpers({
+      show: function () { return show.get(); },
+      items: function () { return items.get(); },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(div.querySelectorAll('span').length).toBe(2);
+
+    show.set(false);
+    reactive.flush();
+    expect(div.querySelectorAll('span').length).toBe(0);
+
+    show.set(true);
+    reactive.flush();
+    expect(div.querySelectorAll('span').length).toBe(2);
+
+    items.set(['x', 'y', 'z']);
+    reactive.flush();
+    expect(div.querySelectorAll('span').length).toBe(3);
+    expect(div.querySelectorAll('span')[2].textContent).toBe('z');
+  });
+});
+
+describe('spacebars integration - #with else block', () => {
+  test('with else shows fallback when null', () => {
+    const tmpl = makeTemplate('test_with_else',
+      '{{#with obj}}has: {{val}}{{else}}empty{{/with}}');
+    const R = reactive.ReactiveVar<Record<string, string> | null>(null);
+    tmpl.helpers({ obj: function () { return R.get(); } });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('empty');
+
+    R.set({ val: 'data' });
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('has: data');
+
+    R.set(null);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('empty');
+  });
+});
+
+describe('spacebars integration - global helper from registerHelper', () => {
+  test('global helper accessible from all templates', () => {
+    registerHelper('GLOBAL_TEST_HELPER', function () { return 'GLOBAL'; });
+
+    const tmpl = makeTemplate('test_global', '{{GLOBAL_TEST_HELPER}}');
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('GLOBAL');
+
+    deregisterHelper('GLOBAL_TEST_HELPER');
+  });
+
+  test('global helper with falsy value works', () => {
+    registerHelper('GLOBAL_ZERO_TEST', 0);
+    const tmpl = makeTemplate('test_global_zero', '{{GLOBAL_ZERO_TEST}}');
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('0');
+    deregisterHelper('GLOBAL_ZERO_TEST');
+  });
+});
+
+describe('spacebars integration - multiple helpers on same element', () => {
+  test('multiple reactive attributes update independently', () => {
+    const tmpl = makeTemplate('test_multi_attrs',
+      '<div class="{{cls}}" id="{{ident}}" title="{{ttl}}">{{text}}</div>');
+    const cls = reactive.ReactiveVar('a');
+    const ident = reactive.ReactiveVar('id1');
+    const ttl = reactive.ReactiveVar('tip');
+    const text = reactive.ReactiveVar('hello');
+
+    tmpl.helpers({
+      cls: function () { return cls.get(); },
+      ident: function () { return ident.get(); },
+      ttl: function () { return ttl.get(); },
+      text: function () { return text.get(); },
+    });
+
+    const div = renderToDiv(tmpl);
+    const el = div.querySelector('div')!;
+    expect(el.getAttribute('class')).toBe('a');
+    expect(el.getAttribute('id')).toBe('id1');
+    expect(el.getAttribute('title')).toBe('tip');
+    expect(el.textContent).toBe('hello');
+
+    cls.set('b');
+    reactive.flush();
+    expect(el.getAttribute('class')).toBe('b');
+    expect(el.getAttribute('id')).toBe('id1'); // unchanged
+    expect(el.textContent).toBe('hello'); // unchanged
+
+    text.set('world');
+    reactive.flush();
+    expect(el.textContent).toBe('world');
+  });
+});
+
+describe('spacebars integration - nested #if chains', () => {
+  test('nested if/else if/else', () => {
+    const tmpl = makeTemplate('test_nested_if',
+      '{{#if a}}A{{else}}{{#if b}}B{{else}}C{{/if}}{{/if}}');
+    const a = reactive.ReactiveVar(true);
+    const b = reactive.ReactiveVar(false);
+    tmpl.helpers({
+      a: function () { return a.get(); },
+      b: function () { return b.get(); },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('A');
+
+    a.set(false);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('C');
+
+    b.set(true);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('B');
+
+    a.set(true);
+    reactive.flush();
+    expect(canonicalizeHtml(div.innerHTML)).toBe('A');
+  });
+});
+
+describe('spacebars integration - helper with keyword hash', () => {
+  test('helper receives keyword arguments', () => {
+    const tmpl = makeTemplate('test_kw_hash',
+      '{{greet name="World" greeting="Hello"}}');
+    tmpl.helpers({
+      greet: function (opts: { hash: { name: string; greeting: string } }) {
+        return opts.hash.greeting + ' ' + opts.hash.name;
+      },
+    });
+
+    const div = renderToDiv(tmpl);
+    expect(canonicalizeHtml(div.innerHTML)).toBe('Hello World');
+  });
+});
+
+describe('spacebars integration - data context propagation', () => {
+  test('data context flows through nested templates', () => {
+    const leaf = makeTemplate('test_ctx_leaf', '{{val}}');
+    const mid = makeTemplate('test_ctx_mid', '{{> leaf}}');
+    mid.helpers({ leaf });
+    const tmpl = makeTemplate('test_ctx_root', '{{> mid}}');
+    tmpl.helpers({ mid });
+
+    const div = renderToDiv(tmpl, { val: 'deep' });
+    expect(canonicalizeHtml(div.innerHTML)).toBe('deep');
+  });
+});
+
+describe('spacebars integration - reactive each reordering', () => {
+  test('each re-renders correctly when items change', () => {
+    const tmpl = makeTemplate('test_each_reorder',
+      '{{#each items}}<span>{{this}}</span>{{/each}}');
+    const R = reactive.ReactiveVar(['a', 'b', 'c']);
+    tmpl.helpers({ items: function () { return R.get(); } });
+
+    const div = renderToDiv(tmpl);
+    expect(div.querySelectorAll('span').length).toBe(3);
+    expect(div.querySelectorAll('span')[0].textContent).toBe('a');
+    expect(div.querySelectorAll('span')[2].textContent).toBe('c');
+
+    R.set(['c', 'a']);
+    reactive.flush();
+    expect(div.querySelectorAll('span').length).toBe(2);
+    expect(div.querySelectorAll('span')[0].textContent).toBe('c');
+    expect(div.querySelectorAll('span')[1].textContent).toBe('a');
+
+    R.set([]);
+    reactive.flush();
+    expect(div.querySelectorAll('span').length).toBe(0);
+
+    R.set(['x']);
+    reactive.flush();
+    expect(div.querySelectorAll('span').length).toBe(1);
+    expect(div.querySelectorAll('span')[0].textContent).toBe('x');
   });
 });
