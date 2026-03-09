@@ -190,9 +190,9 @@
 
 ## Phase 5: Meteor Adapter
 
-- [ ] **5a. `@blaze-ng/meteor`** — TrackerAdapter implementing ReactiveSystem with Meteor Tracker
-- [ ] **5b. Meteor atmosphere wrappers** — `wreiske:blaze-ng-*` packages that import from `@blaze-ng/*`
-- [ ] **5c. `@blaze-ng/compat`** — UI/Handlebars namespace aliases with deprecation warnings
+- [x] **5a. `@blaze-ng/meteor`** — TrackerAdapter implementing ReactiveSystem with Meteor Tracker
+- [x] **5b. `@blaze-ng/hot`** — HMR template tracking, re-rendering, module cleanup
+- [x] **5c. `@blaze-ng/compat`** — UI/Handlebars namespace aliases with deprecation warnings
 
 ---
 
