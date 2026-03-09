@@ -13,3 +13,4 @@ webapp@2.0.0                  # Meteor's HTTP server (WebApp.connectHandlers)
 
 # Blaze-NG packages (replace standard blaze/templating)
 blaze-html-templates
+jquery

@@ -13,3 +13,4 @@ hot-module-replacement@0.5.4  # HMR support
 
 # Blaze-NG packages (replace standard blaze/templating)
 blaze-html-templates
+jquery
