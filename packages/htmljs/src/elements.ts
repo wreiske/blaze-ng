@@ -123,5 +123,6 @@ export function isVoidElement(tagName: string): boolean {
   return voidElementSet.has(tagName);
 }
 
-// Ensure constructors exist for all known elements on module load
-knownElementNames.forEach(ensureTag);
+// Lazily create constructors for known elements on first access.
+// The HTML object uses a Proxy (see index.ts) that calls getTag()
+// on property miss, so we no longer need to pre-register all 202 tags.

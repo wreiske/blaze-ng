@@ -105,8 +105,11 @@ export type { Attrs } from './types';
  *
  * Contains all tag constructors (HTML.P, HTML.DIV, etc.) plus utility
  * functions and classes for working with the HTMLjs AST.
+ *
+ * Tag constructors are lazily created on first access via a Proxy —
+ * only the tags your templates actually use are instantiated.
  */
-export const HTML = Object.assign(HTMLTags, {
+const _htmlBase = Object.assign(HTMLTags, {
   Tag,
   Attrs,
   getTag,
@@ -135,4 +138,20 @@ export const HTML = Object.assign(HTMLTags, {
   TransformingVisitor,
   ToHTMLVisitor,
   ToTextVisitor,
+});
+
+export const HTML = new Proxy(_htmlBase, {
+  get(target, prop, receiver) {
+    if (prop in target) return Reflect.get(target, prop, receiver);
+    // Lazily create tag constructors for known element symbol names (e.g. 'DIV', 'SPAN')
+    if (typeof prop === 'string' && /^[A-Z]/.test(prop)) {
+      const tagName = prop.toLowerCase().replace(/_/g, '-');
+      if (isKnownElement(tagName)) {
+        const ctor = getTag(tagName);
+        (target as Record<string, unknown>)[prop] = ctor;
+        return ctor;
+      }
+    }
+    return undefined;
+  },
 });

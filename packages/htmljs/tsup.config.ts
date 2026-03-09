@@ -6,5 +6,9 @@ export default defineConfig({
   dts: false,
   splitting: false,
   sourcemap: true,
+  esbuildOptions(options) {
+    options.minifySyntax = true;
+    options.minifyWhitespace = true;
+  },
   clean: true,
 });
