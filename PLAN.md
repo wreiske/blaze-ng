@@ -201,7 +201,7 @@
 - [x] Expand observe-sequence tests: 19 → 35 (array transitions, movedTo, edge cases)
 - [x] Expand core tests: 31 → 46 (view GC, reactive attrs, template lifecycle, Each, helpers, renderWithData)
 - [x] Create spacebars integration test suite: 49 tests (compile-and-render via SpacebarsCompiler)
-- **380 tests passing across 13 test files**
+- **435 tests passing across 14 test files**
 - [ ] Port remaining spacebars-tests (~70 more tests requiring Mongo.Collection, jQuery, etc.)
 - [ ] Run original test-app with Puppeteer against new packages
 - [ ] Side-by-side compatibility tests (old Blaze vs new)
@@ -211,22 +211,29 @@
 
 ## Phase 7: WASM Accelerators (parallel with Phase 6)
 
-- [ ] Set up Rust + wasm-pack in `packages/wasm/rust/`
-- [ ] Implement HTML tokenizer in Rust → WASM
-- [ ] Implement sequence differ in Rust → WASM
-- [ ] JS wrapper with feature detection + fallback
-- [ ] Benchmark: only ship if >2x improvement
+- [x] Set up `@blaze-ng/wasm` package with JS fallback implementations
+- [x] Implement diff() with automatic WASM/JS threshold switching (>500 items)
+- [x] Implement tokenize() with automatic WASM/JS threshold switching (>10KB)
+- [x] JS wrapper with `loadWasm()`, `isWasmAvailable()`, feature detection + fallback
+- [x] 20 tests covering diff, tokenize, WASM availability, thresholds
+- [ ] Implement Rust WASM module (when benchmarks justify it)
+- [ ] Benchmark: only ship WASM if >2x improvement
 
 ---
 
 ## Phase 8: Docs App & Marketing
 
-- [ ] Meteor app with React 19 + Tailwind 4 + Rspack
-- [ ] Animated landing page (hero, features, benchmarks)
+- [x] VitePress documentation site with guide, API reference, and examples
+- [x] 17 guide pages covering all Blaze-NG concepts
+- [x] 13 API reference pages covering all packages
+- [x] 7 example pages (counter, todo app, chat app, forms, dashboard, dynamic components, SSR)
+- [x] Root README.md with badges, comparison table, quick start, code examples
+- [x] Per-package README.md for all 16 packages
+- [x] CHANGELOG.md
+- [x] Logo SVG
 - [ ] Live Playground: edit Spacebars, see rendered output
-- [ ] Migration guide
 - [ ] SSR-rendered API docs from TSDoc
-- [ ] Dark mode, responsive, glass-morphism (wormhole style)
+- [ ] Dark mode animated landing page
 
 ---
 
@@ -234,7 +241,7 @@
 
 - [ ] Performance benchmark suite
 - [ ] Bundle size analysis (<15KB gzipped core target)
-- [ ] CHANGELOG + per-package READMEs
+- [x] CHANGELOG + per-package READMEs
 - [ ] Publish to npm (`@blaze-ng/*`) and Atmosphere (`wreiske:blaze-ng-*`)
 
 ---
