@@ -239,8 +239,8 @@
 
 ## Phase 9: Polish & Release
 
-- [ ] Performance benchmark suite
-- [ ] Bundle size analysis (<15KB gzipped core target)
+- [x] Performance benchmark suite
+- [x] Bundle size analysis (<15KB gzipped core target)
 - [x] CHANGELOG + per-package READMEs
 - [ ] Publish to npm (`@blaze-ng/*`) and Atmosphere (`wreiske:blaze-ng-*`)
 
