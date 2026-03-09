@@ -135,17 +135,8 @@ export function codeGen(parseTree: unknown, options?: CompileOptions): string {
  * @returns Formatted code string.
  */
 export function _beautify(code: string): string {
-  // Basic formatting: normalize whitespace in function bodies
-  // to match the original UglifyJS beautifier output.
-  //
-  // The approach:
-  // 1. Parse and re-emit with consistent indentation
-  // We replicate what UglifyJS beautify does:
-  // - 2-space indent
-  // - spaces after colons/commas
-  // - newlines before/after blocks
-
-  // Use a simple approach: pass through a formatter that matches UglifyJS output
+  // Replicate UglifyJS beautify output: 2-space indentation, newlines
+  // after semicolons inside function bodies.
   let result = code;
 
   // Remove wrapping parens if present, format, re-add
@@ -154,27 +145,135 @@ export function _beautify(code: string): string {
     result = result.slice(1, -1);
   }
 
-  // Normalize whitespace: collapse multiple spaces/newlines
+  // Normalize all whitespace to single spaces first
   result = result.replace(/\s+/g, ' ');
 
-  // Format function declarations onto new lines
-  result = result.replace(/function\s*\(\)\s*\{\s*/g, 'function() {\n');
+  // UglifyJS normalizes "function ()" to "function()"
+  result = result.replace(/function \(/g, 'function(');
 
-  // Add newlines after semicolons inside function bodies (var declarations)
-  result = result.replace(/;\s*/g, ';\n');
+  // Now do a simple brace-aware indentation pass
+  let output = '';
+  let indent = 0;
+  const tokens = tokenizeForBeautify(result);
 
-  // Add newlines before return statements
-  result = result.replace(/\s*return\s+/g, '  return ');
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
 
-  // Close braces on their own line
-  result = result.replace(/\s*\}/g, '\n}');
+    if (token === '{') {
+      // Ensure space before opening brace (e.g. "function() {")
+      if (output.length > 0 && !output.endsWith(' ') && !output.endsWith('\n')) {
+        output += ' ';
+      }
+      output += '{\n';
+      indent++;
+    } else if (token === '}') {
+      indent--;
+      output += indentStr(indent) + '}';
+      // Check if next token exists and is not a special char
+      if (i + 1 < tokens.length && tokens[i + 1] !== ')' && tokens[i + 1] !== ';') {
+        output += '\n';
+      }
+    } else if (token === ';') {
+      output += ';\n';
+    } else {
+      // Regular text or string token
+      const trimmed = token.trim();
+      if (trimmed) {
+        if (output.length === 0 || output.endsWith('\n')) {
+          // Start of line — add indentation
+          output += indentStr(indent) + trimmed;
+        } else {
+          // Continuation on same line — ensure space separation
+          // between text/string tokens if needed
+          const lastChar = output[output.length - 1];
+          const firstChar = trimmed[0];
+          const needsSpace =
+            lastChar !== ' ' &&
+            lastChar !== '(' &&
+            firstChar !== ')' &&
+            firstChar !== ',' &&
+            firstChar !== '.';
+          if (needsSpace) {
+            output += ' ';
+          }
+          output += trimmed;
+        }
+      }
+    }
+  }
+
+  // Clean up: remove trailing whitespace on lines, collapse blank lines
+  result = output
+    .split('\n')
+    .map((l) => l.trimEnd())
+    .filter((l, i, arr) => !(l === '' && i > 0 && arr[i - 1] === ''))
+    .join('\n');
+
+  // Remove trailing newline
+  result = result.replace(/\n$/, '');
 
   if (hasParens) {
     result = '(' + result + ')';
   }
 
-  // Strip trailing semicolons (UglifyJS adds them for statements)
-  result = result.replace(/;$/, '');
-
   return result;
+}
+
+/** Produce 2-space indentation string. */
+function indentStr(level: number): string {
+  return '  '.repeat(level);
+}
+
+/**
+ * Split code into tokens for the beautifier: strings, braces, semicolons,
+ * and text chunks. Strings are kept intact to avoid breaking them.
+ */
+function tokenizeForBeautify(code: string): string[] {
+  const tokens: string[] = [];
+  let i = 0;
+  let buf = '';
+
+  const flush = () => {
+    if (buf) {
+      tokens.push(buf);
+      buf = '';
+    }
+  };
+
+  while (i < code.length) {
+    const ch = code[i];
+
+    // Handle string literals (preserve them intact)
+    if (ch === '"' || ch === "'") {
+      flush();
+      let str = ch;
+      i++;
+      while (i < code.length) {
+        const c = code[i];
+        str += c;
+        i++;
+        if (c === '\\' && i < code.length) {
+          str += code[i];
+          i++;
+        } else if (c === ch) {
+          break;
+        }
+      }
+      tokens.push(str);
+      continue;
+    }
+
+    if (ch === '{' || ch === '}' || ch === ';') {
+      flush();
+      tokens.push(ch);
+      i++;
+      continue;
+    }
+
+    buf += ch;
+    i++;
+  }
+
+  flush();
+  return tokens;
 }

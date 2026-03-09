@@ -104,11 +104,11 @@
 
 ### 2c. `@blaze-ng/templating-tools` (depends on 2b)
 
-- [ ] Port HTML scanner (`scanHtmlForTags`)
-- [ ] Port tag compilation (`compileTagsWithSpacebars`)
-- [ ] Port code generation (`generateTemplateJS`, `generateBodyJS`)
-- [ ] Port 1 original test → Vitest
-- [ ] Verify: all tests pass
+- [x] Port HTML scanner (`scanHtmlForTags`)
+- [x] Port tag compilation (`compileTagsWithSpacebars`)
+- [x] Port code generation (`generateTemplateJS`, `generateBodyJS`)
+- [x] Port 1 original test → Vitest (23 tests)
+- [x] Verify: all tests pass
 
 ---
 
