@@ -1,5 +1,14 @@
 import { Meteor } from 'meteor/meteor';
+import { Blaze } from 'meteor/blaze';
+import { Template } from 'meteor/templating';
 import { WebApp } from 'meteor/webapp';
+import { onPageLoad } from 'meteor/server-render';
+import { Messages } from '../imports/api/messages';
+
+// Import shared templates + helpers so they register on the server
+import '../imports/templates/setup';
+import '../imports/templates/app';
+import '../imports/templates/chat';
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 
@@ -58,9 +67,172 @@ const users = {
   },
 };
 
+// ─── Publication ─────────────────────────────────────────────────────────────
+
+Meteor.publish('messages', function () {
+  return Messages.find({}, { sort: { createdAt: 1 } });
+});
+
+// ─── Method ──────────────────────────────────────────────────────────────────
+
+function formatTime(d) {
+  let h = d.getHours();
+  const m = d.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${m < 10 ? '0' : ''}${m} ${ampm}`;
+}
+
+Meteor.methods({
+  'messages.insert'(text) {
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      throw new Meteor.Error('invalid-message', 'Message text is required');
+    }
+    const now = new Date();
+    return Messages.insertAsync({
+      sender: 'Alice Chen',
+      initials: 'AC',
+      avatarColor: '#3b82f6',
+      text: text.trim(),
+      time: formatTime(now),
+      direction: 'sent',
+      createdAt: now,
+    });
+  },
+});
+
+// ─── Seed data ───────────────────────────────────────────────────────────────
+
+const seedMessages = [
+  {
+    sender: 'Alice Chen',
+    initials: 'AC',
+    avatarColor: '#3b82f6',
+    text: 'Hey team! I just pushed the new SSR example using Blaze-NG. Check it out when you get a chance \uD83D\uDE80',
+    time: '2:34 PM',
+    direction: 'sent',
+    reactions: ['\uD83D\uDD25', '\uD83D\uDC4D'],
+    createdAt: new Date(Date.now() - 86400000 + 0),
+  },
+  {
+    sender: 'Bob Smith',
+    initials: 'BS',
+    avatarColor: '#8b5cf6',
+    text: 'Nice! How does the template compilation work on the server side?',
+    time: '2:36 PM',
+    direction: 'received',
+    createdAt: new Date(Date.now() - 86400000 + 120000),
+  },
+  {
+    sender: 'Alice Chen',
+    initials: 'AC',
+    avatarColor: '#3b82f6',
+    text: 'Spacebars compiles to render functions at startup, then toHTMLWithData() renders them to strings. Same templates could be used client-side too.',
+    time: '2:38 PM',
+    direction: 'sent',
+    createdAt: new Date(Date.now() - 86400000 + 240000),
+  },
+  {
+    sender: 'Carol Diaz',
+    initials: 'CD',
+    avatarColor: '#ec4899',
+    text: "That's awesome! I love that we can share templates between server and client. What's the bundle size like?",
+    time: '2:41 PM',
+    direction: 'received',
+    reactions: ['\uD83D\uDCAF'],
+    createdAt: new Date(Date.now() - 86400000 + 420000),
+  },
+  {
+    sender: 'Alice Chen',
+    initials: 'AC',
+    avatarColor: '#3b82f6',
+    text: 'About 18.5 KB gzipped for the full runtime. Pretty lightweight.',
+    time: '2:43 PM',
+    direction: 'sent',
+    createdAt: new Date(Date.now() - 86400000 + 540000),
+  },
+  {
+    sender: 'Dave Kim',
+    initials: 'DK',
+    avatarColor: '#f59e0b',
+    text: 'Morning everyone! Just reviewed the SSR code. The Express integration is really clean.',
+    time: '9:15 AM',
+    direction: 'received',
+    createdAt: new Date(Date.now() - 3600000 * 5),
+  },
+  {
+    sender: 'Dave Kim',
+    initials: 'DK',
+    avatarColor: '#f59e0b',
+    text: 'I especially like the defineTemplate() pattern \u2014 compile once, render many times.',
+    time: '9:16 AM',
+    direction: 'received',
+    image: 'screenshot-ssr-code.png',
+    createdAt: new Date(Date.now() - 3600000 * 5 + 60000),
+  },
+  {
+    sender: 'Bob Smith',
+    initials: 'BS',
+    avatarColor: '#8b5cf6',
+    text: 'Agreed. I ran some benchmarks \u2014 rendering the todo page takes under 1ms. The feature cards page is around 0.5ms.',
+    time: '9:22 AM',
+    direction: 'received',
+    reactions: ['\u26A1', '\uD83C\uDF89'],
+    createdAt: new Date(Date.now() - 3600000 * 5 + 420000),
+  },
+  {
+    sender: 'Carol Diaz',
+    initials: 'CD',
+    avatarColor: '#ec4899',
+    text: "Can we use this for email templates too? We've been looking for something to replace our current email renderer.",
+    time: '9:30 AM',
+    direction: 'received',
+    createdAt: new Date(Date.now() - 3600000 * 5 + 900000),
+  },
+  {
+    sender: 'Alice Chen',
+    initials: 'AC',
+    avatarColor: '#3b82f6',
+    text: 'Absolutely! toHTML() gives you a plain HTML string \u2014 works perfectly for emails. No DOM needed.',
+    time: '9:33 AM',
+    direction: 'sent',
+    reactions: ['\uD83D\uDE4C', '\uD83D\uDCE7'],
+    createdAt: new Date(Date.now() - 3600000 * 5 + 1080000),
+  },
+  {
+    sender: 'Bob Smith',
+    initials: 'BS',
+    avatarColor: '#8b5cf6',
+    text: "Let's add an email template example to the demo. I can take that on.",
+    time: '9:35 AM',
+    direction: 'received',
+    createdAt: new Date(Date.now() - 3600000 * 5 + 1200000),
+  },
+  {
+    sender: 'Alice Chen',
+    initials: 'AC',
+    avatarColor: '#3b82f6',
+    text: "Sounds great! \uD83C\uDFAF Let's sync on it after lunch.",
+    time: '9:37 AM',
+    direction: 'sent',
+    createdAt: new Date(Date.now() - 3600000 * 5 + 1320000),
+  },
+];
+
+async function seedChatMessages() {
+  const count = await Messages.find().countAsync();
+  if (count === 0) {
+    for (const msg of seedMessages) {
+      await Messages.insertAsync(msg);
+    }
+    console.log(`Seeded ${seedMessages.length} chat messages`);
+  }
+}
+
 // ─── Layout wrapper ──────────────────────────────────────────────────────────
 
-function wrapInLayout(title, contentHtml) {
+function wrapInLayout(title, contentHtml, { script } = {}) {
+  const extraScript = script || '';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -111,6 +283,33 @@ function wrapInLayout(title, contentHtml) {
     .not-found a { display: inline-block; margin-top: 1.5rem; color: #3b82f6; }
     .email-preview { background: #e2e8f0; padding: 2rem; border-radius: 0.75rem; }
     .email-preview-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; font-weight: 600; }
+    .chat { max-width: 100%; }
+    .chat h2 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .chat .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .chat-window { background: white; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden; }
+    .chat-date { text-align: center; padding: 0.75rem; font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
+    .chat-messages { padding: 0.5rem 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .msg { display: flex; gap: 0.75rem; max-width: 85%; }
+    .msg.sent { flex-direction: row-reverse; margin-left: auto; }
+    .msg-avatar { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: white; flex-shrink: 0; }
+    .msg-body { display: flex; flex-direction: column; gap: 0.125rem; }
+    .msg-sender { font-size: 0.75rem; font-weight: 600; color: #475569; }
+    .msg.sent .msg-sender { text-align: right; }
+    .msg-bubble { padding: 0.625rem 0.875rem; border-radius: 1rem; font-size: 0.875rem; line-height: 1.4; }
+    .msg.received .msg-bubble { background: #f1f5f9; border-top-left-radius: 0.25rem; }
+    .msg.sent .msg-bubble { background: #3b82f6; color: white; border-top-right-radius: 0.25rem; }
+    .msg-time { font-size: 0.675rem; color: #94a3b8; }
+    .msg.sent .msg-time { text-align: right; }
+    .msg-image { margin-top: 0.375rem; border-radius: 0.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; background: #f8fafc; padding: 2rem; text-align: center; border: 1px dashed #e2e8f0; }
+    .msg-reactions { display: flex; gap: 0.25rem; margin-top: 0.25rem; }
+    .msg.sent .msg-reactions { justify-content: flex-end; }
+    .reaction { font-size: 0.75rem; background: #f1f5f9; border-radius: 1rem; padding: 0.125rem 0.375rem; }
+    .chat-compose { display: flex; gap: 0.75rem; padding: 1rem; border-top: 1px solid #e2e8f0; align-items: center; }
+    .chat-compose input { flex: 1; padding: 0.625rem 1rem; border: 1px solid #e2e8f0; border-radius: 1.5rem; font-size: 0.875rem; outline: none; background: #f8fafc; }
+    .chat-compose button { background: #3b82f6; color: white; border: none; border-radius: 50%; width: 2.25rem; height: 2.25rem; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .chat-participants { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .participant-chip { display: flex; align-items: center; gap: 0.375rem; background: white; border-radius: 2rem; padding: 0.25rem 0.75rem 0.25rem 0.25rem; font-size: 0.8rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .participant-chip .chip-avatar { width: 1.5rem; height: 1.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 600; color: white; }
   </style>
 </head>
 <body>
@@ -119,10 +318,12 @@ function wrapInLayout(title, contentHtml) {
     <a href="/ssr">Home</a>
     <a href="/ssr/todos">Todos</a>
     <a href="/ssr/profile/alice">Profile</a>
+    <a href="/ssr/chat">Chat</a>
     <a href="/ssr/email/welcome">Email</a>
     <a href="/">← Client App</a>
   </nav>
   <main>${contentHtml}</main>
+  ${extraScript}
   <footer>
     &copy; ${new Date().getFullYear()} Blaze-NG &middot; Server-side rendered by Meteor
   </footer>
@@ -256,9 +457,122 @@ function renderEmailNotification(data) {
     </table>`;
 }
 
+// ─── SSR render function for chat (uses MongoDB) ────────────────────────────
+
+const CHAT_PARTICIPANTS = [
+  { name: 'Alice Chen', initials: 'AC', color: '#3b82f6' },
+  { name: 'Bob Smith', initials: 'BS', color: '#8b5cf6' },
+  { name: 'Carol Diaz', initials: 'CD', color: '#ec4899' },
+  { name: 'Dave Kim', initials: 'DK', color: '#f59e0b' },
+];
+
+function formatDateLabel(date) {
+  const now = new Date();
+  const d = new Date(date);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const msgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+  if (msgDay.getTime() === today.getTime()) return 'Today';
+  if (msgDay.getTime() === yesterday.getTime()) return 'Yesterday';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function renderChatSSR(messages, messageCount) {
+  const participantsHtml = CHAT_PARTICIPANTS.map(
+    (p) => `
+    <div class="participant-chip">
+      <div class="chip-avatar" style="background:${escapeHtml(p.color)}">${escapeHtml(p.initials)}</div>
+      ${escapeHtml(p.name)}
+    </div>`,
+  ).join('');
+
+  // Group messages by date
+  const groups = [];
+  let currentDate = null;
+  let currentGroup = null;
+  messages.forEach((msg) => {
+    const dateLabel = formatDateLabel(msg.createdAt);
+    if (dateLabel !== currentDate) {
+      currentDate = dateLabel;
+      currentGroup = { date: dateLabel, messages: [] };
+      groups.push(currentGroup);
+    }
+    currentGroup.messages.push(msg);
+  });
+
+  const groupsHtml = groups
+    .map((group) => {
+      const msgsHtml = group.messages
+        .map((msg) => {
+          const reactionsHtml = msg.reactions
+            ? `<div class="msg-reactions">${msg.reactions.map((r) => `<span class="reaction">${r}</span>`).join('')}</div>`
+            : '';
+          const imageHtml = msg.image
+            ? `<div class="msg-image">\uD83D\uDCCE ${escapeHtml(msg.image)}</div>`
+            : '';
+          return `
+        <div class="msg ${escapeHtml(msg.direction)}">
+          <div class="msg-avatar" style="background:${escapeHtml(msg.avatarColor)}">${escapeHtml(msg.initials)}</div>
+          <div class="msg-body">
+            <div class="msg-sender">${escapeHtml(msg.sender)}</div>
+            <div class="msg-bubble">${escapeHtml(msg.text)}</div>
+            ${imageHtml}
+            ${reactionsHtml}
+            <div class="msg-time">${escapeHtml(msg.time)}</div>
+          </div>
+        </div>`;
+        })
+        .join('');
+      return `<div class="chat-date">${escapeHtml(group.date)}</div><div class="chat-messages">${msgsHtml}</div>`;
+    })
+    .join('');
+
+  return `
+    <div class="chat">
+      <h2>#general</h2>
+      <p class="subtitle">${messageCount} ${pluralize(messageCount, 'message', 'messages')} \u00B7 ${CHAT_PARTICIPANTS.length} participants</p>
+      <div class="chat-participants">${participantsHtml}</div>
+      <div class="chat-window" id="chatWindow">
+        ${groupsHtml}
+        <div class="chat-compose">
+          <input type="text" id="chatInput" placeholder="Type a message\u2026" autocomplete="off" disabled />
+          <button id="chatSend" aria-label="Send" disabled>\u27A4</button>
+        </div>
+      </div>
+      <p style="margin-top: 1rem; color: #64748b; font-size: 0.85rem; text-align: center;">
+        This is the SSR preview. <a href="/" style="color: #3b82f6;">Go to the client app</a> for the interactive chat with real-time reactivity.
+      </p>
+    </div>`;
+}
+
 // ─── SSR Routes via WebApp.connectHandlers ───────────────────────────────────
 
-Meteor.startup(() => {
+// ─── Client-page SSR (onPageLoad) ────────────────────────────────────────────
+// Render the interactiveDemo template on the server using Blaze.toHTMLWithData.
+// This uses the same Blaze templates as the client — no duplicated HTML.
+
+onPageLoad(async (sink) => {
+  const messages = await Messages.find({}, { sort: { createdAt: 1 } }).fetchAsync();
+  const html = Blaze.toHTMLWithData(Template.interactiveDemo, { messages });
+  sink.appendToBody(`<div id="app">${html}</div>`);
+});
+
+Meteor.startup(async () => {
+  await seedChatMessages();
+
+  // SSR chat page — reads from MongoDB
+  WebApp.connectHandlers.use('/ssr/chat', async (req, res, next) => {
+    if (req.url !== '/' && req.url !== '') return next();
+    const messages = await Messages.find({}, { sort: { createdAt: 1 } }).fetchAsync();
+    const messageCount = messages.length;
+    const contentHtml = renderChatSSR(messages, messageCount);
+    const html = wrapInLayout('Chat', contentHtml);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  });
+
   // Home page — feature cards
   WebApp.connectHandlers.use('/ssr/profile', (req, res, next) => {
     const username = req.url.replace(/^\//, '').split('/')[0];
@@ -367,5 +681,6 @@ Meteor.startup(() => {
   console.log('  GET /ssr              — Home page with feature cards');
   console.log('  GET /ssr/todos        — Server-rendered todo list');
   console.log('  GET /ssr/profile/:id  — User profiles (alice, bob)');
+  console.log('  GET /ssr/chat         — Chat with message history');
   console.log('  GET /ssr/email/*      — Email template previews');
 });

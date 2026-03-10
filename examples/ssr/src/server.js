@@ -18,9 +18,10 @@ setReactiveSystem(reactive);
 ObserveSequence.setReactiveSystem(reactive);
 
 // Import and register all templates (side effect: populates Template registry)
-import { wrapInLayout } from './templates.js';
+import { wrapInLayout, CHAT_SCRIPT } from './templates.js';
 
 const app = express();
+app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 // ─── Sample data ─────────────────────────────────────────────────────────────
@@ -66,11 +67,134 @@ const users = {
   },
 };
 
+const chatHistory = {
+  channelName: 'general',
+  participants: [
+    { name: 'Alice Chen', initials: 'AC', color: '#3b82f6' },
+    { name: 'Bob Smith', initials: 'BS', color: '#8b5cf6' },
+    { name: 'Carol Diaz', initials: 'CD', color: '#ec4899' },
+    { name: 'Dave Kim', initials: 'DK', color: '#f59e0b' },
+  ],
+  messageGroups: [
+    {
+      date: 'Yesterday',
+      messages: [
+        {
+          sender: 'Alice Chen',
+          initials: 'AC',
+          avatarColor: '#3b82f6',
+          text: 'Hey team! I just pushed the new SSR example using Blaze-NG. Check it out when you get a chance 🚀',
+          time: '2:34 PM',
+          direction: 'sent',
+          reactions: ['🔥', '👍'],
+        },
+        {
+          sender: 'Bob Smith',
+          initials: 'BS',
+          avatarColor: '#8b5cf6',
+          text: 'Nice! How does the template compilation work on the server side?',
+          time: '2:36 PM',
+          direction: 'received',
+        },
+        {
+          sender: 'Alice Chen',
+          initials: 'AC',
+          avatarColor: '#3b82f6',
+          text: 'Spacebars compiles to render functions at startup, then toHTMLWithData() renders them to strings. Same templates could be used client-side too.',
+          time: '2:38 PM',
+          direction: 'sent',
+        },
+        {
+          sender: 'Carol Diaz',
+          initials: 'CD',
+          avatarColor: '#ec4899',
+          text: "That's awesome! I love that we can share templates between server and client. What's the bundle size like?",
+          time: '2:41 PM',
+          direction: 'received',
+          reactions: ['💯'],
+        },
+        {
+          sender: 'Alice Chen',
+          initials: 'AC',
+          avatarColor: '#3b82f6',
+          text: 'About 18.5 KB gzipped for the full runtime. Pretty lightweight.',
+          time: '2:43 PM',
+          direction: 'sent',
+        },
+      ],
+    },
+    {
+      date: 'Today',
+      messages: [
+        {
+          sender: 'Dave Kim',
+          initials: 'DK',
+          avatarColor: '#f59e0b',
+          text: 'Morning everyone! Just reviewed the SSR code. The Express integration is really clean.',
+          time: '9:15 AM',
+          direction: 'received',
+        },
+        {
+          sender: 'Dave Kim',
+          initials: 'DK',
+          avatarColor: '#f59e0b',
+          text: 'I especially like the defineTemplate() pattern — compile once, render many times.',
+          time: '9:16 AM',
+          direction: 'received',
+          image: 'screenshot-ssr-code.png',
+        },
+        {
+          sender: 'Bob Smith',
+          initials: 'BS',
+          avatarColor: '#8b5cf6',
+          text: 'Agreed. I ran some benchmarks — rendering the todo page takes under 1ms. The feature cards page is around 0.5ms.',
+          time: '9:22 AM',
+          direction: 'received',
+          reactions: ['⚡', '🎉'],
+        },
+        {
+          sender: 'Carol Diaz',
+          initials: 'CD',
+          avatarColor: '#ec4899',
+          text: "Can we use this for email templates too? We've been looking for something to replace our current email renderer.",
+          time: '9:30 AM',
+          direction: 'received',
+        },
+        {
+          sender: 'Alice Chen',
+          initials: 'AC',
+          avatarColor: '#3b82f6',
+          text: 'Absolutely! toHTML() gives you a plain HTML string — works perfectly for emails. No DOM needed.',
+          time: '9:33 AM',
+          direction: 'sent',
+          reactions: ['🙌', '📧'],
+        },
+        {
+          sender: 'Bob Smith',
+          initials: 'BS',
+          avatarColor: '#8b5cf6',
+          text: "Let's add an email template example to the demo. I can take that on.",
+          time: '9:35 AM',
+          direction: 'received',
+        },
+        {
+          sender: 'Alice Chen',
+          initials: 'AC',
+          avatarColor: '#3b82f6',
+          text: "Sounds great! 🎯 Let's sync on it after lunch.",
+          time: '9:37 AM',
+          direction: 'sent',
+        },
+      ],
+    },
+  ],
+};
+
 // ─── Helper: render a page inside the layout ─────────────────────────────────
 
-function renderPage(title, contentTemplate, data = {}) {
+function renderPage(title, contentTemplate, data = {}, options = {}) {
   const content = toHTMLWithData(contentTemplate, data);
-  return wrapInLayout(title, content);
+  return wrapInLayout(title, content, options);
 }
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
@@ -84,6 +208,57 @@ app.get('/todos', (req, res) => {
   const activeCount = todos.filter((t) => !t.completed).length;
   const html = renderPage('Todos', Template.todosPage, { todos, activeCount });
   res.type('html').send(html);
+});
+
+function formatTime(d) {
+  let h = d.getHours();
+  const m = d.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${m < 10 ? '0' : ''}${m} ${ampm}`;
+}
+
+app.get('/chat', (req, res) => {
+  const messageCount = chatHistory.messageGroups.reduce((sum, g) => sum + g.messages.length, 0);
+  const html = renderPage(
+    'Chat',
+    Template.chatPage,
+    {
+      ...chatHistory,
+      messageCount,
+      typingText: '',
+    },
+    { script: CHAT_SCRIPT },
+  );
+  res.type('html').send(html);
+});
+
+app.post('/chat', (req, res) => {
+  const { text } = req.body;
+  if (!text || typeof text !== 'string' || !text.trim()) {
+    return res.status(400).json({ error: 'Message text is required' });
+  }
+
+  const now = new Date();
+  const todayStr = 'Today';
+  const message = {
+    sender: 'Alice Chen',
+    initials: 'AC',
+    avatarColor: '#3b82f6',
+    text: text.trim(),
+    time: formatTime(now),
+    direction: 'sent',
+  };
+
+  // Append to today's group, or create one
+  const lastGroup = chatHistory.messageGroups[chatHistory.messageGroups.length - 1];
+  if (lastGroup && lastGroup.date === todayStr) {
+    lastGroup.messages.push(message);
+  } else {
+    chatHistory.messageGroups.push({ date: todayStr, messages: [message] });
+  }
+
+  res.json({ ok: true, message });
 });
 
 app.get('/profile/:username', (req, res) => {
@@ -110,4 +285,5 @@ app.listen(PORT, () => {
   console.log('     GET /todos         — Server-rendered todo list');
   console.log('     GET /profile/alice — User profile page');
   console.log('     GET /profile/bob   — Another profile');
+  console.log('     GET /chat          — Chat with message history');
 });

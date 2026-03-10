@@ -464,6 +464,37 @@ meteor add wreiske:blaze-ng-html-templates
 
 See the [Migration Guide](docs/guide/migration.md) for detailed instructions.
 
+## Example Apps
+
+The `examples/` directory contains six complete, runnable applications:
+
+| Example              | Stack            | What it demonstrates                                       |
+| -------------------- | ---------------- | ---------------------------------------------------------- |
+| `meteor-counter`     | Meteor           | ReactiveVar, helpers, events, conditional rendering        |
+| `meteor-todos`       | Meteor + MongoDB | Collections, `{{#each}}` cursors, sub-templates, filtering |
+| `meteor-ssr`         | Meteor + WebApp  | Server-side rendering, shared templates, email generation  |
+| `standalone-counter` | Vite (npm)       | Runtime compilation, SimpleReactiveSystem, no Meteor       |
+| `standalone-todos`   | Vite (npm)       | Multiple templates, reactive store, list rendering         |
+| `ssr`                | Express (npm)    | Server-only rendering, layout composition, dynamic routes  |
+
+Meteor examples:
+
+```bash
+cd examples/meteor-counter
+npx meteor@latest npm install
+npx meteor@latest
+```
+
+Standalone examples:
+
+```bash
+cd examples/standalone-counter
+pnpm install
+pnpm dev
+```
+
+See each example's README for full details.
+
 ## Development
 
 ```bash

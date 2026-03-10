@@ -93,6 +93,7 @@ export default defineConfig({
           text: 'Examples',
           items: [
             { text: 'Overview', link: '/examples/' },
+            { text: 'Running the Examples', link: '/examples/running-examples' },
             { text: 'Counter', link: '/examples/counter' },
             { text: 'Todo App', link: '/examples/todo-app' },
             { text: 'Chat App', link: '/examples/chat-app' },

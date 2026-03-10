@@ -40,6 +40,7 @@ meteor-counter/
 ## How it works
 
 The `blaze-html-templates` Meteor package automatically:
+
 1. Compiles `<template>` tags in `.html` files at build time
 2. Registers them in the template registry
 3. Renders `<body>` content to `document.body` on startup

@@ -1,36 +1,31 @@
+import { Meteor } from 'meteor/meteor';
+import { Blaze } from 'meteor/blaze';
 import { Template } from 'meteor/templating';
-import { ReactiveVar } from 'meteor/reactive-var';
 
-// Import shared templates and helpers (registers them on both client + server)
+// Import shared templates + helpers (isomorphic — same code runs on server for SSR)
 import '../imports/templates/setup';
+import '../imports/templates/app';
+import '../imports/templates/chat';
 
-import './main.html';
+// Note: ./main.html only has <head> tags (no templates). Meteor's build system
+// processes <head> content automatically — no import needed. Importing it would
+// fail because the templating compiler doesn't generate a JS module for
+// head-only HTML files.
 import './styles.css';
 
-// ─── Interactive counter (client-side only) ──────────────────────────────────
+// ─── Hydration: replace SSR shell with reactive Blaze templates ──────────────
 
-Template.interactiveDemo.onCreated(function () {
-  this.count = new ReactiveVar(0);
-});
+Meteor.startup(() => {
+  const app = document.getElementById('app');
+  if (!app) return;
 
-Template.interactiveDemo.helpers({
-  count() {
-    return Template.instance().count.get();
-  },
-  isZero() {
-    return Template.instance().count.get() === 0;
-  },
-});
-
-Template.interactiveDemo.events({
-  'click .increment'(event, instance) {
-    instance.count.set(instance.count.get() + 1);
-  },
-  'click .decrement'(event, instance) {
-    const current = instance.count.get();
-    if (current > 0) instance.count.set(current - 1);
-  },
-  'click .reset'(event, instance) {
-    instance.count.set(0);
-  },
+  // Keep the SSR content visible until the messages subscription is ready,
+  // then swap in the reactive Blaze DOM in one step to avoid a flash.
+  const sub = Meteor.subscribe('messages', {
+    onReady() {
+      const ssrNodes = Array.from(app.childNodes);
+      Blaze.render(Template.interactiveDemo, app);
+      ssrNodes.forEach((node) => node.remove());
+    },
+  });
 });

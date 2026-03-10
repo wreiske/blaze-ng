@@ -34,13 +34,13 @@ standalone-counter/
 
 ## Key Differences from Meteor
 
-| Meteor | Standalone |
-|--------|-----------|
-| `meteor/templating` does build-time compilation | You call `compile()` at runtime |
-| Tracker provides reactivity automatically | You create a `SimpleReactiveSystem` |
-| `<body>` is auto-rendered | You call `render(template, element)` manually |
-| `ReactiveVar` comes from `meteor/reactive-var` | You use `reactive.ReactiveVar()` |
-| `reactive.flush()` is automatic | You call `reactive.flush()` after mutations |
+| Meteor                                          | Standalone                                    |
+| ----------------------------------------------- | --------------------------------------------- |
+| `meteor/templating` does build-time compilation | You call `compile()` at runtime               |
+| Tracker provides reactivity automatically       | You create a `SimpleReactiveSystem`           |
+| `<body>` is auto-rendered                       | You call `render(template, element)` manually |
+| `ReactiveVar` comes from `meteor/reactive-var`  | You use `reactive.ReactiveVar()`              |
+| `reactive.flush()` is automatic                 | You call `reactive.flush()` after mutations   |
 
 ## How Templates Work Without Meteor
 

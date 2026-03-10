@@ -22,14 +22,14 @@ Open [http://localhost:3000](http://localhost:3000) for the client-side interact
 
 ## SSR Routes
 
-| Route | Description |
-|---|---|
-| `/ssr` | Home page with feature cards |
-| `/ssr/todos` | Server-rendered todo list |
-| `/ssr/profile/alice` | User profile page |
-| `/ssr/profile/bob` | Another profile |
-| `/ssr/email/welcome` | Welcome email template preview |
-| `/ssr/email/notification` | Notification email preview |
+| Route                     | Description                    |
+| ------------------------- | ------------------------------ |
+| `/ssr`                    | Home page with feature cards   |
+| `/ssr/todos`              | Server-rendered todo list      |
+| `/ssr/profile/alice`      | User profile page              |
+| `/ssr/profile/bob`        | Another profile                |
+| `/ssr/email/welcome`      | Welcome email template preview |
+| `/ssr/email/notification` | Notification email preview     |
 
 All `/ssr/*` routes return complete HTML documents with no client-side JavaScript — the HTML is fully rendered on the server.
 
@@ -111,10 +111,10 @@ const emailHtml = Blaze.toHTMLWithData(Template.emailWelcome, {
 
 ## Key Concepts
 
-| Concept | Client | Server |
-|---|---|---|
-| Template compilation | Build-time (`.html` → JS) | Build-time (same) |
-| Template access | `Template.myTemplate` | `Template.myTemplate` |
-| Rendering | `Blaze.render()` → DOM | `Blaze.toHTMLWithData()` → string |
-| Reactivity | Full (Tracker + ReactiveVar) | None (static render) |
-| Use cases | Interactive UI | SEO, emails, PDFs, crawlers |
+| Concept              | Client                       | Server                            |
+| -------------------- | ---------------------------- | --------------------------------- |
+| Template compilation | Build-time (`.html` → JS)    | Build-time (same)                 |
+| Template access      | `Template.myTemplate`        | `Template.myTemplate`             |
+| Rendering            | `Blaze.render()` → DOM       | `Blaze.toHTMLWithData()` → string |
+| Reactivity           | Full (Tracker + ReactiveVar) | None (static render)              |
+| Use cases            | Interactive UI               | SEO, emails, PDFs, crawlers       |

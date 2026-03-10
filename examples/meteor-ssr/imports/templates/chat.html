@@ -1,0 +1,54 @@
+<template name="chatPage">
+  <div class="chat">
+    <h2>#general</h2>
+    <p class="subtitle">
+      {{messageCount}} {{pluralize messageCount "message" "messages"}} · {{participantCount}}
+      participants
+    </p>
+
+    <div class="chat-participants">
+      {{#each participant in participants}} {{> participantChip participant}} {{/each}}
+    </div>
+
+    <div class="chat-window" id="chatWindow">
+      {{#each group in messageGroups}}
+      <div class="chat-date">{{group.date}}</div>
+      <div class="chat-messages">
+        {{#each msg in group.messages}} {{> chatMessage msg}} {{/each}}
+      </div>
+      {{/each}}
+
+      <div class="chat-compose">
+        <input type="text" id="chatInput" placeholder="Type a message…" autocomplete="off" />
+        <button id="chatSend" aria-label="Send">➤</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="participantChip">
+  <div class="participant-chip">
+    <div class="chip-avatar" style="background: {{color}}">{{initials}}</div>
+    {{name}}
+  </div>
+</template>
+
+<template name="chatMessage">
+  <div class="msg {{direction}}">
+    <div class="msg-avatar" style="background: {{avatarColor}}">{{initials}}</div>
+    <div class="msg-body">
+      <div class="msg-sender">{{sender}}</div>
+      <div class="msg-bubble">{{text}}</div>
+      {{#if image}}
+      <div class="msg-image">📎 {{image}}</div>
+      {{/if}} {{#if reactions.length}}
+      <div class="msg-reactions">
+        {{#each reaction in reactions}}
+        <span class="reaction">{{reaction}}</span>
+        {{/each}}
+      </div>
+      {{/if}}
+      <div class="msg-time">{{time}}</div>
+    </div>
+  </div>
+</template>

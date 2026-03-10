@@ -22,12 +22,12 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Routes
 
-| Route | Description |
-|---|---|
-| `/` | Home page with feature cards |
-| `/todos` | Server-rendered todo list |
-| `/profile/alice` | User profile (Alice) |
-| `/profile/bob` | User profile (Bob) |
+| Route            | Description                  |
+| ---------------- | ---------------------------- |
+| `/`              | Home page with feature cards |
+| `/todos`         | Server-rendered todo list    |
+| `/profile/alice` | User profile (Alice)         |
+| `/profile/bob`   | User profile (Bob)           |
 
 ## Project Structure
 
@@ -50,10 +50,13 @@ Templates are defined as strings and compiled at server startup:
 ```js
 import { defineTemplate } from './compile.js';
 
-defineTemplate('greeting', `
+defineTemplate(
+  'greeting',
+  `
   <h1>Hello, {{name}}!</h1>
   <p>Welcome to {{place}}.</p>
-`);
+`,
+);
 ```
 
 ### 2. Compile & Register
@@ -89,10 +92,10 @@ app.get('/', (req, res) => {
 
 ## Meteor vs Standalone
 
-| Feature | Meteor SSR | This Example |
-|---|---|---|
-| Template compilation | Build-time (`.html` files) | Runtime (strings) |
-| Template access | `import { Template } from 'meteor/templating'` | `import { Template } from '@blaze-ng/core'` |
-| HTTP server | `WebApp.connectHandlers` | Express |
-| SSR function | `Blaze.toHTMLWithData()` | `toHTMLWithData()` |
-| Reactivity | Tracker (available but unused in SSR) | None needed |
+| Feature              | Meteor SSR                                     | This Example                                |
+| -------------------- | ---------------------------------------------- | ------------------------------------------- |
+| Template compilation | Build-time (`.html` files)                     | Runtime (strings)                           |
+| Template access      | `import { Template } from 'meteor/templating'` | `import { Template } from '@blaze-ng/core'` |
+| HTTP server          | `WebApp.connectHandlers`                       | Express                                     |
+| SSR function         | `Blaze.toHTMLWithData()`                       | `toHTMLWithData()`                          |
+| Reactivity           | Tracker (available but unused in SSR)          | None needed                                 |

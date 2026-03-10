@@ -24,26 +24,17 @@ Learn Blaze-ng through complete, working examples.
 | [Dynamic Components](./dynamic-components.md) | Plugin system, lazy loading, and runtime template registration |
 | [SSR](./ssr-example.md)                       | Server-side rendering with hydration                           |
 
-## Running Examples
+## Runnable Example Apps
 
-Each example includes complete, copy-pasteable code. To run them:
+The repository includes six complete, runnable example applications in the [`examples/`](https://github.com/wreiske/blaze-ng/tree/main/examples) directory:
 
-### With Meteor
+| Example                                                                                           | Stack            | Description                                  |
+| ------------------------------------------------------------------------------------------------- | ---------------- | -------------------------------------------- |
+| [`meteor-counter`](https://github.com/wreiske/blaze-ng/tree/main/examples/meteor-counter)         | Meteor           | Simple reactive counter with ReactiveVar     |
+| [`meteor-todos`](https://github.com/wreiske/blaze-ng/tree/main/examples/meteor-todos)             | Meteor + MongoDB | Todo list with full-stack reactivity         |
+| [`meteor-ssr`](https://github.com/wreiske/blaze-ng/tree/main/examples/meteor-ssr)                 | Meteor + WebApp  | Server-side rendering with shared templates  |
+| [`standalone-counter`](https://github.com/wreiske/blaze-ng/tree/main/examples/standalone-counter) | Vite             | Counter using Blaze-NG as a pure npm library |
+| [`standalone-todos`](https://github.com/wreiske/blaze-ng/tree/main/examples/standalone-todos)     | Vite             | Todo list with in-memory reactive store      |
+| [`ssr`](https://github.com/wreiske/blaze-ng/tree/main/examples/ssr)                               | Express          | Server-side rendering without Meteor         |
 
-```bash
-meteor create my-app --blaze
-cd my-app
-# Copy the template and JS code into your app
-meteor
-```
-
-### Without Meteor (npm)
-
-```bash
-mkdir my-app && cd my-app
-npm init -y
-npm install @blaze-ng/core @blaze-ng/htmljs @blaze-ng/spacebars \
-  @blaze-ng/spacebars-compiler @blaze-ng/templating-runtime
-```
-
-Set up the reactive system, then use the runtime compilation approach shown in each example.
+See [Running the Example Apps](./running-examples.md) for setup instructions, project structures, and what each example demonstrates.
