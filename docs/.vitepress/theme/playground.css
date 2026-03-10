@@ -1,0 +1,295 @@
+/* ── Playground container ────────────────────────────────────── */
+.playground {
+  border: 1px solid var(--vp-c-border);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--vp-c-bg);
+  margin: 1.5rem 0;
+}
+
+.playground-mini {
+  border-radius: 12px;
+}
+
+/* ── Toolbar ────────────────────────────────────────────────── */
+.playground-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-border);
+  flex-shrink: 0;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.playground-title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--vp-c-text-1);
+  white-space: nowrap;
+}
+
+.preset-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.preset-select:focus {
+  border-color: var(--vp-c-brand-1);
+  outline: none;
+}
+
+.toolbar-btn {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-2);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.toolbar-btn:hover {
+  color: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+}
+
+/* ── Body: editors + preview side by side ───────────────────── */
+.playground-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Editor panel ───────────────────────────────────────────── */
+.playground-editors {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--vp-c-border);
+}
+
+.editor-tabs {
+  display: flex;
+  background: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-border);
+  flex-shrink: 0;
+}
+
+.editor-tab {
+  padding: 0.4rem 1rem;
+  border: none;
+  background: none;
+  color: var(--vp-c-text-2);
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.editor-tab:hover {
+  color: var(--vp-c-text-1);
+}
+
+.editor-tab.active {
+  color: var(--vp-c-brand-1);
+  border-bottom-color: var(--vp-c-brand-1);
+}
+
+.editor-container {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* CodeMirror overrides */
+.editor-container .cm-editor {
+  height: 100%;
+}
+
+.editor-container .cm-scroller {
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.editor-container .cm-editor .cm-content {
+  padding: 0.5rem 0;
+}
+
+.editor-container .cm-editor.cm-focused {
+  outline: none;
+}
+
+.editor-container .cm-gutters {
+  border-right: 1px solid var(--vp-c-border);
+}
+
+/* Light mode: match VitePress code blocks */
+.editor-container .cm-editor:not(.cm-focused) .cm-activeLine {
+  background: transparent;
+}
+
+/* ── Preview panel ──────────────────────────────────────────── */
+.playground-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.preview-header {
+  padding: 0.4rem 1rem;
+  background: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-border);
+  font-size: 0.8rem;
+  color: var(--vp-c-text-2);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.preview-container {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem;
+  background: white;
+}
+
+.preview-error {
+  padding: 0.5rem 0.75rem;
+  background: #fef2f2;
+  border-top: 1px solid #fecaca;
+  color: #dc2626;
+  font-family: monospace;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  max-height: 100px;
+  overflow: auto;
+  flex-shrink: 0;
+}
+
+/* Dark mode error */
+.dark .preview-error {
+  background: #1c1012;
+  border-top-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+/* Dark mode preview background */
+.dark .preview-container {
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+/* ── Responsive: stack on mobile ───────────────────────────── */
+@media (max-width: 768px) {
+  .playground-body {
+    flex-direction: column;
+  }
+
+  .playground-editors {
+    border-right: none;
+    border-bottom: 1px solid var(--vp-c-border);
+    max-height: 50%;
+  }
+
+  .playground-preview {
+    min-height: 200px;
+  }
+
+  .playground-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* ── Landing page mini mode adjustments ────────────────────── */
+.playground-mini .playground-title {
+  font-size: 0.9rem;
+}
+
+/* ── Make playground full-width in VitePress content ────────── */
+.vp-doc .playground {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* ── Playground page layout (layout: page) ─────────────────── */
+.VPPage > div > div {
+  padding: 1.5rem 1.5rem 2rem;
+  max-width: 1152px;
+  margin: 0 auto;
+}
+
+.VPPage > div > div > h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+}
+
+.VPPage > div > div > h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--vp-c-border);
+}
+
+.VPPage > div > div > p {
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.VPPage > div > div > ul {
+  padding-left: 1.25rem;
+  line-height: 1.8;
+}
+
+.VPPage > div > div > ul > li {
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .VPPage > div > div {
+    padding: 2rem 3rem 2rem;
+  }
+
+  .VPPage > div > div > h1 {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 960px) {
+  .VPPage > div > div {
+    padding: 2rem 4rem 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .VPPage .playground {
+    height: 70vh !important;
+  }
+}

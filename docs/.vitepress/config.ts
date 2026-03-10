@@ -4,6 +4,20 @@ export default defineConfig({
   title: 'Blaze-NG',
   description: 'A modern TypeScript rewrite of Meteor Blaze — the reactive templating engine',
 
+  ignoreDeadLinks: [/localhost/],
+
+  vite: {
+    ssr: {
+      noExternal: [
+        'codemirror',
+        '@codemirror/lang-html',
+        '@codemirror/lang-javascript',
+        '@codemirror/theme-one-dark',
+        '@blaze-ng/observe-sequence',
+      ],
+    },
+  },
+
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
     ['meta', { name: 'theme-color', content: '#e25822' }],
@@ -19,6 +33,7 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'API', link: '/api/' },
       { text: 'Examples', link: '/examples/' },
+      { text: 'Playground', link: '/playground' },
       {
         text: 'v0.1.0',
         items: [

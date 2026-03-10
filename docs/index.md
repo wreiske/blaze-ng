@@ -7,14 +7,14 @@ hero:
   tagline: A modern, zero-dependency rewrite of Meteor Blaze — faster, smaller, fully typed.
   actions:
     - theme: brand
+      text: Try it Live →
+      link: /playground
+    - theme: brand
       text: Get Started
       link: /guide/getting-started
     - theme: alt
       text: View on GitHub
       link: https://github.com/wreiske/blaze-ng
-    - theme: alt
-      text: Examples
-      link: /examples/
 
 features:
   - icon: 🚀
@@ -46,50 +46,15 @@ features:
 }
 </style>
 
-## Quick Example
+<script setup>
+import BlazePlayground from './.vitepress/theme/components/BlazePlayground.vue';
+</script>
 
-Here's what Blaze-NG looks like in action:
+## See it in Action
 
-:::code-group
+Edit the code below and watch Blaze-NG render in real time — no build step, no server, pure client-side:
 
-```handlebars [counter.html]
-<template name='counter'>
-  <div class='counter'>
-    <h2>Count: {{count}}</h2>
-    <button class='increment'>+1</button>
-    <button class='decrement'>-1</button>
-    <button class='reset'>Reset</button>
-  </div>
-</template>
-```
-
-```ts [counter.ts]
-import { Template } from '@blaze-ng/core';
-
-Template.counter.onCreated(function () {
-  this.count = new ReactiveVar(0);
-});
-
-Template.counter.helpers({
-  count() {
-    return Template.instance().count.get();
-  },
-});
-
-Template.counter.events({
-  'click .increment'(event, instance) {
-    instance.count.set(instance.count.get() + 1);
-  },
-  'click .decrement'(event, instance) {
-    instance.count.set(instance.count.get() - 1);
-  },
-  'click .reset'(event, instance) {
-    instance.count.set(0);
-  },
-});
-```
-
-:::
+<BlazePlayground mini preset="counter" height="480px" />
 
 ## Comparison
 
