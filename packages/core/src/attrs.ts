@@ -182,8 +182,9 @@ class StyleHandler extends DiffingAttributeHandler {
   parseValue(attrString: string): OrderedDict<string> {
     const tokens = new OrderedDict<string>();
     // Regex from css-parse for parsing CSS attribute declarations
+    // https://github.com/reworkcss/css-parse/blob/7cef3658d0bba872cde05a85339034b187cb3397/index.js#L219
     const regex =
-      /(\*?[-#/\*\\w]+(?:\[[0-9a-z_-]+\])?)\s*:\s*(?:'(?:\\'|.)*?'|"(?:\\"|.)*?"|\([^)]*?\)|[^};])+[;\s]*/g;
+      /(\*?[-#\/\*\\\w]+(?:\[[0-9a-z_-]+\])?)\s*:\s*(?:'(?:\\'|.)*?'|"(?:\\"|.)*?"|\([^\)]*?\)|[^};])+[;\s]*/g;
     let match = regex.exec(attrString);
     while (match) {
       // Use the last value for the same key

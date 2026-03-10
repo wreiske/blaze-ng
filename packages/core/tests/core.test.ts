@@ -734,6 +734,46 @@ describe('reactive attributes', () => {
     reactive.flush();
     expect(span!.getAttribute('data-info')).toBe('updated');
   });
+
+  test('dynamic style attribute updates', () => {
+    const R = reactive.ReactiveVar('color: red');
+
+    const spanFunc = () => HTML.SPAN({ style: () => new View('attr', () => R.get()) }, 'text');
+
+    const div = document.createElement('div');
+    render(spanFunc, div);
+    const span = div.querySelector('span');
+    expect(span).toBeTruthy();
+    expect(span!.getAttribute('style')).toBe('color: red');
+
+    R.set('color: blue');
+    reactive.flush();
+    expect(span!.getAttribute('style')).toBe('color: blue');
+  });
+
+  test('dynamic style with multiple properties', () => {
+    const R = reactive.ReactiveVar('color: red; padding: 10px');
+
+    const spanFunc = () => HTML.SPAN({ style: () => new View('attr', () => R.get()) }, 'text');
+
+    const div = document.createElement('div');
+    render(spanFunc, div);
+    const span = div.querySelector('span');
+    expect(span!.getAttribute('style')).toBe('color: red; padding: 10px');
+
+    R.set('color: blue; font-size: 14px');
+    reactive.flush();
+    expect(span!.getAttribute('style')).toBe('color: blue; font-size: 14px');
+  });
+
+  test('static style attribute', () => {
+    const spanFunc = () => HTML.SPAN({ style: 'color: green' }, 'text');
+
+    const div = document.createElement('div');
+    render(spanFunc, div);
+    const span = div.querySelector('span');
+    expect(span!.getAttribute('style')).toBe('color: green');
+  });
 });
 
 // ─── Template Lifecycle Tests ────────────────────────────────────────────────
